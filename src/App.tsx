@@ -19,6 +19,7 @@ import PageNavigator from './components/PageNavigator';
 import WordNavigator from './components/WordNavigator';
 import ContextPreview from './components/ContextPreview';
 import DonateButton from './components/DonateButton';
+import FeedbackButton from './components/FeedbackButton';
 import { parsePDF } from './parsers/pdfParser';
 import { parseEPUB } from './parsers/epubParser';
 import { normalizeText, tokenize } from './utils/textUtils';
@@ -192,7 +193,10 @@ export default function App() {
           </h1>
           <p className="subtitle">RSVP Reader</p>
         </div>
-        <DonateButton />
+        <div className="headerActions">
+          <FeedbackButton />
+          <DonateButton />
+        </div>
       </header>
 
       <main className="appMain">
@@ -245,6 +249,23 @@ export default function App() {
           <img src="/icons/icon.svg" className="footerIcon" alt="" aria-hidden="true" />
           Techscript
         </a>
+        {/*
+          Set VITE_GOATCOUNTER_SITE_CODE in your .env to enable the analytics link.
+        */}
+        {import.meta.env.VITE_GOATCOUNTER_SITE_CODE && (
+          <>
+            <span className="footerSep">·</span>
+            <a
+              href={`https://${import.meta.env.VITE_GOATCOUNTER_SITE_CODE}.goatcounter.com`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="analyticsLink"
+              title="View site visitor analytics"
+            >
+              📊 Site Analytics
+            </a>
+          </>
+        )}
       </footer>
     </div>
   );

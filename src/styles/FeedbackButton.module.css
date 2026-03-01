@@ -1,0 +1,26 @@
+/* FeedbackButton.module.css */
+
+.feedbackBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.85rem;
+  background: transparent;
+  color: #6090c0;
+  border: 1px solid #1e3a52;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.feedbackBtn:hover {
+  background: #0f1e2e;
+  border-color: #6090c0;
+  color: #80b0e0;
+}
