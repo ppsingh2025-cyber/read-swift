@@ -252,13 +252,7 @@ export default function App() {
           <img src="/icons/icon.svg" className="footerIcon" alt="" aria-hidden="true" />
           Techscript
         </a>
-        <span className="visitorCounter">
-          {/* %2F is the URL-encoded '/' required by GoatCounter's counter endpoint */}
-          <img
-            src="https://readswift.goatcounter.com/counter/%2F.svg"
-            alt="Visitor count"
-          />
-        </span>
+
       </footer>
     </div>
   );

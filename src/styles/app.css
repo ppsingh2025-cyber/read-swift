@@ -174,13 +174,6 @@ kbd {
   flex-shrink: 0;
 }
 
-.visitorCounter {
-  display: inline-flex;
-  align-items: center;
-  margin-left: 0.75rem;
-  color: #666;
-}
-
 .footerSep {
   color: #333;
   margin: 0 0.15rem;
