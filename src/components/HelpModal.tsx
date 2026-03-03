@@ -68,10 +68,11 @@ export default function HelpModal({ onClose }: HelpModalProps) {
           <section className={styles.section}>
             <h3 className={styles.sectionTitle}>5. Customize the Display</h3>
             <ul className={styles.featureList}>
-              <li>Open the <strong>☰ menu</strong> to adjust window size (1 / 3 / 5 words), orientation, and highlight colour.</li>
+              <li>Open the <strong>☰ menu</strong> to adjust window size (1 – 5 words), orientation, and highlight colour.</li>
+              <li>Use <strong>Window size</strong> to read 1, 2, 3, 4, or 5 words at once — higher counts give more context per flash, lower counts maximise focus. Default is 2 words.</li>
               <li>Enable <strong>ORP</strong> to highlight the focal letter in each word and guide your eye.</li>
               <li>Enable <strong>Punctuation pause</strong> to add natural pauses after sentence-ending marks.</li>
-              <li>Click the <strong>☀ / 🌙</strong> button in the top-right corner to toggle between Day and Night mode.</li>
+              <li>Click the <strong>☀</strong> (Day) or <strong>🌙</strong> (Night) button in the top-right corner to toggle between Day and Night mode. The app logo beside the title also switches automatically to match the selected theme — no page reload needed.</li>
               <li>Click <strong>⊞</strong> on the viewport to enter focus mode for distraction-free reading.</li>
             </ul>
           </section>

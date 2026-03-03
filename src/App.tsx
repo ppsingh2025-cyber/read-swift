@@ -234,7 +234,12 @@ export default function App() {
       <header className="topBar">
         <BurgerMenu onFileSelect={handleFileSelect} onShowHelp={() => setShowHelp(true)} />
         <div className="topBarBrand">
-          <img src="/icons/icon.svg" className="topBarIcon" alt="" aria-hidden="true" />
+          <img
+            src={theme === 'day' ? '/icons/icon-day.svg' : '/icons/icon-night.svg'}
+            className="topBarIcon"
+            alt=""
+            aria-hidden="true"
+          />
           <span className="topBarTitle">ReadSwift</span>
         </div>
         <ThemeToggle />
