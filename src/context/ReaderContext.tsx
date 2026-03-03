@@ -22,6 +22,8 @@ const LS_KEY_ORIENTATION = 'fastread_orientation';
 const LS_KEY_THEME = 'fastread_theme';
 const LS_KEY_ORP = 'fastread_orp';
 const LS_KEY_PUNCT_PAUSE = 'fastread_punct_pause';
+const LS_KEY_PERIPHERAL_FADE = 'fastread_peripheral_fade';
+const LS_KEY_LONG_WORD_COMP = 'fastread_long_word_comp';
 const DEFAULT_WPM = 250;
 const DEFAULT_WINDOW_SIZE: WindowSize = 3;
 const DEFAULT_HIGHLIGHT_COLOR = '#ff0000';
@@ -29,6 +31,8 @@ const DEFAULT_ORIENTATION: Orientation = 'horizontal';
 const DEFAULT_THEME: Theme = 'night';
 const DEFAULT_ORP = false;
 const DEFAULT_PUNCT_PAUSE = true;
+const DEFAULT_PERIPHERAL_FADE = false;
+const DEFAULT_LONG_WORD_COMP = true;
 
 export function ReaderProvider({ children }: { children: React.ReactNode }) {
   const [words, setWordsState] = useState<string[]>([]);
@@ -68,6 +72,14 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
   const [punctuationPause, setPunctuationPauseState] = useState<boolean>(() => {
     const saved = localStorage.getItem(LS_KEY_PUNCT_PAUSE);
     return saved === null ? DEFAULT_PUNCT_PAUSE : saved === 'true';
+  });
+  const [peripheralFade, setPeripheralFadeState] = useState<boolean>(() => {
+    const saved = localStorage.getItem(LS_KEY_PERIPHERAL_FADE);
+    return saved === null ? DEFAULT_PERIPHERAL_FADE : saved === 'true';
+  });
+  const [longWordCompensation, setLongWordCompensationState] = useState<boolean>(() => {
+    const saved = localStorage.getItem(LS_KEY_LONG_WORD_COMP);
+    return saved === null ? DEFAULT_LONG_WORD_COMP : saved === 'true';
   });
 
   // Derive 1-indexed current page via binary search over pageBreaks
@@ -177,6 +189,16 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(LS_KEY_PUNCT_PAUSE, String(enabled));
   }, []);
 
+  const setPeripheralFade = useCallback((enabled: boolean) => {
+    setPeripheralFadeState(enabled);
+    localStorage.setItem(LS_KEY_PERIPHERAL_FADE, String(enabled));
+  }, []);
+
+  const setLongWordCompensation = useCallback((enabled: boolean) => {
+    setLongWordCompensationState(enabled);
+    localStorage.setItem(LS_KEY_LONG_WORD_COMP, String(enabled));
+  }, []);
+
   return (
     <ReaderContext.Provider
       value={{
@@ -197,6 +219,8 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
         theme,
         orpEnabled,
         punctuationPause,
+        peripheralFade,
+        longWordCompensation,
         setWords,
         setCurrentWordIndex,
         setIsPlaying,
@@ -215,6 +239,8 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
         setTheme,
         setOrpEnabled,
         setPunctuationPause,
+        setPeripheralFade,
+        setLongWordCompensation,
       }}
     >
       {children}

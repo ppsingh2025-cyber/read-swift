@@ -29,7 +29,7 @@ const PUNCT_MAJOR_MULT = 1.4;    // pause multiplier after . ? !
 const PUNCT_MINOR_MULT = 1.2;    // pause multiplier after , ; :
 
 /** Calculate the delay multiplier for a given word */
-function wordDelayMultiplier(word: string, punctuationPause: boolean): number {
+function wordDelayMultiplier(word: string, punctuationPause: boolean, longWordComp: boolean): number {
   let mult = 1.0;
 
   if (punctuationPause) {
@@ -38,9 +38,11 @@ function wordDelayMultiplier(word: string, punctuationPause: boolean): number {
     else if (/[,;:]/.test(last)) mult *= PUNCT_MINOR_MULT;
   }
 
-  const len = word.replace(/[^a-zA-Z0-9]/g, '').length;
-  if (len > LONG_WORD_THRESHOLD) {
-    mult += (len - LONG_WORD_THRESHOLD) * LONG_WORD_BONUS;
+  if (longWordComp) {
+    const len = word.replace(/[^a-zA-Z0-9]/g, '').length;
+    if (len > LONG_WORD_THRESHOLD) {
+      mult += (len - LONG_WORD_THRESHOLD) * LONG_WORD_BONUS;
+    }
   }
 
   return mult;
@@ -54,6 +56,7 @@ export function useRSVPEngine() {
     wpm,
     windowSize,
     punctuationPause,
+    longWordCompensation,
     setCurrentWordIndex,
     setIsPlaying,
     resetReader,
@@ -69,6 +72,7 @@ export function useRSVPEngine() {
   // Refs for engine parameters readable without re-creating the loop
   const wpmRef = useRef<number>(wpm);
   const punctuationPauseRef = useRef<boolean>(punctuationPause);
+  const longWordCompRef = useRef<boolean>(longWordCompensation);
   const wordsRef = useRef<string[]>(words);
   const isPlayingRef = useRef<boolean>(isPlaying);
 
@@ -77,6 +81,7 @@ export function useRSVPEngine() {
   useEffect(() => { wordsLenRef.current = words.length; wordsRef.current = words; }, [words]);
   useEffect(() => { wpmRef.current = wpm; }, [wpm]);
   useEffect(() => { punctuationPauseRef.current = punctuationPause; }, [punctuationPause]);
+  useEffect(() => { longWordCompRef.current = longWordCompensation; }, [longWordCompensation]);
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
 
   const clearEngine = useCallback(() => {
@@ -106,7 +111,7 @@ export function useRSVPEngine() {
 
         // Calculate delay for the NEXT word (the one just shown)
         const currentWord = wordsRef.current[nextIndex] ?? '';
-        const mult = wordDelayMultiplier(currentWord, punctuationPauseRef.current);
+        const mult = wordDelayMultiplier(currentWord, punctuationPauseRef.current, longWordCompRef.current);
         const nextBaseMs = 60_000 / wpmRef.current;
         nextTickRef.current = now + nextBaseMs * mult;
       }

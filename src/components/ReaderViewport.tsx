@@ -34,6 +34,8 @@ interface ReaderViewportProps {
   orientation: Orientation;
   /** Whether to render ORP (Optimal Recognition Point) on the center word */
   orpEnabled: boolean;
+  /** Whether to dim non-center words proportional to their distance from center */
+  peripheralFade: boolean;
   isLoading: boolean;
   loadingProgress: number;
   hasWords: boolean;
@@ -84,11 +86,24 @@ const ReaderViewport = memo(function ReaderViewport({
   highlightColor,
   orientation,
   orpEnabled,
+  peripheralFade,
   isLoading,
   loadingProgress,
   hasWords,
   fullHeight,
 }: ReaderViewportProps) {
+  /**
+   * Peripheral fade: opacity decreases with distance from the center slot.
+   * Center = 1.0, distance-1 = 0.5, distance-2+ = 0.25.
+   * Only applied when peripheralFade is enabled AND word count > 1.
+   */
+  const slotOpacity = (i: number): number => {
+    if (!peripheralFade || wordWindow.length === 1) return 1;
+    const dist = Math.abs(i - highlightIndex);
+    if (dist === 0) return 1;
+    if (dist === 1) return 0.5;
+    return 0.25;
+  };
   return (
     <div
       className={`${styles.viewport}${fullHeight ? ` ${styles.viewportFull}` : ''}`}
@@ -129,11 +144,15 @@ const ReaderViewport = memo(function ReaderViewport({
         >
           {wordWindow.map((word, i) => {
             const isCenter = i === highlightIndex;
+            const opacity = slotOpacity(i);
             return (
               <span
                 key={i}
                 className={`${styles.wordSlot}${isCenter ? ` ${styles.wordSlotCenter}` : ''}`}
-                style={isCenter ? { color: highlightColor } : undefined}
+                style={{
+                  ...(isCenter ? { color: highlightColor } : undefined),
+                  ...(opacity < 1 ? { opacity } : undefined),
+                }}
                 aria-hidden={word === '' ? true : undefined}
               >
                 {word

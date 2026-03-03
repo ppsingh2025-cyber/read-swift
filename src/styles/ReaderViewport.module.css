@@ -27,6 +27,11 @@
   border-radius: 0;
 }
 
+/* Scale words up in fullscreen so they use available space */
+.viewportFull .wordSlot {
+  font-size: clamp(2.5rem, min(7vw, 10vh), 6rem);
+}
+
 /* ─── Rolling word window ─────────────────────────────────────── */
 
 /*
@@ -82,9 +87,15 @@
   min-width: 4ch;
 }
 
-/* Center (highlighted) word — bold to distinguish from context */
+/* Center (highlighted) word — bold, full word always visible (no ellipsis) */
 .wordSlotCenter {
   font-weight: 700;
+  /* Override slot clipping so the full focused word is never truncated */
+  overflow: visible;
+  text-overflow: unset;
+  /* Ensure the overflowing text renders above adjacent context slots */
+  position: relative;
+  z-index: 1;
 }
 
 /* ORP focal letter — slightly enlarged for eye anchoring */

@@ -58,6 +58,10 @@ interface ReaderState {
   orpEnabled: boolean;
   /** Whether to add extra pause after punctuation */
   punctuationPause: boolean;
+  /** Whether to dim peripheral (non-center) words to sharpen focal contrast */
+  peripheralFade: boolean;
+  /** Whether to apply extra delay for long words (>8 chars) */
+  longWordCompensation: boolean;
 }
 
 interface ReaderActions {
@@ -80,6 +84,8 @@ interface ReaderActions {
   setTheme: (theme: Theme) => void;
   setOrpEnabled: (enabled: boolean) => void;
   setPunctuationPause: (enabled: boolean) => void;
+  setPeripheralFade: (enabled: boolean) => void;
+  setLongWordCompensation: (enabled: boolean) => void;
 }
 
 export type ReaderContextValue = ReaderState & ReaderActions;

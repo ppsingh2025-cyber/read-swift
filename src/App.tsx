@@ -1,15 +1,16 @@
 /**
  * App
  *
- * Root component. Wires together:
- *  - File parsing (PDF/EPUB/TXT/MD/HTML/RTF/SRT/DOCX)
- *  - Paste text mode and URL reader
- *  - ReaderContext state
- *  - useRSVPEngine hook
- *  - Keyboard shortcuts
- *  - ReaderViewport + Controls + Settings + InputPanel
- *  - Day/Night theme toggle
- *  - Help modal
+ * Root component. New 4-layer layout:
+ *   1. Top bar  — burger menu (left) · brand (center) · donate (right)
+ *   2. Reading main — viewport + ORP + context preview
+ *   3. Navigation layer — page nav · word nav (hidden in focus mode)
+ *   4. Bottom bar — Controls (sticky, always visible)
+ *
+ * Burger menu handles: theme toggle, all display/reading settings, history,
+ * feedback link, help trigger, and app version.
+ *
+ * The paste/URL panel slides in above the bottom bar when the 📋 button is pressed.
  */
 
 import { useCallback, useEffect, useState } from 'react';
@@ -17,14 +18,12 @@ import { useReaderContext } from './context/useReaderContext';
 import { useRSVPEngine } from './hooks/useRSVPEngine';
 import ReaderViewport from './components/ReaderViewport';
 import Controls from './components/Controls';
-import Settings from './components/Settings';
 import InputPanel from './components/InputPanel';
-import ReadingHistory from './components/ReadingHistory';
 import PageNavigator from './components/PageNavigator';
 import WordNavigator from './components/WordNavigator';
 import ContextPreview from './components/ContextPreview';
+import BurgerMenu from './components/BurgerMenu';
 import DonateButton from './components/DonateButton';
-import FeedbackButton from './components/FeedbackButton';
 import HelpModal from './components/HelpModal';
 import { parsePDF } from './parsers/pdfParser';
 import { parseEPUB } from './parsers/epubParser';
@@ -34,10 +33,7 @@ import { saveRecord } from './utils/recordsUtils';
 import './styles/app.css';
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
-
-/** File extensions handled by PDF/EPUB parsers (streaming, with progress) */
 const STREAMING_EXTS = new Set(['pdf', 'epub']);
-/** File extensions handled by the unified text parser */
 const TEXT_EXTS = new Set(['txt', 'md', 'html', 'htm', 'rtf', 'srt', 'docx']);
 
 export default function App() {
@@ -54,6 +50,7 @@ export default function App() {
     highlightColor,
     orientation,
     orpEnabled,
+    peripheralFade,
     theme,
     setWords,
     setCurrentWordIndex,
@@ -63,13 +60,13 @@ export default function App() {
     setIsPlaying,
     setPageBreaks,
     setRecords,
-    setTheme,
   } = useReaderContext();
 
   const { wordWindow, play, pause, reset, faster, slower, prevWord, nextWord } = useRSVPEngine();
 
   const [showHelp, setShowHelp] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [showPaste, setShowPaste] = useState(false);
 
   /** Highlight index is always the center slot of the window */
   const highlightIndex = Math.floor(windowSize / 2);
@@ -93,14 +90,9 @@ export default function App() {
         setRecords(updated);
       }
     }
-    // Only run when isPlaying flips to false; other deps are stable refs
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying]);
 
-  /**
-   * Shared finalisation step: store words into the engine and save a record.
-   * Used by both the file-select handler and the InputPanel text-ready callback.
-   */
   const finaliseWords = useCallback(
     (allWords: string[], sourceName: string, breaks: number[] = []) => {
       if (allWords.length === 0) {
@@ -129,7 +121,6 @@ export default function App() {
     [setWords, setPageBreaks, setCurrentWordIndex, records, wpm, setRecords],
   );
 
-  /** Handle a file selected by the user (file input) */
   const handleFileSelect = useCallback(
     async (file: File) => {
       if (file.size > MAX_FILE_SIZE) {
@@ -138,7 +129,6 @@ export default function App() {
         );
         return;
       }
-
       const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
       if (!STREAMING_EXTS.has(ext) && !TEXT_EXTS.has(ext)) {
         alert(
@@ -146,39 +136,30 @@ export default function App() {
         );
         return;
       }
-
       setIsPlaying(false);
       setIsLoading(true);
       setLoadingProgress(0);
       setFileMetadata({ name: file.name, size: file.size, type: ext });
-
       const allWords: string[] = [];
       const breaks: number[] = [];
-
       try {
         if (ext === 'pdf') {
-          for await (const pageText of parsePDF(file, (p) =>
-            setLoadingProgress(p.percent),
-          )) {
+          for await (const pageText of parsePDF(file, (p) => setLoadingProgress(p.percent))) {
             breaks.push(allWords.length);
             allWords.push(...tokenize(normalizeText(pageText)));
           }
         } else if (ext === 'epub') {
-          for await (const chapterText of parseEPUB(file, (p) =>
-            setLoadingProgress(p.percent),
-          )) {
+          for await (const chapterText of parseEPUB(file, (p) => setLoadingProgress(p.percent))) {
             breaks.push(allWords.length);
             allWords.push(...tokenize(normalizeText(chapterText)));
           }
         } else {
-          // Unified text parser for all other formats
           setLoadingProgress(50);
           const { words: parsed } = await parseFile(file);
           breaks.push(0);
           allWords.push(...parsed);
           setLoadingProgress(100);
         }
-
         finaliseWords(allWords, file.name, breaks);
       } catch (err) {
         console.error('Error parsing file:', err);
@@ -195,11 +176,11 @@ export default function App() {
     [setIsPlaying, setIsLoading, setLoadingProgress, setFileMetadata, finaliseWords],
   );
 
-  /** Called by InputPanel when paste/URL text is ready */
   const handleTextReady = useCallback(
     (words: string[], sourceName: string) => {
       setFileMetadata({ name: sourceName, size: 0, type: 'text' });
       finaliseWords(words, sourceName);
+      setShowPaste(false); // collapse paste panel after loading
     },
     [setFileMetadata, finaliseWords],
   );
@@ -207,17 +188,14 @@ export default function App() {
   /** Global keyboard shortcuts */
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Escape always closes overlays regardless of focus
       if (e.key === 'Escape') {
         setShowHelp(false);
         setIsFocused(false);
+        setShowPaste(false);
         return;
       }
-
-      // Ignore other shortcuts when focus is on an interactive element
       const tag = (e.target as HTMLElement).tagName.toLowerCase();
       if (tag === 'input' || tag === 'button' || tag === 'select' || tag === 'textarea') return;
-
       switch (e.key) {
         case ' ':
           e.preventDefault();
@@ -241,129 +219,82 @@ export default function App() {
           break;
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isPlaying, play, pause, faster, slower, prevWord, nextWord]);
 
-  const toggleTheme = useCallback(() => {
-    setTheme(theme === 'night' ? 'day' : 'night');
-  }, [theme, setTheme]);
-
-  const toggleFocus = useCallback(() => {
-    setIsFocused((f) => !f);
-  }, []);
+  const toggleFocus = useCallback(() => setIsFocused((f) => !f), []);
+  const togglePaste = useCallback(() => setShowPaste((p) => !p), []);
 
   return (
-    <div className="appWrapper">
-      <header className="appHeader">
-        <div className="appBrand">
-          <h1>
-            <img src="/icons/icon.svg" className="brandIcon" alt="" aria-hidden="true" />
-            ReadSwift
-          </h1>
-          <p className="subtitle">Speed Reader</p>
-        </div>
-        <div className="headerActions">
-          <div className="headerIconGroup">
-            {/* Day / Night theme toggle */}
-            <button
-              className="themeBtn"
-              onClick={toggleTheme}
-              title={theme === 'night' ? 'Switch to Day mode' : 'Switch to Night mode'}
-              aria-label={theme === 'night' ? 'Switch to Day mode' : 'Switch to Night mode'}
-            >
-              {theme === 'night' ? '☀' : '🌙'}
-            </button>
+    <div className={`appShell${isFocused ? ' appShellFocused' : ''}`}>
 
-            {/* Help button */}
-            <button
-              className="helpBtn"
-              onClick={() => setShowHelp(true)}
-              title="Help & Features"
-              aria-label="Open help"
-            >
-              ?
-            </button>
-          </div>
-
-          <DonateButton />
+      {/* ── 1. Top bar ──────────────────────────────────────────── */}
+      <header className="topBar">
+        <BurgerMenu onFileSelect={handleFileSelect} onShowHelp={() => setShowHelp(true)} />
+        <div className="topBarBrand">
+          <img src="/icons/icon.svg" className="topBarIcon" alt="" aria-hidden="true" />
+          <span className="topBarTitle">ReadSwift</span>
         </div>
+        <DonateButton />
       </header>
 
-      <main className="appMain">
-        <div className={`readingArea${isFocused ? ' readingAreaFocused' : ''}`}>
-          <div className="viewportWrapper">
-            <ReaderViewport
-              wordWindow={wordWindow}
-              highlightIndex={highlightIndex}
-              highlightColor={highlightColor}
-              orientation={orientation}
-              orpEnabled={orpEnabled}
-              isLoading={isLoading}
-              loadingProgress={loadingProgress}
-              hasWords={words.length > 0}
-              fullHeight={isFocused}
-            />
-            {/* Maximize / exit focus mode button */}
-            <button
-              className={`maximizeBtn${isFocused ? ' maximizeBtnVisible' : ''}`}
-              onClick={toggleFocus}
-              title={isFocused ? 'Exit focus mode (Esc)' : 'Enter focus mode'}
-              aria-label={isFocused ? 'Exit focus mode' : 'Enter focus mode'}
-            >
-              {isFocused ? '⊡' : '⊞'}
-            </button>
-          </div>
-          {!isFocused && <ContextPreview />}
+      {/* ── 2. Reading main ─────────────────────────────────────── */}
+      <main className="readingMain">
+        <div className="viewportWrapper">
+          <ReaderViewport
+            wordWindow={wordWindow}
+            highlightIndex={highlightIndex}
+            highlightColor={highlightColor}
+            orientation={orientation}
+            orpEnabled={orpEnabled}
+            peripheralFade={peripheralFade}
+            isLoading={isLoading}
+            loadingProgress={loadingProgress}
+            hasWords={words.length > 0}
+            fullHeight={isFocused}
+          />
+          {/* Maximize / minimize button */}
+          <button
+            className={`maximizeBtn${isFocused ? ' maximizeBtnVisible' : ''}`}
+            onClick={toggleFocus}
+            title={isFocused ? 'Exit focus mode (Esc)' : 'Enter focus mode'}
+            aria-label={isFocused ? 'Exit focus mode' : 'Enter focus mode'}
+          >
+            {isFocused ? '⊡' : '⊞'}
+          </button>
         </div>
-
-        <Controls
-          onFileSelect={handleFileSelect}
-          onPlay={play}
-          onPause={pause}
-          onReset={reset}
-          onFaster={faster}
-          onSlower={slower}
-          onPrevWord={prevWord}
-          onNextWord={nextWord}
-        />
-
-        <Settings />
-
-        <InputPanel onTextReady={handleTextReady} />
-
-        <PageNavigator />
-
-        <WordNavigator onPrevWord={prevWord} onNextWord={nextWord} />
-
-        <ReadingHistory onFileSelect={handleFileSelect} />
-
-        <section className="shortcuts" aria-label="Keyboard shortcuts">
-          <kbd>Space</kbd> Play/Pause &nbsp;
-          <kbd>←</kbd> Prev &nbsp;
-          <kbd>→</kbd> Next &nbsp;
-          <kbd>↑</kbd> Faster &nbsp;
-          <kbd>↓</kbd> Slower
-        </section>
+        {!isFocused && <ContextPreview />}
       </main>
 
-      <div className="preFooter">
-        <FeedbackButton />
-      </div>
+      {/* ── 3. Navigation layer ─────────────────────────────────── */}
+      {!isFocused && (
+        <section className="navLayer" aria-label="Navigation">
+          <PageNavigator />
+          <WordNavigator onPrevWord={prevWord} onNextWord={nextWord} />
+        </section>
+      )}
 
-      <footer className="appFooter">
-        <span>A product by&nbsp;</span>
-        <a
-          href="https://www.techscript.ca"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="techscriptLink"
-        >
-          <img src="/icons/icon.svg" className="footerIcon" alt="" aria-hidden="true" />
-          Techscript
-        </a>
-      </footer>
+      {/* ── Paste / URL panel (above bottom bar, collapsible) ───── */}
+      {showPaste && !isFocused && (
+        <div className="pasteArea">
+          <InputPanel onTextReady={handleTextReady} />
+        </div>
+      )}
+
+      {/* ── 4. Bottom control bar (always visible) ──────────────── */}
+      <Controls
+        onFileSelect={handleFileSelect}
+        onPlay={play}
+        onPause={pause}
+        onReset={reset}
+        onFaster={faster}
+        onSlower={slower}
+        onPrevWord={prevWord}
+        onNextWord={nextWord}
+        onPasteToggle={togglePaste}
+        pasteOpen={showPaste}
+      />
 
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
     </div>

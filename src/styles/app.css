@@ -1,4 +1,16 @@
-/* app.css – global styles for ReadSwift */
+/* app.css – global styles for ReadSwift
+ *
+ * Layout layers (top to bottom in flex column):
+ *   1. topBar         — burger · brand · donate
+ *   2. readingMain    — viewport + context preview (flex: 1)
+ *   3. navLayer       — page nav + word nav
+ *   4. pasteArea      — collapsible paste/URL panel
+ *   5. Controls       — sticky bottom bar
+ *
+ * Focus / fullscreen mode:
+ *   appShellFocused → position:fixed inset:0, navLayer/pasteArea hidden,
+ *   readingMain fills all available space between topBar and Controls.
+ */
 
 *,
 *::before,
@@ -27,12 +39,10 @@
   --kbd-border:   #333;
   --kbd-text:     #888;
 
-  /* Viewport-specific tokens (consumed by ReaderViewport.module.css) */
   --vp-bg:          #0a0a0a;
   --vp-border:      #151515;
   --vp-text:        #d4d4d4;
   --vp-placeholder: #666;
-  /* Fixed slot width: wide enough for most English words */
   --slot-width:     10ch;
 }
 
@@ -74,149 +84,127 @@ body {
   flex-direction: column;
 }
 
-/* ─── Layout ────────────────────────────────────────────────────── */
+/* ─── App shell ─────────────────────────────────────────────── */
 
-.appWrapper {
+.appShell {
   flex: 1;
   display: flex;
   flex-direction: column;
   max-width: 960px;
   width: 100%;
   margin: 0 auto;
-  padding: 0.75rem 1rem 2rem;
-  gap: 0.875rem;
+  /* bottom padding so the sticky Controls bar doesn't overlay content */
+  padding: 0;
 }
 
-/* ─── Header: brand left, donate right ─────────────────────────── */
+/* Focus / fullscreen mode */
+.appShellFocused {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  max-width: 100%;
+  background: var(--bg);
+}
 
-.appHeader {
+/* ─── 1. Top bar ─────────────────────────────────────────────── */
+
+.topBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.25rem 0;
+  padding: 0.5rem 1rem;
+  flex-shrink: 0;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--border);
 }
 
-.headerActions {
+.topBarBrand {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
+  flex: 1;
+  justify-content: center;
+}
+
+.topBarIcon {
+  width: 1.4em;
+  height: 1.4em;
+  border-radius: 5px;
   flex-shrink: 0;
 }
 
-.appBrand h1 {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: clamp(1.25rem, 3.5vw, 1.9rem);
+.topBarTitle {
+  font-size: clamp(1rem, 3vw, 1.3rem);
   font-weight: 800;
   letter-spacing: -0.02em;
-  line-height: 1.1;
+  color: var(--text);
 }
 
-.brandIcon {
-  width: 1.6em;
-  height: 1.6em;
-  border-radius: 6px;
-  flex-shrink: 0;
-}
+/* ─── 2. Reading main ───────────────────────────────────────── */
 
-.subtitle {
-  color: var(--text-muted);
-  font-size: 0.72rem;
-  margin-top: 0.1rem;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-}
-
-.appMain {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  flex: 1;
-}
-
-/* ─── Side-by-side reading area ─────────────────────────────────── */
-
-.readingArea {
+.readingMain {
   display: flex;
   gap: 0.75rem;
   align-items: stretch;
-}
-
-/* On narrow screens, stack the context preview below the viewport */
-@media (max-width: 640px) {
-  .readingArea {
-    flex-direction: column;
-  }
-}
-
-/* ─── Keyboard shortcuts hint — hide on touch devices ───────────── */
-
-.shortcuts {
-  text-align: center;
-  color: var(--text-faint);
-  font-size: 0.78rem;
-}
-
-/* Hide on touchscreen / pointer: coarse (phones, tablets) */
-@media (pointer: coarse) {
-  .shortcuts {
-    display: none;
-  }
-}
-
-kbd {
-  background: var(--kbd-bg);
-  border: 1px solid var(--kbd-border);
-  border-radius: 4px;
-  padding: 0.1em 0.4em;
-  font-size: 0.75rem;
-  font-family: monospace;
-  color: var(--kbd-text);
-}
-
-/* ─── Header icon group (theme + help) ──────────────────────── */
-
-.headerIconGroup {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding-right: 0.625rem;
-  margin-right: 0.125rem;
-  border-right: 1px solid var(--border);
-}
-
-/* Shared base for circular icon buttons */
-.themeBtn,
-.helpBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  color: var(--text-muted);
-  font-size: 1rem;
-  cursor: pointer;
-  transition: color 0.15s, background 0.15s, border-color 0.15s;
+  padding: 0.75rem 1rem 0;
   flex-shrink: 0;
 }
 
-.themeBtn:hover,
-.helpBtn:hover {
-  color: var(--text);
-  background: var(--bg-panel);
-  border-color: var(--border-input);
+/* Stack context preview below viewport on narrow screens */
+@media (max-width: 640px) {
+  .readingMain {
+    flex-direction: column;
+    padding: 0.5rem 0.75rem 0;
+  }
 }
 
-/* ─── Viewport wrapper (relative for the maximize button) ───── */
+/* In focus mode, reading main fills all available height */
+.appShellFocused .readingMain {
+  flex: 1;
+  min-height: 0;
+  padding: 0;
+}
 
 .viewportWrapper {
   position: relative;
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* In focus mode, wrapper must stretch to fill */
+.appShellFocused .viewportWrapper {
+  flex: 1;
+}
+
+/* ─── 3. Navigation layer ───────────────────────────────────── */
+
+.navLayer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .navLayer {
+    padding: 0.5rem 0.75rem;
+  }
+}
+
+/* ─── Paste / URL panel area ────────────────────────────────── */
+
+.pasteArea {
+  padding: 0 1rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .pasteArea {
+    padding: 0 0.75rem;
+  }
 }
 
 /* ─── Maximize / focus-mode button ─────────────────────────── */
@@ -262,25 +250,6 @@ kbd {
   background: rgba(255, 255, 255, 0.9);
 }
 
-/* ─── Focus mode: reading area takes over the full viewport ── */
-
-.readingAreaFocused {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  background: var(--bg);
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.readingAreaFocused .viewportWrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
 /* ─── Suppress browser red invalid/out-of-range styling ─────── */
 
 input:invalid,
@@ -288,58 +257,14 @@ input:out-of-range {
   box-shadow: none;
 }
 
-/* ─── Footer: Techscript branding ───────────────────────────────── */
+/* ─── kbd (keyboard shortcuts in help modal) ────────────────── */
 
-/* Feedback strip — sits just above the Techscript footer */
-.preFooter {
-  display: flex;
-  justify-content: center;
-  padding: 0.5rem 1rem 0;
-}
-
-.appFooter {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.75rem 1rem;
-  color: var(--text-faint);
-  font-size: 0.78rem;
-  gap: 0.25rem;
-}
-
-.techscriptLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  color: var(--text-muted);
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.15s;
-}
-
-.techscriptLink:hover {
-  color: var(--accent);
-}
-
-.footerIcon {
-  width: 1.1em;
-  height: 1.1em;
-  border-radius: 3px;
-  flex-shrink: 0;
-}
-
-.footerSep {
-  color: var(--text-faint);
-  margin: 0 0.15rem;
-}
-
-.analyticsLink {
-  color: var(--text-faint);
-  text-decoration: none;
-  font-size: 0.78rem;
-  transition: color 0.15s;
-}
-
-.analyticsLink:hover {
-  color: var(--text-muted);
+kbd {
+  background: var(--kbd-bg);
+  border: 1px solid var(--kbd-border);
+  border-radius: 4px;
+  padding: 0.1em 0.4em;
+  font-size: 0.75rem;
+  font-family: monospace;
+  color: var(--kbd-text);
 }

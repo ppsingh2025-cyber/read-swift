@@ -44,6 +44,10 @@ interface ControlsProps {
   onSlower: () => void;
   onPrevWord: () => void;
   onNextWord: () => void;
+  /** Toggle the paste/URL input panel above the bottom bar */
+  onPasteToggle: () => void;
+  /** Whether the paste panel is currently open */
+  pasteOpen: boolean;
 }
 
 export default function Controls({
@@ -55,6 +59,8 @@ export default function Controls({
   onSlower,
   onPrevWord,
   onNextWord,
+  onPasteToggle,
+  pasteOpen,
 }: ControlsProps) {
   const { isPlaying, wpm, setWpm, words, isLoading, currentWordIndex, goToWord } =
     useReaderContext();
@@ -200,6 +206,17 @@ export default function Controls({
           aria-label="Upload file"
         >
           📂
+        </button>
+
+        {/* Paste / URL toggle button */}
+        <button
+          className={`${styles.uploadBtn}${pasteOpen ? ` ${styles.uploadBtnActive}` : ''}`}
+          onClick={onPasteToggle}
+          title="Paste text or enter a URL"
+          aria-label="Toggle paste / URL panel"
+          aria-pressed={pasteOpen}
+        >
+          📋
         </button>
 
         <button

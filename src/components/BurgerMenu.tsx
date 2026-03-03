@@ -1,0 +1,295 @@
+/**
+ * BurgerMenu
+ *
+ * Hamburger icon (top-left) that opens a slide-in settings drawer.
+ *
+ * Drawer contains (in order):
+ *   • Day / Night theme toggle
+ *   • Display: window size, orientation, highlight colour
+ *   • Reading features: peripheral fade, ORP, punctuation pause, long-word delay
+ *   • Reading History (collapsible, re-uses existing component)
+ *   • Links: feedback form, help modal
+ *   • About: app version, Techscript credit
+ *
+ * State notes:
+ *   - Opens/closes locally (no reading-state side effects).
+ *   - All settings write directly to ReaderContext which persists to localStorage.
+ *   - Drawer is closed whenever a file is selected from history.
+ */
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useReaderContext } from '../context/useReaderContext';
+import ReadingHistory from './ReadingHistory';
+import type { WindowSize, Orientation } from '../context/readerContextDef';
+import { APP_VERSION } from '../version';
+import styles from '../styles/BurgerMenu.module.css';
+
+const FEEDBACK_FORM_URL = 'https://forms.gle/dCBSTs4SjvhmA3Zh6';
+
+interface BurgerMenuProps {
+  onFileSelect: (file: File) => void;
+  onShowHelp: () => void;
+}
+
+export default function BurgerMenu({ onFileSelect, onShowHelp }: BurgerMenuProps) {
+  const [open, setOpen] = useState(false);
+
+  const {
+    theme, setTheme,
+    windowSize, setWindowSize,
+    orientation, setOrientation,
+    highlightColor, setHighlightColor,
+    peripheralFade, setPeripheralFade,
+    orpEnabled, setOrpEnabled,
+    punctuationPause, setPunctuationPause,
+    longWordCompensation, setLongWordCompensation,
+  } = useReaderContext();
+
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  const close = useCallback(() => setOpen(false), []);
+
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [open, close]);
+
+  // Trap focus inside panel when open (accessibility)
+  useEffect(() => {
+    if (open) panelRef.current?.focus();
+  }, [open]);
+
+  // Wrap file select so the menu closes when a history item triggers re-load
+  const handleHistoryFileSelect = useCallback(
+    (file: File) => {
+      close();
+      onFileSelect(file);
+    },
+    [close, onFileSelect],
+  );
+
+  const handleShowHelp = useCallback(() => {
+    close();
+    onShowHelp();
+  }, [close, onShowHelp]);
+
+  return (
+    <>
+      {/* Hamburger button */}
+      <button
+        className={styles.burgerBtn}
+        onClick={() => setOpen(true)}
+        aria-label="Open settings menu"
+        aria-expanded={open}
+        aria-haspopup="dialog"
+      >
+        <span className={styles.bar} />
+        <span className={styles.bar} />
+        <span className={styles.bar} />
+      </button>
+
+      {open && (
+        /* Backdrop */
+        <div className={styles.backdrop} onClick={close} aria-hidden="true">
+          {/* Drawer — stop propagation so clicks inside don't close */}
+          <div
+            ref={panelRef}
+            className={styles.panel}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Settings menu"
+            tabIndex={-1}
+          >
+            {/* ── Drawer header ───────────────────────────────── */}
+            <div className={styles.drawerHeader}>
+              <span className={styles.drawerTitle}>ReadSwift</span>
+              <button
+                className={styles.closeBtn}
+                onClick={close}
+                aria-label="Close settings menu"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className={styles.drawerBody}>
+
+              {/* ── Theme ──────────────────────────────────────── */}
+              <section className={styles.section}>
+                <h3 className={styles.sectionTitle}>Theme</h3>
+                <button
+                  className={styles.themeToggle}
+                  onClick={() => setTheme(theme === 'night' ? 'day' : 'night')}
+                  aria-label={theme === 'night' ? 'Switch to Day mode' : 'Switch to Night mode'}
+                >
+                  {theme === 'night' ? '☀ Day mode' : '🌙 Night mode'}
+                </button>
+              </section>
+
+              {/* ── Display ────────────────────────────────────── */}
+              <section className={styles.section}>
+                <h3 className={styles.sectionTitle}>Display</h3>
+
+                <label className={styles.row}>
+                  <span className={styles.label}>Window size</span>
+                  <select
+                    className={styles.select}
+                    value={windowSize}
+                    onChange={(e) => setWindowSize(parseInt(e.target.value, 10) as WindowSize)}
+                    aria-label="Number of words shown at once"
+                  >
+                    <option value={1}>1 word</option>
+                    <option value={3}>3 words</option>
+                    <option value={5}>5 words</option>
+                  </select>
+                </label>
+
+                <label className={styles.row}>
+                  <span className={styles.label}>Orientation</span>
+                  <select
+                    className={styles.select}
+                    value={orientation}
+                    onChange={(e) => setOrientation(e.target.value as Orientation)}
+                    aria-label="Word window orientation"
+                  >
+                    <option value="horizontal">Horizontal</option>
+                    <option value="vertical">Vertical</option>
+                  </select>
+                </label>
+
+                <label className={styles.row}>
+                  <span className={styles.label}>Highlight colour</span>
+                  <div className={styles.colorWrapper}>
+                    <input
+                      type="color"
+                      className={styles.colorInput}
+                      value={highlightColor}
+                      onChange={(e) => setHighlightColor(e.target.value)}
+                      aria-label="Center word highlight colour"
+                    />
+                    <span className={styles.colorHex}>{highlightColor}</span>
+                  </div>
+                </label>
+              </section>
+
+              {/* ── Reading features ───────────────────────────── */}
+              <section className={styles.section}>
+                <h3 className={styles.sectionTitle}>Reading Features</h3>
+
+                <label className={styles.row}>
+                  <span className={styles.label}>
+                    Peripheral fade
+                    <span className={styles.hint}> (dim side words)</span>
+                  </span>
+                  <input
+                    type="checkbox"
+                    className={styles.checkbox}
+                    checked={peripheralFade}
+                    onChange={(e) => setPeripheralFade(e.target.checked)}
+                    aria-label="Dim peripheral words for sharper focus"
+                  />
+                </label>
+
+                <label className={styles.row}>
+                  <span className={styles.label}>
+                    ORP highlight
+                    <span className={styles.hint}> (focal letter)</span>
+                  </span>
+                  <input
+                    type="checkbox"
+                    className={styles.checkbox}
+                    checked={orpEnabled}
+                    onChange={(e) => setOrpEnabled(e.target.checked)}
+                    aria-label="Enable Optimal Recognition Point highlighting"
+                  />
+                </label>
+
+                <label className={styles.row}>
+                  <span className={styles.label}>
+                    Punctuation pause
+                    <span className={styles.hint}> (. ? ! , ;)</span>
+                  </span>
+                  <input
+                    type="checkbox"
+                    className={styles.checkbox}
+                    checked={punctuationPause}
+                    onChange={(e) => setPunctuationPause(e.target.checked)}
+                    aria-label="Pause longer after punctuation"
+                  />
+                </label>
+
+                <label className={styles.row}>
+                  <span className={styles.label}>
+                    Long-word delay
+                    <span className={styles.hint}> ({'>'}8 chars)</span>
+                  </span>
+                  <input
+                    type="checkbox"
+                    className={styles.checkbox}
+                    checked={longWordCompensation}
+                    onChange={(e) => setLongWordCompensation(e.target.checked)}
+                    aria-label="Extra display time for long words"
+                  />
+                </label>
+              </section>
+
+              {/* ── Reading History ─────────────────────────────── */}
+              <section className={styles.section}>
+                <h3 className={styles.sectionTitle}>Reading History</h3>
+                <ReadingHistory onFileSelect={handleHistoryFileSelect} />
+              </section>
+
+              {/* ── Links ───────────────────────────────────────── */}
+              <section className={styles.section}>
+                <h3 className={styles.sectionTitle}>More</h3>
+                <button className={styles.linkBtn} onClick={handleShowHelp}>
+                  ❓ Help &amp; Features
+                </button>
+                <a
+                  href={FEEDBACK_FORM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.linkBtn}
+                >
+                  💬 Send Feedback
+                </a>
+                <a
+                  href="https://buymeacoffee.com/techscriptx"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.linkBtn}
+                >
+                  ☕ Buy me a coffee
+                </a>
+              </section>
+
+              {/* ── About ───────────────────────────────────────── */}
+              <section className={styles.section}>
+                <h3 className={styles.sectionTitle}>About</h3>
+                <p className={styles.aboutText}>
+                  ReadSwift {APP_VERSION}
+                </p>
+                <p className={styles.aboutText}>
+                  A product by{' '}
+                  <a
+                    href="https://www.techscript.ca"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.aboutLink}
+                  >
+                    Techscript Limited
+                  </a>
+                </p>
+              </section>
+
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
