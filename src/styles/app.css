@@ -288,20 +288,41 @@ body {
 }
 
 /* ─── Landscape mode on mobile ──────────────────────────────────── */
-/* Prioritize the reading area when the device is in landscape orientation */
+/* Prioritize the reading area when the device is in landscape orientation.
+ * Landscape must feel intentional: reading viewport dominates, controls
+ * compressed, navigation hidden to prevent layout reflow loops. */
 @media (max-height: 480px) and (orientation: landscape) {
+  .appShell {
+    /* Ensure no unnecessary gaps accumulate */
+    gap: 0;
+  }
+
+  .topBar {
+    /* Compress top bar height in landscape */
+    min-height: 2.5rem;
+    padding: 0.2rem 0.75rem;
+  }
+
   .readingMain {
     flex: 1;
     min-height: 0;
     padding: 0.25rem 0.75rem 0;
+    /* Prevent layout reflow caused by context preview expanding */
+    overflow: hidden;
   }
 
   .viewportWrapper {
     flex: 1;
+    /* ORP center maintained via the existing grid layout */
   }
 
-  /* Hide navigation and footer controls to free vertical space */
+  /* Hide navigation and session stats to free vertical space */
   .navLayer {
+    display: none;
+  }
+
+  /* Compact bottom control bar */
+  .pasteArea {
     display: none;
   }
 }

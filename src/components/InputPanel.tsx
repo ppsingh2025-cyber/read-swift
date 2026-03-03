@@ -12,7 +12,7 @@ import styles from '../styles/InputPanel.module.css';
 
 interface InputPanelProps {
   /** Called when text has been extracted and is ready for the reading engine */
-  onTextReady: (words: string[], sourceName: string) => void;
+  onTextReady: (words: string[], sourceName: string, rawLines?: string[]) => void;
 }
 
 export default function InputPanel({ onTextReady }: InputPanelProps) {
@@ -26,12 +26,12 @@ export default function InputPanel({ onTextReady }: InputPanelProps) {
       setError('Please paste some text before loading.');
       return;
     }
-    const { words } = parseRawText(trimmed, 'paste');
+    const { words, rawLines } = parseRawText(trimmed, 'paste');
     if (words.length === 0) {
       setError('No readable words found in the pasted text.');
       return;
     }
-    onTextReady(words, 'Pasted text');
+    onTextReady(words, 'Pasted text', rawLines);
     setPasteValue('');
   }, [pasteValue, onTextReady]);
 

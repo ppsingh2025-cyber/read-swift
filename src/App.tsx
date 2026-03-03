@@ -16,6 +16,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useReaderContext } from './context/useReaderContext';
 import { useRSVPEngine } from './hooks/useRSVPEngine';
+import { useChunkEngine } from './hooks/useChunkEngine';
 import ReaderViewport from './components/ReaderViewport';
 import Controls from './components/Controls';
 import InputPanel from './components/InputPanel';
@@ -26,11 +27,13 @@ import BurgerMenu from './components/BurgerMenu';
 import ThemeToggle from './components/ThemeToggle';
 import AppFooter from './components/AppFooter';
 import HelpModal from './components/HelpModal';
+import SessionStats from './components/SessionStats';
 import { parsePDF } from './parsers/pdfParser';
 import { parseEPUB } from './parsers/epubParser';
 import { parseFile } from './parsers/textParser';
 import { normalizeText, tokenize } from './utils/textUtils';
 import { saveRecord } from './utils/recordsUtils';
+import { buildStructureMap, buildStructureMapFromWords } from './utils/structureUtils';
 import './styles/app.css';
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
@@ -54,24 +57,38 @@ export default function App() {
     peripheralFade,
     theme,
     mainWordFontSize,
+    chunkMode,
     setWords,
     setCurrentWordIndex,
     setFileMetadata,
+    setFileId,
     setIsLoading,
     setLoadingProgress,
     setIsPlaying,
     setPageBreaks,
+    setStructureMap,
     setRecords,
+    resetSessionStats,
   } = useReaderContext();
 
   const { wordWindow, play, pause, reset, faster, slower, prevWord, nextWord } = useRSVPEngine();
 
+  /** Highlight index: center for odd sizes, left-middle for even sizes */
+  const highlightIndex = Math.ceil(windowSize / 2) - 1;
+
+  // Apply phrase-based chunking when in intelligent mode
+  const { chunkWindow, chunkHighlightIndex } = useChunkEngine(
+    words,
+    currentWordIndex,
+    windowSize,
+    chunkMode,
+    wordWindow,
+    highlightIndex,
+  );
+
   const [showHelp, setShowHelp] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [showPaste, setShowPaste] = useState(false);
-
-  /** Highlight index: center for odd sizes, left-middle for even sizes */
-  const highlightIndex = Math.ceil(windowSize / 2) - 1;
 
   /** Apply theme as a data attribute on <html> so CSS variables cascade */
   useEffect(() => {
@@ -96,13 +113,20 @@ export default function App() {
   }, [isPlaying]);
 
   const finaliseWords = useCallback(
-    (allWords: string[], sourceName: string, breaks: number[] = []) => {
+    (allWords: string[], sourceName: string, breaks: number[] = [], rawLines?: string[]) => {
       if (allWords.length === 0) {
         alert('No readable text found.');
         return;
       }
       setWords(allWords);
       setPageBreaks(breaks);
+      setFileId(sourceName);
+      resetSessionStats();
+      // Build structural markers for richer context rendering
+      const sMap = rawLines && rawLines.length > 0
+        ? buildStructureMap(rawLines, allWords)
+        : buildStructureMapFromWords(allWords);
+      setStructureMap(sMap);
       const existing = records.find((r) => r.name === sourceName);
       const restoredIndex =
         existing &&
@@ -120,7 +144,7 @@ export default function App() {
       });
       setRecords(updated);
     },
-    [setWords, setPageBreaks, setCurrentWordIndex, records, wpm, setRecords],
+    [setWords, setPageBreaks, setFileId, resetSessionStats, setStructureMap, setCurrentWordIndex, records, wpm, setRecords],
   );
 
   const handleFileSelect = useCallback(
@@ -144,25 +168,30 @@ export default function App() {
       setFileMetadata({ name: file.name, size: file.size, type: ext });
       const allWords: string[] = [];
       const breaks: number[] = [];
+      const allRawLines: string[] = [];
       try {
         if (ext === 'pdf') {
           for await (const pageText of parsePDF(file, (p) => setLoadingProgress(p.percent))) {
             breaks.push(allWords.length);
-            allWords.push(...tokenize(normalizeText(pageText)));
+            const normalized = normalizeText(pageText);
+            allRawLines.push(...pageText.split('\n'));
+            allWords.push(...tokenize(normalized));
           }
         } else if (ext === 'epub') {
           for await (const chapterText of parseEPUB(file, (p) => setLoadingProgress(p.percent))) {
             breaks.push(allWords.length);
+            allRawLines.push(...chapterText.split('\n'));
             allWords.push(...tokenize(normalizeText(chapterText)));
           }
         } else {
           setLoadingProgress(50);
-          const { words: parsed } = await parseFile(file);
+          const { words: parsed, rawLines } = await parseFile(file);
           breaks.push(0);
           allWords.push(...parsed);
+          if (rawLines) allRawLines.push(...rawLines);
           setLoadingProgress(100);
         }
-        finaliseWords(allWords, file.name, breaks);
+        finaliseWords(allWords, file.name, breaks, allRawLines.length > 0 ? allRawLines : undefined);
       } catch (err) {
         console.error('Error parsing file:', err);
         alert(
@@ -179,9 +208,9 @@ export default function App() {
   );
 
   const handleTextReady = useCallback(
-    (words: string[], sourceName: string) => {
+    (words: string[], sourceName: string, rawLines?: string[]) => {
       setFileMetadata({ name: sourceName, size: 0, type: 'text' });
-      finaliseWords(words, sourceName);
+      finaliseWords(words, sourceName, [], rawLines);
       setShowPaste(false); // collapse paste panel after loading
     },
     [setFileMetadata, finaliseWords],
@@ -260,8 +289,8 @@ export default function App() {
       <main className="readingMain">
         <div className="viewportWrapper">
           <ReaderViewport
-            wordWindow={wordWindow}
-            highlightIndex={highlightIndex}
+            wordWindow={chunkWindow}
+            highlightIndex={chunkHighlightIndex}
             highlightColor={highlightColor}
             orientation={orientation}
             orpEnabled={orpEnabled}
@@ -316,6 +345,9 @@ export default function App() {
       />
 
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
+
+      {/* ── Session analytics panel ──────────────────────────────── */}
+      {!isFocused && words.length > 0 && <SessionStats />}
 
       {/* ── Footer ──────────────────────────────────────────────── */}
       {!isFocused && <AppFooter />}

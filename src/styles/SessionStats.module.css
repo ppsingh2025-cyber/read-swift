@@ -1,0 +1,25 @@
+/* SessionStats.module.css
+ *
+ * Compact, non-intrusive stats bar displayed below the navigation layer.
+ * Uses muted text so it doesn't compete with the reading UI.
+ */
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.2rem 1rem;
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  user-select: none;
+}
+
+.stat {
+  white-space: nowrap;
+}
+
+.divider {
+  color: var(--text-faint);
+  opacity: 0.5;
+}

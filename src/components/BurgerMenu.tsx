@@ -20,7 +20,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useReaderContext } from '../context/useReaderContext';
 import ReadingHistory from './ReadingHistory';
-import type { WindowSize, Orientation } from '../context/readerContextDef';
+import type { WindowSize, Orientation, ChunkMode } from '../context/readerContextDef';
 import { APP_VERSION } from '../version';
 import styles from '../styles/BurgerMenu.module.css';
 
@@ -42,6 +42,7 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
     punctuationPause, setPunctuationPause,
     longWordCompensation, setLongWordCompensation,
     mainWordFontSize, setMainWordFontSize,
+    chunkMode, setChunkMode,
   } = useReaderContext();
 
   const panelRef = useRef<HTMLDivElement>(null);
@@ -238,6 +239,22 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
                     onChange={(e) => setLongWordCompensation(e.target.checked)}
                     aria-label="Extra display time for long words"
                   />
+                </label>
+
+                <label className={styles.row}>
+                  <span className={styles.label}>
+                    Chunk mode
+                    <span className={styles.hint}> (phrase grouping)</span>
+                  </span>
+                  <select
+                    className={styles.select}
+                    value={chunkMode}
+                    onChange={(e) => setChunkMode(e.target.value as ChunkMode)}
+                    aria-label="Word chunking mode"
+                  >
+                    <option value="fixed">Fixed window</option>
+                    <option value="intelligent">Intelligent phrases</option>
+                  </select>
                 </label>
               </section>
 

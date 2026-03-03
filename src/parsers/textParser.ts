@@ -16,6 +16,8 @@
 
 export interface ParsedText {
   words: string[];
+  /** Original text split into lines; used by structureUtils for richer analysis */
+  rawLines?: string[];
   metadata?: { title?: string; format: string };
 }
 
@@ -221,6 +223,7 @@ export async function parseFile(file: File): Promise<ParsedText> {
 
   return {
     words: wordsFromText(rawText),
+    rawLines: rawText.split('\n'),
     metadata: { format: ext },
   };
 }
@@ -232,6 +235,7 @@ export async function parseFile(file: File): Promise<ParsedText> {
 export function parseRawText(text: string, source = 'text'): ParsedText {
   return {
     words: wordsFromText(text),
+    rawLines: text.split('\n'),
     metadata: { format: source },
   };
 }

@@ -27,6 +27,8 @@ const LONG_WORD_THRESHOLD = 8;   // characters — pause bonus kicks in above th
 const LONG_WORD_BONUS = 0.04;    // +4% per extra character
 const PUNCT_MAJOR_MULT = 1.4;    // pause multiplier after . ? !
 const PUNCT_MINOR_MULT = 1.2;    // pause multiplier after , ; :
+/** How many words to advance between session-stats batch writes during playback */
+const STATS_UPDATE_BATCH_SIZE = 30;
 
 /** Calculate the delay multiplier for a given word */
 function wordDelayMultiplier(word: string, punctuationPause: boolean, longWordComp: boolean): number {
@@ -57,10 +59,12 @@ export function useRSVPEngine() {
     windowSize,
     punctuationPause,
     longWordCompensation,
+    sessionStats,
     setCurrentWordIndex,
     setIsPlaying,
     resetReader,
     setWpm,
+    updateSessionStats,
   } = useReaderContext();
 
   const rafRef = useRef<number | null>(null);
@@ -75,6 +79,10 @@ export function useRSVPEngine() {
   const longWordCompRef = useRef<boolean>(longWordCompensation);
   const wordsRef = useRef<string[]>(words);
   const isPlayingRef = useRef<boolean>(isPlaying);
+  // Session analytics refs
+  const sessionPlayStartRef = useRef<number>(0); // performance.now() when play last started
+  const sessionWordsAtPlayStartRef = useRef<number>(sessionStats.wordsRead);
+  const sessionActiveTimeAtStartRef = useRef<number>(sessionStats.activeTimeMs);
 
   // Keep refs in sync with state
   useEffect(() => { indexRef.current = currentWordIndex; }, [currentWordIndex]);
@@ -83,6 +91,9 @@ export function useRSVPEngine() {
   useEffect(() => { punctuationPauseRef.current = punctuationPause; }, [punctuationPause]);
   useEffect(() => { longWordCompRef.current = longWordCompensation; }, [longWordCompensation]);
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+  // Keep session analytics refs in sync
+  useEffect(() => { sessionWordsAtPlayStartRef.current = sessionStats.wordsRead; }, [sessionStats.wordsRead]);
+  useEffect(() => { sessionActiveTimeAtStartRef.current = sessionStats.activeTimeMs; }, [sessionStats.activeTimeMs]);
 
   const clearEngine = useCallback(() => {
     if (rafRef.current !== null) {
@@ -91,10 +102,29 @@ export function useRSVPEngine() {
     }
   }, []);
 
+  // Flush accumulated session time when playback stops
+  const flushSessionTime = useCallback(() => {
+    if (sessionPlayStartRef.current > 0) {
+      const elapsed = performance.now() - sessionPlayStartRef.current;
+      sessionPlayStartRef.current = 0;
+      updateSessionStats({ activeTimeMs: sessionActiveTimeAtStartRef.current + elapsed });
+    }
+  }, [updateSessionStats]);
+
+  /** Ref tracking how many words were at the session start of current play segment */
+  const wordsAtSegmentStartRef = useRef<number>(0);
+  /** Ref tracking index at play segment start (to count words consumed) */
+  const indexAtSegmentStartRef = useRef<number>(0);
+
   const startEngine = useCallback(() => {
     clearEngine();
     const baseMs = 60_000 / wpmRef.current;
     nextTickRef.current = performance.now() + baseMs;
+
+    // Record when playback started for analytics
+    sessionPlayStartRef.current = performance.now();
+    indexAtSegmentStartRef.current = indexRef.current;
+    wordsAtSegmentStartRef.current = sessionWordsAtPlayStartRef.current;
 
     const tick = () => {
       if (!isPlayingRef.current) return; // safety guard
@@ -109,6 +139,15 @@ export function useRSVPEngine() {
         indexRef.current = nextIndex;
         setCurrentWordIndex(nextIndex);
 
+        // Update session words-read counter (incremental, no setState rate concern)
+        const wordsConsumed = nextIndex - indexAtSegmentStartRef.current;
+        const newWordsRead = wordsAtSegmentStartRef.current + wordsConsumed;
+        // Batch the state update — update at most once per second to avoid
+        // excessive re-renders; the exact count is always correct on pause.
+        if (wordsConsumed % STATS_UPDATE_BATCH_SIZE === 0) {
+          updateSessionStats({ wordsRead: newWordsRead });
+        }
+
         // Calculate delay for the NEXT word (the one just shown)
         const currentWord = wordsRef.current[nextIndex] ?? '';
         const mult = wordDelayMultiplier(currentWord, punctuationPauseRef.current, longWordCompRef.current);
@@ -120,7 +159,7 @@ export function useRSVPEngine() {
     };
 
     rafRef.current = requestAnimationFrame(tick);
-  }, [clearEngine, setCurrentWordIndex, setIsPlaying]);
+  }, [clearEngine, setCurrentWordIndex, setIsPlaying, updateSessionStats]);
 
   // (Re)start engine whenever play state, speed, or word list changes
   useEffect(() => {
@@ -128,9 +167,17 @@ export function useRSVPEngine() {
       startEngine();
     } else {
       clearEngine();
+      // Flush remaining active time and final word count on pause/stop
+      if (!isPlaying) {
+        flushSessionTime();
+        const finalWords = indexRef.current - indexAtSegmentStartRef.current;
+        if (finalWords > 0) {
+          updateSessionStats({ wordsRead: wordsAtSegmentStartRef.current + finalWords });
+        }
+      }
     }
     return clearEngine;
-  }, [isPlaying, wpm, words.length, startEngine, clearEngine]);
+  }, [isPlaying, wpm, words.length, startEngine, clearEngine, flushSessionTime, updateSessionStats]);
 
   const play = useCallback(() => setIsPlaying(true), [setIsPlaying]);
   const pause = useCallback(() => setIsPlaying(false), [setIsPlaying]);

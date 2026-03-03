@@ -11,7 +11,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { ReaderContext, type FileMetadata, type ReadingRecord, type WindowSize, type Orientation, type Theme } from './readerContextDef';
+import { ReaderContext, type FileMetadata, type ReadingRecord, type WindowSize, type Orientation, type Theme, type ChunkMode, type SessionStats, type StructuralMarker } from './readerContextDef';
 import { loadRecords } from '../utils/recordsUtils';
 
 const LS_KEY_INDEX = 'fastread_word_index';
@@ -25,6 +25,8 @@ const LS_KEY_PUNCT_PAUSE = 'fastread_punct_pause';
 const LS_KEY_PERIPHERAL_FADE = 'fastread_peripheral_fade';
 const LS_KEY_LONG_WORD_COMP = 'fastread_long_word_comp';
 const LS_KEY_MAIN_FONT_SIZE = 'fastread_main_font_size';
+const LS_KEY_CHUNK_MODE = 'fastread_chunk_mode';
+const LS_KEY_SESSION_STATS = 'fastread_session_stats';
 const DEFAULT_WPM = 250;
 const DEFAULT_WINDOW_SIZE: WindowSize = 1;
 const DEFAULT_HIGHLIGHT_COLOR = '#ff0000';
@@ -35,6 +37,14 @@ const DEFAULT_PUNCT_PAUSE = true;
 const DEFAULT_PERIPHERAL_FADE = false;
 const DEFAULT_LONG_WORD_COMP = true;
 const DEFAULT_MAIN_FONT_SIZE = 100;
+const DEFAULT_CHUNK_MODE: ChunkMode = 'fixed';
+
+const EMPTY_SESSION_STATS: SessionStats = {
+  wordsRead: 0,
+  startTime: 0,
+  activeTimeMs: 0,
+  effectiveWpm: 0,
+};
 
 export function ReaderProvider({ children }: { children: React.ReactNode }) {
   const [words, setWordsState] = useState<string[]>([]);
@@ -48,9 +58,11 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
     return saved ? parseInt(saved, 10) : DEFAULT_WPM;
   });
   const [fileMetadata, setFileMetadata] = useState<FileMetadata | null>(null);
+  const [fileId, setFileId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [pageBreaks, setPageBreaksState] = useState<number[]>([]);
+  const [structureMap, setStructureMapState] = useState<Map<number, StructuralMarker>>(() => new Map());
   const [records, setRecordsState] = useState<ReadingRecord[]>(() => loadRecords());
   const [windowSize, setWindowSizeState] = useState<WindowSize>(() => {
     const saved = localStorage.getItem(LS_KEY_WINDOW_SIZE);
@@ -95,6 +107,17 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
     const parsed = saved ? parseInt(saved, 10) : DEFAULT_MAIN_FONT_SIZE;
     return isNaN(parsed) ? DEFAULT_MAIN_FONT_SIZE : Math.min(200, Math.max(60, parsed));
   });
+  const [chunkMode, setChunkModeState] = useState<ChunkMode>(() => {
+    const saved = localStorage.getItem(LS_KEY_CHUNK_MODE);
+    return (saved === 'intelligent' || saved === 'fixed') ? saved as ChunkMode : DEFAULT_CHUNK_MODE;
+  });
+  const [sessionStats, setSessionStatsState] = useState<SessionStats>(() => {
+    try {
+      const saved = localStorage.getItem(LS_KEY_SESSION_STATS);
+      if (saved) return JSON.parse(saved) as SessionStats;
+    } catch { /* ignore parse errors */ }
+    return { ...EMPTY_SESSION_STATS };
+  });
 
   // Derive 1-indexed current page via binary search over pageBreaks
   const currentPage = useMemo(() => {
@@ -126,6 +149,7 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
     // Reset index and page breaks when a new file is loaded
     setCurrentWordIndexState(0);
     setPageBreaksState([]);
+    setStructureMapState(new Map());
     localStorage.setItem(LS_KEY_INDEX, '0');
   }, []);
 
@@ -145,6 +169,10 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
 
   const setPageBreaks = useCallback((breaks: number[]) => {
     setPageBreaksState(breaks);
+  }, []);
+
+  const setStructureMap = useCallback((map: Map<number, StructuralMarker>) => {
+    setStructureMapState(map);
   }, []);
 
   const goToPage = useCallback(
@@ -219,6 +247,29 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(LS_KEY_MAIN_FONT_SIZE, String(clamped));
   }, []);
 
+  const setChunkMode = useCallback((mode: ChunkMode) => {
+    setChunkModeState(mode);
+    localStorage.setItem(LS_KEY_CHUNK_MODE, mode);
+  }, []);
+
+  const updateSessionStats = useCallback((delta: Partial<SessionStats>) => {
+    setSessionStatsState((prev) => {
+      const next: SessionStats = { ...prev, ...delta };
+      // Recalculate effectiveWpm whenever wordsRead or activeTimeMs changes
+      if (next.activeTimeMs > 0) {
+        next.effectiveWpm = Math.round(next.wordsRead / (next.activeTimeMs / 60_000));
+      }
+      try { localStorage.setItem(LS_KEY_SESSION_STATS, JSON.stringify(next)); } catch { /* ignore */ }
+      return next;
+    });
+  }, []);
+
+  const resetSessionStats = useCallback(() => {
+    const fresh = { ...EMPTY_SESSION_STATS };
+    setSessionStatsState(fresh);
+    try { localStorage.setItem(LS_KEY_SESSION_STATS, JSON.stringify(fresh)); } catch { /* ignore */ }
+  }, []);
+
   return (
     <ReaderContext.Provider
       value={{
@@ -227,11 +278,13 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
         isPlaying,
         wpm,
         fileMetadata,
+        fileId,
         isLoading,
         loadingProgress,
         pageBreaks,
         currentPage,
         totalPages,
+        structureMap,
         records,
         windowSize,
         highlightColor,
@@ -242,15 +295,19 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
         peripheralFade,
         longWordCompensation,
         mainWordFontSize,
+        chunkMode,
+        sessionStats,
         setWords,
         setCurrentWordIndex,
         setIsPlaying,
         setWpm,
         setFileMetadata,
+        setFileId,
         setIsLoading,
         setLoadingProgress,
         resetReader,
         setPageBreaks,
+        setStructureMap,
         goToPage,
         goToWord,
         setRecords,
@@ -263,6 +320,9 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
         setPeripheralFade,
         setLongWordCompensation,
         setMainWordFontSize,
+        setChunkMode,
+        updateSessionStats,
+        resetSessionStats,
       }}
     >
       {children}

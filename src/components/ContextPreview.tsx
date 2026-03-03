@@ -1,9 +1,13 @@
 /**
  * ContextPreview
  *
- * Shows a scrollable excerpt of the current page (or a ±60-word window when
- * no page boundaries are known). The current word is highlighted in the brand
- * colour and every word is clickable to jump directly to it.
+ * Shows a scrollable excerpt centered on the current word position.
+ * Uses a fixed ±window approach (continuous reading engine) rather than
+ * page-bounded display, eliminating the page-reset bug where the preview
+ * would jump back to the top of a page on page changes.
+ *
+ * The current word is highlighted in the brand colour and every word is
+ * clickable to jump directly to it.
  *
  * The component auto-scrolls so the active word stays visible whenever the
  * current word index changes.
@@ -13,37 +17,23 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useReaderContext } from '../context/useReaderContext';
 import styles from '../styles/ContextPreview.module.css';
 
-/** Half-window size used when no page boundaries are available */
-const WINDOW_HALF = 60;
+/** Number of words shown before and after the current position */
+const CONTEXT_HALF = 80;
 
 export default function ContextPreview() {
   const {
     words,
     currentWordIndex,
-    pageBreaks,
-    currentPage,
     goToWord,
     isLoading,
   } = useReaderContext();
 
   const activeRef = useRef<HTMLSpanElement>(null);
 
-  // Compute the visible range of words to render
-  // pageBreaks is 0-indexed (pageBreaks[i] = first word index of page i+1)
-  // currentPage is 1-indexed, so currentPage-1 maps to pageBreaks index
-  let start: number;
-  let end: number;
-  if (pageBreaks.length > 0) {
-    const pageIdx = Math.max(0, Math.min(currentPage - 1, pageBreaks.length - 1));
-    start = pageBreaks[pageIdx];
-    end =
-      pageIdx + 1 < pageBreaks.length
-        ? pageBreaks[pageIdx + 1]
-        : words.length;
-  } else {
-    start = Math.max(0, currentWordIndex - WINDOW_HALF);
-    end = Math.min(words.length, currentWordIndex + WINDOW_HALF + 1);
-  }
+  // Always use a rolling window centered on the current word index.
+  // This gives a true continuous reading experience with no page boundaries.
+  const start = Math.max(0, currentWordIndex - CONTEXT_HALF);
+  const end = Math.min(words.length, currentWordIndex + CONTEXT_HALF + 1);
 
   const visibleWords = words.slice(start, end);
 
@@ -62,7 +52,7 @@ export default function ContextPreview() {
   if (!words.length || isLoading) return null;
 
   return (
-    <div className={styles.preview} aria-label="Page text preview">
+    <div className={styles.preview} aria-label="Reading context preview">
       <p className={styles.heading}>Context</p>
       <div className={styles.content}>
         {visibleWords.map((word, i) => {
