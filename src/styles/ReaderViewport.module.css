@@ -8,7 +8,7 @@
   width: 100%;
   height: 300px;
   background: var(--vp-bg, #0a0a0a);
-  border-radius: 14px;
+  border-radius: var(--radius-lg, 14px);
   overflow: hidden;
   user-select: none;
   border: 1px solid var(--vp-border, #151515);
@@ -44,29 +44,22 @@
 /* ─── Rolling word window ─────────────────────────────────────── */
 
 /*
- * Fixed-proportion grid layout (horizontal).
+ * Inline text-flow layout (horizontal).
  *
- * Layout stability guarantee:
- *   All slots are exactly 1fr of a controlled-width container.
- *   Because every column has equal fractional width, the ORP slot is ALWAYS
- *   at a predictable horizontal position regardless of word length.
- *   Font size scales down with slot count via clamp() so long words are
- *   always contained — no overflow, no overlap, no reflow.
+ * Words render as a natural sentence, preserving the typographic rhythm
+ * of continuous reading. The ORP (center/highlight) word remains visually
+ * anchored at the focal point using text-align: center on the container.
  *
- * Container width scales with slot count so that peripheral words in small
- * windows (1–2 words) sit closer together, improving peripheral focus:
- *   clamp(600px, 250px × slot-count, 900px)
- *   • 1 word  → 600 px  (centred single word, plenty of room)
- *   • 2 words → 600 px  → 300 px / slot  (was 450 px – words ~33 % closer)
- *   • 3 words → 750 px  → 250 px / slot
- *   • 4–5 words → 900 px (capped)
- *   On mobile, min(92vw, …) wins so the layout stays viewport-safe.
+ * Word spacing is kept tight (0.25em) so multi-word windows read like
+ * a phrase, not separated UI blocks. The container max-width prevents
+ * lines from becoming too long at large font sizes.
  */
 .windowHorizontal {
-  display: grid;
-  grid-template-columns: repeat(var(--slot-count, 1), 1fr);
-  place-items: center;
-  gap: 0.2em;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.25em;
   width: min(92vw, clamp(600px, calc(250px * var(--slot-count, 1)), 900px));
   max-width: 100%;
 }
@@ -81,51 +74,37 @@
 }
 
 /*
- * Each word slot fills its grid column (width: 100%).
- * Font size scales inversely with slot count so all words stay readable
- * within their allocated space — no overflow, no truncation for center word.
+ * Each word slot sizes naturally with the text content.
+ * In horizontal mode the slot does NOT get a fixed width — it flows inline
+ * so words sit naturally adjacent like a sentence.
  *
- * clamp(min, preferred, max):
- *   preferred = 8vw / slot-count gives proportional size per slot width.
+ * Font size scales inversely with slot count so all words remain readable.
  */
 .wordSlot {
   display: inline-block;
-  width: 100%;
+  flex-shrink: 0;
   box-sizing: border-box;
   font-size: clamp(1.1rem, calc(8vw / var(--slot-count, 1)), 3.2rem);
   font-family: 'Georgia', serif;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
+  word-spacing: normal;
   text-align: center;
   color: var(--vp-text, #d4d4d4);
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
   will-change: contents;
-  /* Vertical layout needs auto width */
 }
 
 .windowVertical .wordSlot {
-  width: auto;
   min-width: 4ch;
 }
 
 /* Center (highlighted) word — bold; font scaling prevents any overflow */
 .wordSlotCenter {
   font-weight: 700;
-  /* Ensure the ORP word renders above adjacent slots if it ever touches */
   position: relative;
   z-index: 1;
-  /* ORP word must never be truncated or hidden regardless of length */
+  /* ORP word must never be truncated regardless of length */
   overflow: visible;
-}
-
-/*
- * Horizontal mode: JS supplies scaled font-sizes for all word slots so
- * overflow is handled by scaling down. Use clip instead of ellipsis so
- * no partial-word artefacts appear at minimum readable size.
- */
-.windowHorizontal .wordSlot {
-  text-overflow: clip;
 }
 
 /* ORP focal letter — slightly enlarged for eye anchoring */
@@ -136,7 +115,7 @@
 
 .placeholder {
   color: var(--vp-placeholder, #666);
-  font-size: 1rem;
+  font-size: var(--font-size-md, 1rem);
   text-align: center;
   padding: 0 2rem;
   max-width: 340px;
@@ -148,20 +127,20 @@
   align-items: center;
   gap: 1rem;
   color: var(--vp-placeholder, #aaa);
-  font-size: 1rem;
+  font-size: var(--font-size-md, 1rem);
 }
 
 .progressBar {
   width: 240px;
   height: 8px;
   background: #333;
-  border-radius: 4px;
+  border-radius: var(--radius-sm, 4px);
   overflow: hidden;
 }
 
 .progressFill {
   height: 100%;
-  background: #4a7fa0;
-  border-radius: 4px;
+  background: var(--color-accent, #22d3ee);
+  border-radius: var(--radius-sm, 4px);
   transition: width 0.3s ease;
 }

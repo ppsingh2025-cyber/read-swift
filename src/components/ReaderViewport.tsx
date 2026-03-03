@@ -3,15 +3,11 @@
  *
  * Displays the rolling word window with a guaranteed-stable focal position.
  *
- * Layout stability guarantee:
- *   Each word slot is rendered as a 1fr grid column inside a controlled-width
- *   container (min(92vw, clamp(600px, 250px×slots, 900px))). Because every
- *   column has equal fractional width, the ORP slot is ALWAYS at a predictable
- *   horizontal position regardless of word length. Font size scales inversely
- *   with slot count via clamp() so long words never overflow their column — no
- *   reflow, no horizontal drift, no overlap.  For the ORP (center) word, JS
- *   additionally computes a proportionally scaled font-size so that even very
- *   long words are displayed at the largest readable size with no ellipsis.
+ * Layout approach:
+ *   Horizontal mode uses inline text flow (flexbox with baseline alignment and
+ *   tight gap). Words render like a natural sentence — the ORP (center) word
+ *   is displayed at a scaled font size and all words sit on the same baseline,
+ *   preserving typographic rhythm.
  *
  * ORP (Optimal Recognition Point):
  *   When orpEnabled is true the center/ORP word is split into three spans:
@@ -66,93 +62,16 @@ function calcOrpIndex(word: string): number {
 }
 
 /**
- * Compute a scaled font-size CSS value that prevents a word from overflowing
- * its grid slot in horizontal mode.
+ * Compute a CSS font-size value for the ORP (center) word based on the user's
+ * mainWordFontSize preference (percentage 60–200, mapped to a scale factor).
  *
- * For the ORP (center) word, pass `userScale` to honour the user's preferred
- * main-word font size (percentage / 100). Side words always use scale 1.
+ * The scale is applied to the CSS clamp() parameters so the ORP word scales
+ * proportionally without shifting the layout. Side words always render at
+ * scale 1 so they provide natural peripheral context.
  *
- * The CSS class already sets  font-size: clamp(MIN rem, VW_COEFF vw / slots, MAX rem).
- * This function returns the same clamp() expression multiplied by a scale
- * factor derived from the word's character count versus the available slot
- * width, so the rendered text always fits — no ellipsis, no reflow.
- *
- * A SAFETY margin (8 %) is subtracted from the slot width so that normal
- * font-metric variation never causes the word to bleed into the gap.
- *
- * Returns undefined when the word fits comfortably at the default size,
- * letting the CSS rule take effect unchanged.
+ * Returns undefined when userScale is 1 (no change needed from CSS default).
  */
-function computeWordFontSize(
-  word: string,
-  slotCount: number,
-  isFullHeight: boolean,
-  userScale: number = 1,
-): string | undefined {
-  if (!word) return undefined;
-
-  const REM_PX = 16;
-  // Match the CSS clamp parameters for normal and full-height modes.
-  const minFontRem = isFullHeight ? 2 : 1.1;
-  const baseMaxFontRem = isFullHeight ? 6 : 3.2;
-  const baseVwCoeff   = isFullHeight ? 10 : 8;
-
-  // Apply user scale to the max/preferred size ceiling.
-  const maxFontRem = baseMaxFontRem * userScale;
-  const vwCoeff    = baseVwCoeff    * userScale;
-
-  const MIN_FONT_PX      = minFontRem * REM_PX;
-  const MAX_FONT_PX      = maxFontRem * REM_PX;
-  /**
-   * Approximate ratio of character width to font-size for Georgia serif.
-   * Latin characters in Georgia average ~0.58–0.62 em; 0.60 is the midpoint.
-   * If the app font ever changes, update this constant to match.
-   */
-  const CHAR_WIDTH       = 0.60;
-  const SAFETY           = 0.92; // 8 % margin so metric variance never causes overflow
-  const MIN_READABLE_PX  = 12;   // never render below this size regardless of word length
-
-  // Container width mirrors the CSS formula:
-  //   min(92vw, clamp(600px, 250px × slotCount, 900px))
-  /** Fallback viewport width (px) used in non-browser (SSR) environments. */
-  const DEFAULT_VIEWPORT_PX = 1280;
-  const vwPx        = typeof window !== 'undefined' ? window.innerWidth / 100 : DEFAULT_VIEWPORT_PX / 100;
-  const clampedPx   = Math.min(900, Math.max(600, 250 * slotCount));
-  const containerPx = Math.min(0.92 * vwPx * 100, clampedPx);
-  const slotPx      = containerPx / slotCount;
-
-  // Base font size: replicate the CSS clamp using the live viewport width.
-  const preferredPx = (vwCoeff * vwPx) / slotCount;
-  const baseFontPx  = Math.min(MAX_FONT_PX, Math.max(MIN_FONT_PX, preferredPx));
-
-  const maxChars = (slotPx * SAFETY) / (baseFontPx * CHAR_WIDTH);
-
-  // If user scale is non-default, always return a CSS value so the preference
-  // is applied even for short words that fit at the default size.
-  if (word.length <= maxChars && userScale === 1) return undefined;
-
-  // Minimum scale: ensure the rendered preferred size stays above MIN_READABLE_PX.
-  const minScaleForReadability = MIN_READABLE_PX / Math.max(preferredPx, 1);
-  const fitScale = word.length <= maxChars ? 1 : maxChars / word.length;
-  const scale = Math.max(minScaleForReadability, fitScale);
-  return [
-    `clamp(${(minFontRem * scale).toFixed(3)}rem,`,
-    ` calc(${(vwCoeff * scale).toFixed(3)}vw / ${slotCount}),`,
-    ` ${(maxFontRem * scale).toFixed(3)}rem)`,
-  ].join('');
-}
-
-
-/**
- * Compute a scaled font-size CSS value for the ORP (center) word in
- * **vertical** orientation when the user has changed the main word size.
- *
- * In vertical mode, words are stacked and there is no slot-width constraint,
- * so we simply scale the CSS clamp() parameters by the user's scale factor.
- * Returns undefined when userScale is 1 (no change needed).
- */
-function computeVerticalOrpFontSize(
-  slotCount: number,
+function computeOrpFontSize(
   isFullHeight: boolean,
   userScale: number,
 ): string | undefined {
@@ -160,6 +79,7 @@ function computeVerticalOrpFontSize(
   const minFontRem = isFullHeight ? 2 : 1.1;
   const maxFontRem = isFullHeight ? 6 : 3.2;
   const vwCoeff    = isFullHeight ? 10 : 8;
+  const slotCount  = 1; // ORP word scales as if it were a single-word slot
   return [
     `clamp(${(minFontRem * userScale).toFixed(3)}rem,`,
     ` calc(${(vwCoeff * userScale).toFixed(3)}vw / ${slotCount}),`,
@@ -216,6 +136,9 @@ const ReaderViewport = memo(function ReaderViewport({
     if (dist === 1) return 0.5;
     return 0.25;
   };
+
+  const userScale = mainWordFontSize / 100;
+
   return (
     <div
       className={`${styles.viewport}${fullHeight ? ` ${styles.viewportFull}` : ''}`}
@@ -244,9 +167,11 @@ const ReaderViewport = memo(function ReaderViewport({
         </p>
       ) : (
         /*
-         * Fixed-width grid: each slot gets exactly --slot-width.
-         * With equal columns, slot N is always at the same horizontal
-         * position regardless of word content — no layout shifts.
+         * Inline text-flow word window.
+         * Horizontal: words flow naturally side-by-side like a sentence.
+         * Vertical: words stacked, each centered on the focal axis.
+         * The ORP (center) word is scaled by the user's mainWordFontSize
+         * preference; side words always render at the default size.
          */
         <div
           className={
@@ -257,21 +182,10 @@ const ReaderViewport = memo(function ReaderViewport({
           {wordWindow.map((word, i) => {
             const isCenter = i === highlightIndex;
             const opacity = slotOpacity(i);
-            const scaledFont =
-              orientation === 'horizontal'
-                ? computeWordFontSize(
-                    word,
-                    wordWindow.length,
-                    fullHeight ?? false,
-                    isCenter ? mainWordFontSize / 100 : 1,
-                  )
-                : isCenter
-                  ? computeVerticalOrpFontSize(
-                      wordWindow.length,
-                      fullHeight ?? false,
-                      mainWordFontSize / 100,
-                    )
-                  : undefined;
+            // Only scale the ORP word; side words stay at CSS default
+            const scaledFont = isCenter
+              ? computeOrpFontSize(fullHeight ?? false, userScale)
+              : undefined;
             return (
               <span
                 key={i}

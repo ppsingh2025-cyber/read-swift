@@ -251,11 +251,16 @@ export default function Controls({
         >
           {isPlaying ? (
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" width="1em" height="1em">
-              <circle cx="12" cy="12" r="10" fill="var(--accent, #2e7db8)"/>
+              <circle cx="12" cy="12" r="10" fill="var(--color-primary, #1E3A8A)"/>
               <rect x="8" y="7" width="3" height="10" rx="1" fill="white"/>
               <rect x="13" y="7" width="3" height="10" rx="1" fill="white"/>
             </svg>
-          ) : '▶'}
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" width="1em" height="1em">
+              <circle cx="12" cy="12" r="10" fill="var(--color-primary, #1E3A8A)"/>
+              <polygon points="10,8 18,12 10,16" fill="white"/>
+            </svg>
+          )}
         </button>
 
         <button
@@ -275,7 +280,10 @@ export default function Controls({
           title="Restart from beginning"
           aria-label="Restart"
         >
-          ↻
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" width="1em" height="1em">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
         </button>
       </div>
 
