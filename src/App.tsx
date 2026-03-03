@@ -32,6 +32,7 @@ import { parsePDF } from './parsers/pdfParser';
 import { parseEPUB } from './parsers/epubParser';
 import { parseFile } from './parsers/textParser';
 import { normalizeText, tokenize } from './utils/textUtils';
+import { normalizePages } from './utils/contentNormalizer';
 import { saveRecord } from './utils/recordsUtils';
 import { buildStructureMap, buildStructureMapFromWords } from './utils/structureUtils';
 import './styles/app.css';
@@ -171,17 +172,50 @@ export default function App() {
       const allRawLines: string[] = [];
       try {
         if (ext === 'pdf') {
-          for await (const pageText of parsePDF(file, (p) => setLoadingProgress(p.percent))) {
+          // Stage 1 — Raw extraction: stream pages from pdfjs-dist.
+          // Progress is scaled to 0–80 % during collection so the user sees
+          // incremental feedback; the final 20 % covers normalization + tokenization.
+          const rawPages: string[] = [];
+          for await (const pageText of parsePDF(file, (p) =>
+            setLoadingProgress(Math.round(p.percent * 0.8)),
+          )) {
+            rawPages.push(pageText);
+          }
+
+          // Stage 3+4 — Normalize: classify and remove headers/footers/page-numbers.
+          // Runs once here, never during playback.
+          const { normalizedPages, stats } = normalizePages(rawPages, import.meta.env.DEV);
+          if (import.meta.env.DEV) {
+            console.debug('[ingestion] PDF normalization stats:', stats);
+          }
+          setLoadingProgress(90);
+
+          // Stage 4 output — Tokenize normalized pages into the word array.
+          for (const pageText of normalizedPages) {
             breaks.push(allWords.length);
-            const normalized = normalizeText(pageText);
             allRawLines.push(...pageText.split('\n'));
-            allWords.push(...tokenize(normalized));
+            allWords.push(...tokenize(normalizeText(pageText)));
           }
         } else if (ext === 'epub') {
-          for await (const chapterText of parseEPUB(file, (p) => setLoadingProgress(p.percent))) {
+          // Stage 1 — Raw extraction: stream chapters from epubjs.
+          const rawPages: string[] = [];
+          for await (const chapterText of parseEPUB(file, (p) =>
+            setLoadingProgress(Math.round(p.percent * 0.8)),
+          )) {
+            rawPages.push(chapterText);
+          }
+
+          // Stage 3+4 — Normalize chapters the same way as PDF pages.
+          const { normalizedPages, stats } = normalizePages(rawPages, import.meta.env.DEV);
+          if (import.meta.env.DEV) {
+            console.debug('[ingestion] EPUB normalization stats:', stats);
+          }
+          setLoadingProgress(90);
+
+          for (const pageText of normalizedPages) {
             breaks.push(allWords.length);
-            allRawLines.push(...chapterText.split('\n'));
-            allWords.push(...tokenize(normalizeText(chapterText)));
+            allRawLines.push(...pageText.split('\n'));
+            allWords.push(...tokenize(normalizeText(pageText)));
           }
         } else {
           setLoadingProgress(50);

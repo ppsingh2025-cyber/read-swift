@@ -44,11 +44,20 @@ export async function* parsePDF(
     const page = await pdf.getPage(pageNum);
     const textContent = await page.getTextContent();
 
-    // Reconstruct reading order from text items
-    const pageText = textContent.items
-      .filter((item) => 'str' in item)
-      .map((item) => (item as { str: string }).str)
-      .join(' ');
+    // Reconstruct reading order from text items, preserving line breaks.
+    // hasEOL is set by pdfjs-dist when a text item ends a visual line in the PDF.
+    // Using '\n' at EOL boundaries gives the content normalizer the line
+    // structure it needs for header/footer classification (Stage 3 of the
+    // ingestion pipeline).  Non-EOL items are joined with a space.
+    const items = textContent.items.filter((item) => 'str' in item) as Array<{
+      str: string;
+      hasEOL?: boolean;
+    }>;
+    let pageText = '';
+    for (const item of items) {
+      pageText += item.str + ((item.hasEOL ?? false) ? '\n' : ' ');
+    }
+    pageText = pageText.trim();
 
     if (onProgress) {
       onProgress({
