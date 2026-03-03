@@ -19,6 +19,7 @@
  */
 
 import { memo } from 'react';
+import type { CSSProperties } from 'react';
 import type { Orientation } from '../context/readerContextDef';
 import styles from '../styles/ReaderViewport.module.css';
 
@@ -117,7 +118,7 @@ const ReaderViewport = memo(function ReaderViewport({
           className={
             orientation === 'vertical' ? styles.windowVertical : styles.windowHorizontal
           }
-          style={{ '--slot-count': wordWindow.length } as React.CSSProperties}
+          style={{ '--slot-count': wordWindow.length } as CSSProperties}
         >
           {wordWindow.map((word, i) => {
             const isCenter = i === highlightIndex;
