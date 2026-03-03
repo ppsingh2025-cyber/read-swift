@@ -2,16 +2,16 @@
 
 .historyDetails {
   padding: 0.875rem 1rem;
-  background: #111;
+  background: var(--bg-panel, #111);
   border-radius: 14px;
   width: 100%;
-  border: 1px solid #1e1e1e;
+  border: 1px solid var(--border, #1e1e1e);
 }
 
 .heading {
   font-size: 0.85rem;
   font-weight: 700;
-  color: #777;
+  color: var(--text-muted, #777);
   cursor: pointer;
   list-style: none;
   display: flex;
@@ -30,7 +30,7 @@
 .heading::after {
   content: '›';
   font-size: 1rem;
-  color: #444;
+  color: var(--text-faint, #444);
   margin-left: auto;
   transition: transform 0.2s;
   transform: rotate(90deg);
@@ -41,7 +41,7 @@ details:not([open]) .heading::after {
 }
 
 .heading:hover {
-  color: #aaa;
+  color: var(--text, #aaa);
 }
 
 .list {
@@ -57,9 +57,9 @@ details:not([open]) .heading::after {
   align-items: center;
   gap: 0.75rem;
   padding: 0.6rem 0.75rem;
-  background: #161616;
+  background: var(--bg-input, #161616);
   border-radius: 10px;
-  border: 1px solid #1e1e1e;
+  border: 1px solid var(--border, #1e1e1e);
 }
 
 .info {
@@ -72,7 +72,7 @@ details:not([open]) .heading::after {
 
 .name {
   font-size: 0.875rem;
-  color: #ddd;
+  color: var(--text, #ddd);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -80,12 +80,12 @@ details:not([open]) .heading::after {
 
 .meta {
   font-size: 0.72rem;
-  color: #555;
+  color: var(--text-faint, #555);
 }
 
 .bar {
   height: 3px;
-  background: #222;
+  background: var(--bg, #222);
   border-radius: 2px;
   overflow: hidden;
   margin-top: 0.2rem;
@@ -102,7 +102,7 @@ details:not([open]) .heading::after {
   flex-shrink: 0;
   background: transparent;
   border: none;
-  color: #444;
+  color: var(--text-faint, #444);
   font-size: 0.8rem;
   cursor: pointer;
   padding: 0.3rem 0.5rem;
@@ -116,8 +116,8 @@ details:not([open]) .heading::after {
 }
 
 .deleteBtn:hover {
-  color: #e74c3c;
-  background: #1a0f0f;
+  color: var(--accent, #e74c3c);
+  background: rgba(231, 76, 60, 0.08);
 }
 
 .actions {
@@ -130,8 +130,8 @@ details:not([open]) .heading::after {
 .resumeBtn {
   flex-shrink: 0;
   background: transparent;
-  border: 1px solid #2a2a2a;
-  color: #888;
+  border: 1px solid var(--border-input, #2a2a2a);
+  color: var(--text-muted, #888);
   font-size: 0.75rem;
   cursor: pointer;
   padding: 0.3rem 0.6rem;
@@ -145,7 +145,7 @@ details:not([open]) .heading::after {
 }
 
 .resumeBtn:hover {
-  color: #f0f0f0;
-  background: #1e2a1e;
-  border-color: #3a7a3a;
+  color: var(--text, #f0f0f0);
+  background: rgba(45, 106, 246, 0.1);
+  border-color: #2d6af6;
 }

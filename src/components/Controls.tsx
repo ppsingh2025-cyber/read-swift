@@ -14,7 +14,7 @@ import { useReaderContext } from '../context/useReaderContext';
 import styles from '../styles/Controls.module.css';
 
 const MIN_WPM = 60;
-const MAX_WPM = 1000;
+const MAX_WPM = 1500;
 const SLIDER_MIN = 0;
 const SLIDER_MAX = 100;
 

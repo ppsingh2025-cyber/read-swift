@@ -4,8 +4,8 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  background: #111;
-  border: 1px solid #1e1e1e;
+  background: var(--bg-panel, #111);
+  border: 1px solid var(--border, #1e1e1e);
   border-radius: 14px;
   overflow: hidden;
 }
@@ -13,7 +13,7 @@
 /* ─── Tabs ──────────────────────────────────────────────────────── */
 .tabs {
   display: flex;
-  border-bottom: 1px solid #1e1e1e;
+  border-bottom: 1px solid var(--border, #1e1e1e);
 }
 
 .tab,
@@ -24,20 +24,20 @@
   padding: 0.6rem 0.75rem;
   font-size: 0.82rem;
   cursor: pointer;
-  color: #666;
+  color: var(--text-muted, #666);
   transition: color 0.15s, background 0.15s;
   text-align: center;
 }
 
 .tab:hover {
-  color: #ccc;
-  background: #161616;
+  color: var(--text, #ccc);
+  background: var(--bg-input, #161616);
 }
 
 .tabActive {
-  color: #f0f0f0;
-  background: #161616;
-  border-bottom: 2px solid #e74c3c;
+  color: var(--text, #f0f0f0);
+  background: var(--bg-input, #161616);
+  border-bottom: 2px solid var(--accent, #e74c3c);
 }
 
 /* ─── Body ──────────────────────────────────────────────────────── */
@@ -50,9 +50,9 @@
 
 .textarea {
   width: 100%;
-  background: #0d0d0d;
-  color: #f0f0f0;
-  border: 1px solid #2a2a2a;
+  background: var(--bg, #0d0d0d);
+  color: var(--text, #f0f0f0);
+  border: 1px solid var(--border-input, #2a2a2a);
   border-radius: 8px;
   padding: 0.6rem 0.75rem;
   font-size: 0.88rem;
@@ -64,14 +64,14 @@
 }
 
 .textarea:focus {
-  border-color: #e74c3c;
+  border-color: var(--accent, #e74c3c);
 }
 
 .urlInput {
   width: 100%;
-  background: #0d0d0d;
-  color: #f0f0f0;
-  border: 1px solid #2a2a2a;
+  background: var(--bg, #0d0d0d);
+  color: var(--text, #f0f0f0);
+  border: 1px solid var(--border-input, #2a2a2a);
   border-radius: 8px;
   padding: 0.5rem 0.75rem;
   font-size: 0.88rem;
@@ -81,7 +81,7 @@
 }
 
 .urlInput:focus {
-  border-color: #e74c3c;
+  border-color: var(--accent, #e74c3c);
 }
 
 .urlInput:disabled {
@@ -90,7 +90,7 @@
 
 .submitBtn {
   align-self: flex-end;
-  background: #e74c3c;
+  background: var(--accent, #e74c3c);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -111,12 +111,12 @@
 }
 
 .hint {
-  color: #555;
+  color: var(--text-faint, #555);
   font-size: 0.75rem;
 }
 
 .error {
-  color: #e74c3c;
+  color: var(--accent, #e74c3c);
   font-size: 0.8rem;
   padding: 0.5rem 1rem 0.75rem;
 }

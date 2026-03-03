@@ -5,9 +5,9 @@
 }
 
 .toggle {
-  background: #111;
-  color: #aaa;
-  border: 1px solid #1e1e1e;
+  background: var(--bg-panel, #111);
+  color: var(--text-muted, #aaa);
+  border: 1px solid var(--border, #1e1e1e);
   border-radius: 10px;
   padding: 0.45rem 0.9rem;
   font-size: 0.82rem;
@@ -18,13 +18,13 @@
 }
 
 .toggle:hover {
-  color: #f0f0f0;
-  background: #191919;
+  color: var(--text, #f0f0f0);
+  background: var(--bg-input, #191919);
 }
 
 .panel {
-  background: #111;
-  border: 1px solid #1e1e1e;
+  background: var(--bg-panel, #111);
+  border: 1px solid var(--border, #1e1e1e);
   border-top: none;
   border-radius: 0 0 10px 10px;
   padding: 0.75rem 1rem;
@@ -41,15 +41,15 @@
 }
 
 .label {
-  color: #888;
+  color: var(--text-muted, #888);
   font-size: 0.82rem;
   flex-shrink: 0;
 }
 
 .select {
-  background: #1a1a1a;
-  color: #f0f0f0;
-  border: 1px solid #2a2a2a;
+  background: var(--bg-input, #1a1a1a);
+  color: var(--text, #f0f0f0);
+  border: 1px solid var(--border-input, #2a2a2a);
   border-radius: 6px;
   padding: 0.3rem 0.5rem;
   font-size: 0.82rem;
@@ -67,14 +67,28 @@
   width: 36px;
   height: 28px;
   padding: 2px;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--border-input, #2a2a2a);
   border-radius: 6px;
-  background: #1a1a1a;
+  background: var(--bg-input, #1a1a1a);
   cursor: pointer;
 }
 
 .colorHex {
-  color: #777;
+  color: var(--text-muted, #777);
   font-size: 0.78rem;
   font-family: monospace;
 }
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent, #e74c3c);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.hint {
+  color: var(--text-faint, #555);
+  font-size: 0.75rem;
+}
+

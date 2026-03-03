@@ -11,7 +11,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { ReaderContext, type FileMetadata, type ReadingRecord, type WindowSize, type Orientation } from './readerContextDef';
+import { ReaderContext, type FileMetadata, type ReadingRecord, type WindowSize, type Orientation, type Theme } from './readerContextDef';
 import { loadRecords } from '../utils/recordsUtils';
 
 const LS_KEY_INDEX = 'fastread_word_index';
@@ -19,10 +19,16 @@ const LS_KEY_WPM = 'fastread_wpm';
 const LS_KEY_WINDOW_SIZE = 'fastread_window_size';
 const LS_KEY_HIGHLIGHT_COLOR = 'fastread_highlight_color';
 const LS_KEY_ORIENTATION = 'fastread_orientation';
+const LS_KEY_THEME = 'fastread_theme';
+const LS_KEY_ORP = 'fastread_orp';
+const LS_KEY_PUNCT_PAUSE = 'fastread_punct_pause';
 const DEFAULT_WPM = 250;
 const DEFAULT_WINDOW_SIZE: WindowSize = 3;
 const DEFAULT_HIGHLIGHT_COLOR = '#ff0000';
 const DEFAULT_ORIENTATION: Orientation = 'horizontal';
+const DEFAULT_THEME: Theme = 'night';
+const DEFAULT_ORP = false;
+const DEFAULT_PUNCT_PAUSE = true;
 
 export function ReaderProvider({ children }: { children: React.ReactNode }) {
   const [words, setWordsState] = useState<string[]>([]);
@@ -51,6 +57,17 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
   const [orientation, setOrientationState] = useState<Orientation>(() => {
     const saved = localStorage.getItem(LS_KEY_ORIENTATION);
     return (saved === 'vertical' ? 'vertical' : DEFAULT_ORIENTATION) as Orientation;
+  });
+  const [theme, setThemeState] = useState<Theme>(() => {
+    const saved = localStorage.getItem(LS_KEY_THEME);
+    return (saved === 'day' ? 'day' : DEFAULT_THEME) as Theme;
+  });
+  const [orpEnabled, setOrpEnabledState] = useState<boolean>(() => {
+    return localStorage.getItem(LS_KEY_ORP) === 'true' ? true : DEFAULT_ORP;
+  });
+  const [punctuationPause, setPunctuationPauseState] = useState<boolean>(() => {
+    const saved = localStorage.getItem(LS_KEY_PUNCT_PAUSE);
+    return saved === null ? DEFAULT_PUNCT_PAUSE : saved === 'true';
   });
 
   // Derive 1-indexed current page via binary search over pageBreaks
@@ -145,6 +162,21 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(LS_KEY_ORIENTATION, o);
   }, []);
 
+  const setTheme = useCallback((t: Theme) => {
+    setThemeState(t);
+    localStorage.setItem(LS_KEY_THEME, t);
+  }, []);
+
+  const setOrpEnabled = useCallback((enabled: boolean) => {
+    setOrpEnabledState(enabled);
+    localStorage.setItem(LS_KEY_ORP, String(enabled));
+  }, []);
+
+  const setPunctuationPause = useCallback((enabled: boolean) => {
+    setPunctuationPauseState(enabled);
+    localStorage.setItem(LS_KEY_PUNCT_PAUSE, String(enabled));
+  }, []);
+
   return (
     <ReaderContext.Provider
       value={{
@@ -162,6 +194,9 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
         windowSize,
         highlightColor,
         orientation,
+        theme,
+        orpEnabled,
+        punctuationPause,
         setWords,
         setCurrentWordIndex,
         setIsPlaying,
@@ -177,6 +212,9 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
         setWindowSize,
         setHighlightColor,
         setOrientation,
+        setTheme,
+        setOrpEnabled,
+        setPunctuationPause,
       }}
     >
       {children}

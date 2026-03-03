@@ -8,9 +8,11 @@
  *  - useRSVPEngine hook
  *  - Keyboard shortcuts
  *  - ReaderViewport + Controls + Settings + InputPanel
+ *  - Day/Night theme toggle
+ *  - Help modal
  */
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useReaderContext } from './context/useReaderContext';
 import { useRSVPEngine } from './hooks/useRSVPEngine';
 import ReaderViewport from './components/ReaderViewport';
@@ -23,6 +25,7 @@ import WordNavigator from './components/WordNavigator';
 import ContextPreview from './components/ContextPreview';
 import DonateButton from './components/DonateButton';
 import FeedbackButton from './components/FeedbackButton';
+import HelpModal from './components/HelpModal';
 import { parsePDF } from './parsers/pdfParser';
 import { parseEPUB } from './parsers/epubParser';
 import { parseFile } from './parsers/textParser';
@@ -50,6 +53,8 @@ export default function App() {
     windowSize,
     highlightColor,
     orientation,
+    orpEnabled,
+    theme,
     setWords,
     setCurrentWordIndex,
     setFileMetadata,
@@ -58,12 +63,20 @@ export default function App() {
     setIsPlaying,
     setPageBreaks,
     setRecords,
+    setTheme,
   } = useReaderContext();
 
   const { wordWindow, play, pause, reset, faster, slower, prevWord, nextWord } = useRSVPEngine();
 
+  const [showHelp, setShowHelp] = useState(false);
+
   /** Highlight index is always the center slot of the window */
   const highlightIndex = Math.floor(windowSize / 2);
+
+  /** Apply theme as a data attribute on <html> so CSS variables cascade */
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   /** Persist reading progress to the record whenever reading is paused */
   useEffect(() => {
@@ -218,12 +231,19 @@ export default function App() {
           e.preventDefault();
           nextWord();
           break;
+        case 'Escape':
+          setShowHelp(false);
+          break;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isPlaying, play, pause, faster, slower, prevWord, nextWord]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme(theme === 'night' ? 'day' : 'night');
+  }, [theme, setTheme]);
 
   return (
     <div className="appWrapper">
@@ -236,6 +256,26 @@ export default function App() {
           <p className="subtitle">Speed Reader</p>
         </div>
         <div className="headerActions">
+          {/* Day / Night theme toggle */}
+          <button
+            className="themeBtn"
+            onClick={toggleTheme}
+            title={theme === 'night' ? 'Switch to Day mode' : 'Switch to Night mode'}
+            aria-label={theme === 'night' ? 'Switch to Day mode' : 'Switch to Night mode'}
+          >
+            {theme === 'night' ? '☀' : '🌙'}
+          </button>
+
+          {/* Help button */}
+          <button
+            className="helpBtn"
+            onClick={() => setShowHelp(true)}
+            title="Help & Features"
+            aria-label="Open help"
+          >
+            ?
+          </button>
+
           <DonateButton />
         </div>
       </header>
@@ -248,6 +288,7 @@ export default function App() {
               highlightIndex={highlightIndex}
               highlightColor={highlightColor}
               orientation={orientation}
+              orpEnabled={orpEnabled}
               isLoading={isLoading}
               loadingProgress={loadingProgress}
               hasWords={words.length > 0}
@@ -302,6 +343,8 @@ export default function App() {
           Techscript
         </a>
       </footer>
+
+      {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
     </div>
   );
 }

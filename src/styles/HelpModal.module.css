@@ -1,0 +1,151 @@
+/* HelpModal.module.css */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 2rem 1rem;
+  backdrop-filter: blur(2px);
+}
+
+.modal {
+  background: var(--bg-panel, #111);
+  border: 1px solid var(--border, #1e1e1e);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.4rem 0.9rem;
+  border-bottom: 1px solid var(--border, #1e1e1e);
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text, #f0f0f0);
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted, #888);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+  line-height: 1;
+}
+
+.closeBtn:hover {
+  color: var(--text, #f0f0f0);
+  background: var(--bg-input, #1a1a1a);
+}
+
+.body {
+  padding: 1.25rem 1.4rem 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text, #f0f0f0);
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--border, #1e1e1e);
+}
+
+.subTitle {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-muted, #888);
+  margin-top: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.section p {
+  color: var(--text, #f0f0f0);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.steps {
+  color: var(--text, #f0f0f0);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  padding-left: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.steps li {
+  padding-left: 0.2rem;
+}
+
+.steps ul {
+  margin-top: 0.3rem;
+  margin-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.featureList {
+  color: var(--text, #f0f0f0);
+  font-size: 0.88rem;
+  line-height: 1.65;
+  padding-left: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.featureList strong {
+  color: var(--text, #f0f0f0);
+}
+
+.shortcutTable {
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  color: var(--text, #f0f0f0);
+}
+
+.shortcutTable td {
+  padding: 0.3rem 0.8rem 0.3rem 0;
+  vertical-align: middle;
+}
+
+.shortcutTable td:first-child {
+  min-width: 6rem;
+}
+
+.note {
+  color: var(--text-muted, #888) !important;
+  font-size: 0.8rem !important;
+  margin-top: 0.25rem;
+}

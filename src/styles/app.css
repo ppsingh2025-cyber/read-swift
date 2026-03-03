@@ -8,18 +8,64 @@
   padding: 0;
 }
 
+/* ─── Night theme (default) ──────────────────────────────────── */
 :root {
   color-scheme: dark;
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   font-size: 16px;
+
+  --bg:           #060606;
+  --bg-panel:     #111;
+  --bg-input:     #1a1a1a;
+  --border:       #1e1e1e;
+  --border-input: #2a2a2a;
+  --text:         #f0f0f0;
+  --text-muted:   #888;
+  --text-faint:   #444;
+  --accent:       #e74c3c;
+  --kbd-bg:       #1a1a1a;
+  --kbd-border:   #333;
+  --kbd-text:     #888;
+
+  /* Viewport-specific tokens (consumed by ReaderViewport.module.css) */
+  --vp-bg:          #0a0a0a;
+  --vp-border:      #151515;
+  --vp-text:        #d4d4d4;
+  --vp-placeholder: #666;
+  /* Fixed slot width: wide enough for most English words */
+  --slot-width:     10ch;
+}
+
+/* ─── Day theme ──────────────────────────────────────────────── */
+[data-theme='day'] {
+  color-scheme: light;
+
+  --bg:           #f5f5f0;
+  --bg-panel:     #eeeeea;
+  --bg-input:     #e6e6e1;
+  --border:       #d8d8d0;
+  --border-input: #c8c8c0;
+  --text:         #1a1a1a;
+  --text-muted:   #555;
+  --text-faint:   #999;
+  --accent:       #c0392b;
+  --kbd-bg:       #e6e6e1;
+  --kbd-border:   #c8c8c0;
+  --kbd-text:     #666;
+
+  --vp-bg:          #eaeae5;
+  --vp-border:      #d0d0c8;
+  --vp-text:        #222;
+  --vp-placeholder: #999;
 }
 
 body {
-  background: #060606;
-  color: #f0f0f0;
+  background: var(--bg);
+  color: var(--text);
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  transition: background 0.2s, color 0.2s;
 }
 
 #root {
@@ -75,7 +121,7 @@ body {
 }
 
 .subtitle {
-  color: #555;
+  color: var(--text-muted);
   font-size: 0.72rem;
   margin-top: 0.1rem;
   letter-spacing: 0.02em;
@@ -113,7 +159,7 @@ body {
 
 .shortcuts {
   text-align: center;
-  color: #444;
+  color: var(--text-faint);
   font-size: 0.78rem;
 }
 
@@ -125,13 +171,60 @@ body {
 }
 
 kbd {
-  background: #1a1a1a;
-  border: 1px solid #333;
+  background: var(--kbd-bg);
+  border: 1px solid var(--kbd-border);
   border-radius: 4px;
   padding: 0.1em 0.4em;
   font-size: 0.75rem;
   font-family: monospace;
-  color: #888;
+  color: var(--kbd-text);
+}
+
+/* ─── Theme toggle button ────────────────────────────────────── */
+
+.themeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.themeBtn:hover {
+  color: var(--text);
+  background: var(--bg-input);
+}
+
+/* ─── Help button ────────────────────────────────────────────── */
+
+.helpBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.helpBtn:hover {
+  color: var(--text);
+  background: var(--bg-input);
 }
 
 /* ─── Footer: Techscript branding ───────────────────────────────── */
@@ -148,7 +241,7 @@ kbd {
   align-items: center;
   justify-content: center;
   padding: 0.75rem 1rem;
-  color: #444;
+  color: var(--text-faint);
   font-size: 0.78rem;
   gap: 0.25rem;
 }
@@ -157,14 +250,14 @@ kbd {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  color: #888;
+  color: var(--text-muted);
   text-decoration: none;
   font-weight: 600;
   transition: color 0.15s;
 }
 
 .techscriptLink:hover {
-  color: #e74c3c;
+  color: var(--accent);
 }
 
 .footerIcon {
@@ -175,17 +268,17 @@ kbd {
 }
 
 .footerSep {
-  color: #333;
+  color: var(--text-faint);
   margin: 0 0.15rem;
 }
 
 .analyticsLink {
-  color: #555;
+  color: var(--text-faint);
   text-decoration: none;
   font-size: 0.78rem;
   transition: color 0.15s;
 }
 
 .analyticsLink:hover {
-  color: #888;
+  color: var(--text-muted);
 }

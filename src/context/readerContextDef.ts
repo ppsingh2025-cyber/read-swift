@@ -28,6 +28,9 @@ export type WindowSize = 1 | 3 | 5;
 /** Display orientation of the word window */
 export type Orientation = 'horizontal' | 'vertical';
 
+/** App colour theme */
+export type Theme = 'day' | 'night';
+
 interface ReaderState {
   words: string[];
   currentWordIndex: number;
@@ -49,6 +52,12 @@ interface ReaderState {
   highlightColor: string;
   /** Layout direction of the rolling word window */
   orientation: Orientation;
+  /** UI colour theme */
+  theme: Theme;
+  /** Whether to use Optimal Recognition Point (ORP) highlighting */
+  orpEnabled: boolean;
+  /** Whether to add extra pause after punctuation */
+  punctuationPause: boolean;
 }
 
 interface ReaderActions {
@@ -68,6 +77,9 @@ interface ReaderActions {
   setWindowSize: (size: WindowSize) => void;
   setHighlightColor: (color: string) => void;
   setOrientation: (orientation: Orientation) => void;
+  setTheme: (theme: Theme) => void;
+  setOrpEnabled: (enabled: boolean) => void;
+  setPunctuationPause: (enabled: boolean) => void;
 }
 
 export type ReaderContextValue = ReaderState & ReaderActions;

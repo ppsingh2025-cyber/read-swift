@@ -5,6 +5,8 @@
  *   - Word window size (1 / 3 / 5)
  *   - Highlight color picker (persisted in localStorage via ReaderContext)
  *   - Reading orientation (Horizontal / Vertical)
+ *   - ORP (Optimal Recognition Point) toggle
+ *   - Punctuation pause toggle
  *
  * All changes take effect immediately without reloading.
  */
@@ -15,8 +17,13 @@ import type { WindowSize, Orientation } from '../context/readerContextDef';
 import styles from '../styles/Settings.module.css';
 
 export default function Settings() {
-  const { windowSize, setWindowSize, highlightColor, setHighlightColor, orientation, setOrientation } =
-    useReaderContext();
+  const {
+    windowSize, setWindowSize,
+    highlightColor, setHighlightColor,
+    orientation, setOrientation,
+    orpEnabled, setOrpEnabled,
+    punctuationPause, setPunctuationPause,
+  } = useReaderContext();
 
   const [open, setOpen] = useState(false);
 
@@ -97,6 +104,36 @@ export default function Settings() {
               <option value="horizontal">Horizontal</option>
               <option value="vertical">Vertical</option>
             </select>
+          </label>
+
+          {/* ORP toggle */}
+          <label className={styles.row}>
+            <span className={styles.label}>
+              ORP highlight
+              <span className={styles.hint}> (focal letter)</span>
+            </span>
+            <input
+              type="checkbox"
+              className={styles.checkbox}
+              checked={orpEnabled}
+              onChange={(e) => setOrpEnabled(e.target.checked)}
+              aria-label="Enable Optimal Recognition Point highlighting"
+            />
+          </label>
+
+          {/* Punctuation pause toggle */}
+          <label className={styles.row}>
+            <span className={styles.label}>
+              Punctuation pause
+              <span className={styles.hint}> (. ? ! , ;)</span>
+            </span>
+            <input
+              type="checkbox"
+              className={styles.checkbox}
+              checked={punctuationPause}
+              onChange={(e) => setPunctuationPause(e.target.checked)}
+              aria-label="Pause longer after punctuation"
+            />
           </label>
         </div>
       )}

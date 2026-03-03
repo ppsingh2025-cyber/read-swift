@@ -1,12 +1,21 @@
 /**
  * ReaderViewport
  *
- * Displays the rolling word window in a fixed focal position.
- * The center word is highlighted (bold + configurable color).
- * Orientation can be horizontal or vertical.
+ * Displays the rolling word window with a guaranteed-stable focal position.
  *
- * Performance: only re-renders when window contents change (memo boundary).
- * Layout is fixed-size so no layout shift occurs when words change.
+ * Layout stability guarantee:
+ *   Each word slot is rendered as a fixed-width grid column (--slot-width).
+ *   Because every column is the same width, the center column is ALWAYS at
+ *   the exact horizontal midpoint of the grid, regardless of word length.
+ *   No reflow, no horizontal drift.
+ *
+ * ORP (Optimal Recognition Point):
+ *   When orpEnabled is true the center word is split into three spans:
+ *   [prefix][orp-letter][suffix]. The ORP letter sits at approximately 20%
+ *   from the left of the word (classic Spritz placement), rendered in a
+ *   slightly different hue to guide the fixation point.
+ *   The ORP letter is always aligned to the visual center of its slot so it
+ *   effectively remains at the same screen position as words change.
  */
 
 import { memo } from 'react';
@@ -22,6 +31,8 @@ interface ReaderViewportProps {
   highlightColor: string;
   /** Layout direction for the word window */
   orientation: Orientation;
+  /** Whether to render ORP (Optimal Recognition Point) on the center word */
+  orpEnabled: boolean;
   isLoading: boolean;
   loadingProgress: number;
   hasWords: boolean;
@@ -30,11 +41,46 @@ interface ReaderViewportProps {
 /** Non-breaking space used to keep empty window slots visible without text */
 const EMPTY_SLOT_PLACEHOLDER = '\u00A0';
 
+/**
+ * Calculate the ORP index for a word (0-based character index).
+ * Classic algorithm: position ≈ ceil(length / 5) - 1 (≈ 20% from left).
+ * Single-character words use index 0.
+ */
+function calcOrpIndex(word: string): number {
+  if (!word) return 0;
+  return Math.max(0, Math.ceil(word.length / 5) - 1);
+}
+
+/** Render a center word with the ORP letter highlighted */
+function WordWithOrp({
+  word,
+  baseColor,
+}: {
+  word: string;
+  baseColor: string;
+}) {
+  const idx = calcOrpIndex(word);
+  const before = word.slice(0, idx);
+  const orpChar = word[idx] ?? '';
+  const after = word.slice(idx + 1);
+  return (
+    <>
+      <span>{before}</span>
+      {/* ORP letter — slightly brighter/larger to anchor the eye */}
+      <span className={styles.orpChar} style={{ color: baseColor }}>
+        {orpChar}
+      </span>
+      <span>{after}</span>
+    </>
+  );
+}
+
 const ReaderViewport = memo(function ReaderViewport({
   wordWindow,
   highlightIndex,
   highlightColor,
   orientation,
+  orpEnabled,
   isLoading,
   loadingProgress,
   hasWords,
@@ -62,29 +108,36 @@ const ReaderViewport = memo(function ReaderViewport({
           Upload a file, paste text, or enter a URL to start reading
         </p>
       ) : (
+        /*
+         * Fixed-width grid: each slot gets exactly --slot-width.
+         * With equal columns, slot N is always at the same horizontal
+         * position regardless of word content — no layout shifts.
+         */
         <div
           className={
             orientation === 'vertical' ? styles.windowVertical : styles.windowHorizontal
           }
+          style={{ '--slot-count': wordWindow.length } as React.CSSProperties}
         >
-          {wordWindow.map((word, i) => (
-            <span
-              key={i}
-              className={styles.wordSlot}
-              style={
-                i === highlightIndex
-                  ? { color: highlightColor, fontWeight: 700 }
-                  : undefined
-              }
-              aria-hidden={word === '' ? true : undefined}
-            >
-              {word || EMPTY_SLOT_PLACEHOLDER}
-            </span>
-          ))}
+          {wordWindow.map((word, i) => {
+            const isCenter = i === highlightIndex;
+            return (
+              <span
+                key={i}
+                className={`${styles.wordSlot}${isCenter ? ` ${styles.wordSlotCenter}` : ''}`}
+                style={isCenter ? { color: highlightColor } : undefined}
+                aria-hidden={word === '' ? true : undefined}
+              >
+                {word
+                  ? isCenter && orpEnabled
+                    ? <WordWithOrp word={word} baseColor={highlightColor} />
+                    : word
+                  : EMPTY_SLOT_PLACEHOLDER}
+              </span>
+            );
+          })}
         </div>
       )}
-      {/* Fixed focal guide line */}
-      <div className={styles.focalLine} aria-hidden="true" />
     </div>
   );
 });

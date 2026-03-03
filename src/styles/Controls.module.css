@@ -5,10 +5,10 @@
   flex-direction: column;
   gap: 0.625rem;
   padding: 0.875rem 1rem;
-  background: #111;
+  background: var(--bg-panel, #111);
   border-radius: 14px;
   width: 100%;
-  border: 1px solid #1e1e1e;
+  border: 1px solid var(--border, #1e1e1e);
 }
 
 /* ─── Row 1: Progress ───────────────────────────────────────────── */
@@ -23,7 +23,7 @@
 .wordCounter {
   background: transparent;
   border: none;
-  color: #777;
+  color: var(--text-muted, #777);
   font-size: 0.78rem;
   font-variant-numeric: tabular-nums;
   cursor: pointer;
@@ -36,8 +36,8 @@
 }
 
 .wordCounter:hover {
-  color: #ccc;
-  background: #1e1e1e;
+  color: var(--text, #ccc);
+  background: var(--bg-input, #1e1e1e);
 }
 
 .sep {
@@ -48,7 +48,7 @@
 .progressTrack {
   flex: 1;
   height: 6px;
-  background: #222;
+  background: var(--bg-input, #222);
   border-radius: 3px;
   cursor: pointer;
   overflow: hidden;
@@ -57,7 +57,7 @@
 }
 
 .progressTrack:hover {
-  background: #2a2a2a;
+  background: var(--border-input, #2a2a2a);
 }
 
 .progressFill {
@@ -69,7 +69,7 @@
 }
 
 .progressPct {
-  color: #555;
+  color: var(--text-faint, #555);
   font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -79,7 +79,7 @@
 }
 
 .emptyHint {
-  color: #444;
+  color: var(--text-faint, #444);
   font-size: 0.85rem;
   width: 100%;
   text-align: center;
@@ -89,9 +89,9 @@
   width: 6.5rem;
   height: 1.75rem;
   padding: 0.15rem 0.5rem;
-  background: #1a1a1a;
-  color: #f0f0f0;
-  border: 1px solid #e74c3c;
+  background: var(--bg-input, #1a1a1a);
+  color: var(--text, #f0f0f0);
+  border: 1px solid var(--accent, #e74c3c);
   border-radius: 6px;
   font-size: 0.82rem;
   font-variant-numeric: tabular-nums;
@@ -160,9 +160,9 @@
   height: 44px;
   font-size: 1.65rem;
   line-height: 1;
-  background: #1a1a1a;
-  color: #bbb;
-  border: 1px solid #2a2a2a;
+  background: var(--bg-input, #1a1a1a);
+  color: var(--text-muted, #bbb);
+  border: 1px solid var(--border-input, #2a2a2a);
   border-radius: 12px;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
@@ -171,12 +171,12 @@
 }
 
 .navBtn:hover:not(:disabled) {
-  background: #242424;
-  color: #f0f0f0;
+  background: var(--bg-panel, #242424);
+  color: var(--text, #f0f0f0);
 }
 
 .navBtn:active:not(:disabled) {
-  background: #2e2e2e;
+  background: var(--border-input, #2e2e2e);
 }
 
 .navBtn:disabled {
@@ -227,9 +227,9 @@
   height: 44px;
   font-size: 1.15rem;
   line-height: 1;
-  background: #1a1a1a;
-  color: #999;
-  border: 1px solid #2a2a2a;
+  background: var(--bg-input, #1a1a1a);
+  color: var(--text-muted, #999);
+  border: 1px solid var(--border-input, #2a2a2a);
   border-radius: 12px;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
@@ -237,12 +237,12 @@
 }
 
 .resetBtn:hover:not(:disabled) {
-  background: #242424;
-  color: #f0f0f0;
+  background: var(--bg-panel, #242424);
+  color: var(--text, #f0f0f0);
 }
 
 .resetBtn:active:not(:disabled) {
-  background: #2e2e2e;
+  background: var(--border-input, #2e2e2e);
 }
 
 .resetBtn:disabled {
@@ -266,9 +266,9 @@
   height: 38px;
   font-size: 1.3rem;
   font-weight: 700;
-  background: #1a1a1a;
-  color: #bbb;
-  border: 1px solid #2a2a2a;
+  background: var(--bg-input, #1a1a1a);
+  color: var(--text-muted, #bbb);
+  border: 1px solid var(--border-input, #2a2a2a);
   border-radius: 10px;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
@@ -276,12 +276,12 @@
 }
 
 .speedBtn:hover:not(:disabled) {
-  background: #242424;
-  color: #f0f0f0;
+  background: var(--bg-panel, #242424);
+  color: var(--text, #f0f0f0);
 }
 
 .speedBtn:active:not(:disabled) {
-  background: #2e2e2e;
+  background: var(--border-input, #2e2e2e);
 }
 
 .speedBtn:disabled {
@@ -302,7 +302,7 @@
 }
 
 .wpmLabel {
-  color: #999;
+  color: var(--text-muted, #999);
   font-size: 0.83rem;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
