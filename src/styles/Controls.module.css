@@ -91,7 +91,7 @@
   padding: 0.15rem 0.5rem;
   background: var(--bg-input, #1a1a1a);
   color: var(--text, #f0f0f0);
-  border: 1px solid var(--accent, #e74c3c);
+  border: 1px solid var(--text-muted, #666);
   border-radius: 6px;
   font-size: 0.82rem;
   font-variant-numeric: tabular-nums;

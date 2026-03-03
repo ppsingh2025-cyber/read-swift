@@ -69,6 +69,7 @@ export default function App() {
   const { wordWindow, play, pause, reset, faster, slower, prevWord, nextWord } = useRSVPEngine();
 
   const [showHelp, setShowHelp] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
   /** Highlight index is always the center slot of the window */
   const highlightIndex = Math.floor(windowSize / 2);
@@ -206,7 +207,14 @@ export default function App() {
   /** Global keyboard shortcuts */
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore shortcuts when focus is on an interactive element
+      // Escape always closes overlays regardless of focus
+      if (e.key === 'Escape') {
+        setShowHelp(false);
+        setIsFocused(false);
+        return;
+      }
+
+      // Ignore other shortcuts when focus is on an interactive element
       const tag = (e.target as HTMLElement).tagName.toLowerCase();
       if (tag === 'input' || tag === 'button' || tag === 'select' || tag === 'textarea') return;
 
@@ -231,9 +239,6 @@ export default function App() {
           e.preventDefault();
           nextWord();
           break;
-        case 'Escape':
-          setShowHelp(false);
-          break;
       }
     };
 
@@ -244,6 +249,10 @@ export default function App() {
   const toggleTheme = useCallback(() => {
     setTheme(theme === 'night' ? 'day' : 'night');
   }, [theme, setTheme]);
+
+  const toggleFocus = useCallback(() => {
+    setIsFocused((f) => !f);
+  }, []);
 
   return (
     <div className="appWrapper">
@@ -256,32 +265,34 @@ export default function App() {
           <p className="subtitle">Speed Reader</p>
         </div>
         <div className="headerActions">
-          {/* Day / Night theme toggle */}
-          <button
-            className="themeBtn"
-            onClick={toggleTheme}
-            title={theme === 'night' ? 'Switch to Day mode' : 'Switch to Night mode'}
-            aria-label={theme === 'night' ? 'Switch to Day mode' : 'Switch to Night mode'}
-          >
-            {theme === 'night' ? '☀' : '🌙'}
-          </button>
+          <div className="headerIconGroup">
+            {/* Day / Night theme toggle */}
+            <button
+              className="themeBtn"
+              onClick={toggleTheme}
+              title={theme === 'night' ? 'Switch to Day mode' : 'Switch to Night mode'}
+              aria-label={theme === 'night' ? 'Switch to Day mode' : 'Switch to Night mode'}
+            >
+              {theme === 'night' ? '☀' : '🌙'}
+            </button>
 
-          {/* Help button */}
-          <button
-            className="helpBtn"
-            onClick={() => setShowHelp(true)}
-            title="Help & Features"
-            aria-label="Open help"
-          >
-            ?
-          </button>
+            {/* Help button */}
+            <button
+              className="helpBtn"
+              onClick={() => setShowHelp(true)}
+              title="Help & Features"
+              aria-label="Open help"
+            >
+              ?
+            </button>
+          </div>
 
           <DonateButton />
         </div>
       </header>
 
       <main className="appMain">
-        <div className="readingArea">
+        <div className={`readingArea${isFocused ? ' readingAreaFocused' : ''}`}>
           <div className="viewportWrapper">
             <ReaderViewport
               wordWindow={wordWindow}
@@ -292,9 +303,19 @@ export default function App() {
               isLoading={isLoading}
               loadingProgress={loadingProgress}
               hasWords={words.length > 0}
+              fullHeight={isFocused}
             />
+            {/* Maximize / exit focus mode button */}
+            <button
+              className={`maximizeBtn${isFocused ? ' maximizeBtnVisible' : ''}`}
+              onClick={toggleFocus}
+              title={isFocused ? 'Exit focus mode (Esc)' : 'Enter focus mode'}
+              aria-label={isFocused ? 'Exit focus mode' : 'Enter focus mode'}
+            >
+              {isFocused ? '⊡' : '⊞'}
+            </button>
           </div>
-          <ContextPreview />
+          {!isFocused && <ContextPreview />}
         </div>
 
         <Controls

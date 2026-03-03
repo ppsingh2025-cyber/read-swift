@@ -20,6 +20,13 @@
   }
 }
 
+/* Focus / full-height mode (when reading area is maximized) */
+.viewportFull {
+  height: 100%;
+  min-height: 300px;
+  border-radius: 0;
+}
+
 /* ─── Rolling word window ─────────────────────────────────────── */
 
 /*

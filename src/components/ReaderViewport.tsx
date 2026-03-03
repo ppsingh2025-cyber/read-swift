@@ -37,6 +37,8 @@ interface ReaderViewportProps {
   isLoading: boolean;
   loadingProgress: number;
   hasWords: boolean;
+  /** When true, the viewport expands to fill the available vertical space */
+  fullHeight?: boolean;
 }
 
 /** Non-breaking space used to keep empty window slots visible without text */
@@ -85,9 +87,14 @@ const ReaderViewport = memo(function ReaderViewport({
   isLoading,
   loadingProgress,
   hasWords,
+  fullHeight,
 }: ReaderViewportProps) {
   return (
-    <div className={styles.viewport} aria-live="assertive" aria-atomic="true">
+    <div
+      className={`${styles.viewport}${fullHeight ? ` ${styles.viewportFull}` : ''}`}
+      aria-live="assertive"
+      aria-atomic="true"
+    >
       {isLoading ? (
         <div className={styles.loading}>
           <p>Parsing file… {loadingProgress}%</p>

@@ -143,11 +143,6 @@ body {
   align-items: stretch;
 }
 
-.viewportWrapper {
-  flex: 1;
-  min-width: 0;
-}
-
 /* On narrow screens, stack the context preview below the viewport */
 @media (max-width: 640px) {
   .readingArea {
@@ -180,51 +175,117 @@ kbd {
   color: var(--kbd-text);
 }
 
-/* ─── Theme toggle button ────────────────────────────────────── */
+/* ─── Header icon group (theme + help) ──────────────────────── */
 
-.themeBtn {
+.headerIconGroup {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: var(--bg-panel);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  color: var(--text-muted);
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: color 0.15s, background 0.15s;
-  flex-shrink: 0;
+  gap: 0.25rem;
+  padding-right: 0.625rem;
+  margin-right: 0.125rem;
+  border-right: 1px solid var(--border);
 }
 
-.themeBtn:hover {
-  color: var(--text);
-  background: var(--bg-input);
-}
-
-/* ─── Help button ────────────────────────────────────────────── */
-
+/* Shared base for circular icon buttons */
+.themeBtn,
 .helpBtn {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 36px;
   height: 36px;
-  background: var(--bg-panel);
+  background: transparent;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 50%;
   color: var(--text-muted);
   font-size: 1rem;
-  font-weight: 700;
   cursor: pointer;
-  transition: color 0.15s, background 0.15s;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
   flex-shrink: 0;
 }
 
+.themeBtn:hover,
 .helpBtn:hover {
   color: var(--text);
-  background: var(--bg-input);
+  background: var(--bg-panel);
+  border-color: var(--border-input);
+}
+
+/* ─── Viewport wrapper (relative for the maximize button) ───── */
+
+.viewportWrapper {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ─── Maximize / focus-mode button ─────────────────────────── */
+
+.maximizeBtn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: rgba(0, 0, 0, 0.45);
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, background 0.15s, color 0.15s;
+}
+
+[data-theme='day'] .maximizeBtn {
+  background: rgba(255, 255, 255, 0.55);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+.viewportWrapper:hover .maximizeBtn,
+.maximizeBtnVisible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.maximizeBtn:hover {
+  background: rgba(0, 0, 0, 0.7);
+  color: var(--text);
+}
+
+[data-theme='day'] .maximizeBtn:hover {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+/* ─── Focus mode: reading area takes over the full viewport ── */
+
+.readingAreaFocused {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--bg);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.readingAreaFocused .viewportWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Suppress browser red invalid/out-of-range styling ─────── */
+
+input:invalid,
+input:out-of-range {
+  box-shadow: none;
 }
 
 /* ─── Footer: Techscript branding ───────────────────────────────── */
