@@ -106,6 +106,8 @@
   /* Ensure the ORP word renders above adjacent slots if it ever touches */
   position: relative;
   z-index: 1;
+  /* ORP word must never be truncated or hidden regardless of length */
+  overflow: visible;
 }
 
 /*
