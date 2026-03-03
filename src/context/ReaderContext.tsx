@@ -61,9 +61,13 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
   const [orientation, setOrientationState] = useState<Orientation>(() => {
     const saved = localStorage.getItem(LS_KEY_ORIENTATION);
     if (saved === 'vertical' || saved === 'horizontal') return saved as Orientation;
-    // Adaptive default: mobile (< 640 px) = vertical, tablet/desktop = horizontal
+    // No saved preference yet — derive from screen width once and persist it
+    // immediately so all subsequent visits (on any device/screen size) retain
+    // this initial choice rather than recomputing the adaptive default.
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
-    return isMobile ? 'vertical' : DEFAULT_ORIENTATION;
+    const initial: Orientation = isMobile ? 'vertical' : DEFAULT_ORIENTATION;
+    try { localStorage.setItem(LS_KEY_ORIENTATION, initial); } catch { /* storage unavailable */ }
+    return initial;
   });
   const [theme, setThemeState] = useState<Theme>(() => {
     const saved = localStorage.getItem(LS_KEY_THEME);
