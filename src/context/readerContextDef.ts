@@ -46,7 +46,7 @@ interface ReaderState {
   /** Total number of pages/chapters (equals pageBreaks.length, 0 when unknown) */
   totalPages: number;
   records: ReadingRecord[];
-  /** Number of words shown at once in the rolling window (1, 3, or 5) */
+  /** Number of words shown at once in the rolling window (1–5) */
   windowSize: WindowSize;
   /** CSS color string for the highlighted (center) word */
   highlightColor: string;

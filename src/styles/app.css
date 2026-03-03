@@ -250,6 +250,43 @@ body {
   background: rgba(255, 255, 255, 0.9);
 }
 
+/* ─── Top bar right-side action group ──────────────────────── */
+
+.topBarActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.helpBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: transparent;
+  border: 1px solid var(--border, #1e1e1e);
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+  color: var(--text-muted, #888);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  line-height: 1;
+}
+
+.helpBtn:hover {
+  background: var(--bg-panel, #111);
+  border-color: var(--border-input, #2a2a2a);
+  color: var(--text, #f0f0f0);
+}
+
+[data-theme='day'] .helpBtn:hover {
+  background: var(--bg-panel, #eeeeea);
+}
+
 /* ─── Suppress browser red invalid/out-of-range styling ─────── */
 
 input:invalid,

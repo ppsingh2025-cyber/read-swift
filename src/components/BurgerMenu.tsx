@@ -7,7 +7,7 @@
  *   • Display: window size, orientation, highlight colour
  *   • Reading features: peripheral fade, ORP, punctuation pause, long-word delay
  *   • Reading History (collapsible, re-uses existing component)
- *   • Links: "How to Use" modal, feedback form
+ *   • Links: feedback form
  *   • About: app version, Techscript credit
  *
  * State notes:
@@ -28,10 +28,9 @@ const FEEDBACK_FORM_URL = 'https://forms.gle/dCBSTs4SjvhmA3Zh6';
 
 interface BurgerMenuProps {
   onFileSelect: (file: File) => void;
-  onShowHelp: () => void;
 }
 
-export default function BurgerMenu({ onFileSelect, onShowHelp }: BurgerMenuProps) {
+export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
   const [open, setOpen] = useState(false);
 
   const {
@@ -69,11 +68,6 @@ export default function BurgerMenu({ onFileSelect, onShowHelp }: BurgerMenuProps
     },
     [close, onFileSelect],
   );
-
-  const handleShowHelp = useCallback(() => {
-    close();
-    onShowHelp();
-  }, [close, onShowHelp]);
 
   return (
     <>
@@ -130,7 +124,9 @@ export default function BurgerMenu({ onFileSelect, onShowHelp }: BurgerMenuProps
                     aria-label="Number of words shown at once"
                   >
                     <option value={1}>1 word</option>
+                    <option value={2}>2 words</option>
                     <option value={3}>3 words</option>
+                    <option value={4}>4 words</option>
                     <option value={5}>5 words</option>
                   </select>
                 </label>
@@ -233,9 +229,6 @@ export default function BurgerMenu({ onFileSelect, onShowHelp }: BurgerMenuProps
               {/* ── Links ───────────────────────────────────────── */}
               <section className={styles.section}>
                 <h3 className={styles.sectionTitle}>More</h3>
-                <button className={styles.linkBtn} onClick={handleShowHelp}>
-                  📖 How to Use
-                </button>
                 <a
                   href={FEEDBACK_FORM_URL}
                   target="_blank"
