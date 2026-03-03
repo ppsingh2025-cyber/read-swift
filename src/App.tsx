@@ -23,7 +23,8 @@ import PageNavigator from './components/PageNavigator';
 import WordNavigator from './components/WordNavigator';
 import ContextPreview from './components/ContextPreview';
 import BurgerMenu from './components/BurgerMenu';
-import DonateButton from './components/DonateButton';
+import ThemeToggle from './components/ThemeToggle';
+import AppFooter from './components/AppFooter';
 import HelpModal from './components/HelpModal';
 import { parsePDF } from './parsers/pdfParser';
 import { parseEPUB } from './parsers/epubParser';
@@ -236,7 +237,7 @@ export default function App() {
           <img src="/icons/icon.svg" className="topBarIcon" alt="" aria-hidden="true" />
           <span className="topBarTitle">ReadSwift</span>
         </div>
-        <DonateButton />
+        <ThemeToggle />
       </header>
 
       {/* ── 2. Reading main ─────────────────────────────────────── */}
@@ -297,6 +298,9 @@ export default function App() {
       />
 
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
+
+      {/* ── Footer ──────────────────────────────────────────────── */}
+      {!isFocused && <AppFooter />}
     </div>
   );
 }

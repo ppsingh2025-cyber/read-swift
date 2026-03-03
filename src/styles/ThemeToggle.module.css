@@ -1,0 +1,22 @@
+/* ThemeToggle.module.css */
+
+.toggleBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: transparent;
+  border: 1px solid var(--border, #1e1e1e);
+  border-radius: 10px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+  line-height: 1;
+}
+
+.toggleBtn:hover {
+  background: var(--bg-panel, #111);
+  border-color: var(--border-input, #2a2a2a);
+}

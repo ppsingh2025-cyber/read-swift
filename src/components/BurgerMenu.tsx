@@ -4,17 +4,17 @@
  * Hamburger icon (top-left) that opens a slide-in settings drawer.
  *
  * Drawer contains (in order):
- *   • Day / Night theme toggle
  *   • Display: window size, orientation, highlight colour
  *   • Reading features: peripheral fade, ORP, punctuation pause, long-word delay
  *   • Reading History (collapsible, re-uses existing component)
- *   • Links: feedback form, help modal
+ *   • Links: "How to Use" modal, feedback form
  *   • About: app version, Techscript credit
  *
  * State notes:
  *   - Opens/closes locally (no reading-state side effects).
  *   - All settings write directly to ReaderContext which persists to localStorage.
  *   - Drawer is closed whenever a file is selected from history.
+ *   - Theme toggle is in the top bar (ThemeToggle component), not here.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -35,7 +35,6 @@ export default function BurgerMenu({ onFileSelect, onShowHelp }: BurgerMenuProps
   const [open, setOpen] = useState(false);
 
   const {
-    theme, setTheme,
     windowSize, setWindowSize,
     orientation, setOrientation,
     highlightColor, setHighlightColor,
@@ -118,19 +117,7 @@ export default function BurgerMenu({ onFileSelect, onShowHelp }: BurgerMenuProps
 
             <div className={styles.drawerBody}>
 
-              {/* ── Theme ──────────────────────────────────────── */}
-              <section className={styles.section}>
-                <h3 className={styles.sectionTitle}>Theme</h3>
-                <button
-                  className={styles.themeToggle}
-                  onClick={() => setTheme(theme === 'night' ? 'day' : 'night')}
-                  aria-label={theme === 'night' ? 'Switch to Day mode' : 'Switch to Night mode'}
-                >
-                  {theme === 'night' ? '☀ Day mode' : '🌙 Night mode'}
-                </button>
-              </section>
-
-              {/* ── Display ────────────────────────────────────── */}
+              {/* ── Display ────────────────────────────────────────── */}
               <section className={styles.section}>
                 <h3 className={styles.sectionTitle}>Display</h3>
 
@@ -247,7 +234,7 @@ export default function BurgerMenu({ onFileSelect, onShowHelp }: BurgerMenuProps
               <section className={styles.section}>
                 <h3 className={styles.sectionTitle}>More</h3>
                 <button className={styles.linkBtn} onClick={handleShowHelp}>
-                  ❓ Help &amp; Features
+                  📖 How to Use
                 </button>
                 <a
                   href={FEEDBACK_FORM_URL}
@@ -256,14 +243,6 @@ export default function BurgerMenu({ onFileSelect, onShowHelp }: BurgerMenuProps
                   className={styles.linkBtn}
                 >
                   💬 Send Feedback
-                </a>
-                <a
-                  href="https://buymeacoffee.com/techscriptx"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.linkBtn}
-                >
-                  ☕ Buy me a coffee
                 </a>
               </section>
 
