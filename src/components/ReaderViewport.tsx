@@ -108,12 +108,13 @@ function WordWithOrp({
   const after = word.slice(idx + 1);
   return (
     <>
-      <span>{before}</span>
-      {/* ORP letter — slightly brighter/larger to anchor the eye */}
+      {/* Prefix and suffix: slightly muted so the pivot stands out */}
+      <span className={styles.orpContext}>{before}</span>
+      {/* ORP pivot letter — full color, bold, slightly larger */}
       <span className={styles.orpChar} style={{ color: baseColor }}>
         {orpChar}
       </span>
-      <span>{after}</span>
+      <span className={styles.orpContext}>{after}</span>
     </>
   );
 }

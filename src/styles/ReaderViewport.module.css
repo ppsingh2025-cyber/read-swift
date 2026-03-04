@@ -143,12 +143,20 @@
   z-index: 1;
   /* ORP word must never be truncated regardless of length */
   overflow: visible;
+  /* Stable minimum width prevents jitter when short words replace long words */
+  min-width: 3ch;
+  text-align: center;
 }
 
-/* ORP focal letter — slightly enlarged for eye anchoring */
+/* ORP focal letter — slightly enlarged and full-color for eye anchoring */
 .orpChar {
   font-size: 1.08em;
   font-weight: 900;
+}
+
+/* Non-pivot prefix/suffix letters — slightly muted to draw attention to pivot */
+.orpContext {
+  opacity: 0.78;
 }
 
 .placeholder {

@@ -13,10 +13,11 @@
  * The paste/URL panel slides in above the bottom bar when the 📋 button is pressed.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useReaderContext } from './context/useReaderContext';
 import { useRSVPEngine } from './hooks/useRSVPEngine';
 import { useChunkEngine } from './hooks/useChunkEngine';
+import { useAdaptiveSpeed } from './hooks/useAdaptiveSpeed';
 import ReaderViewport from './components/ReaderViewport';
 import Controls from './components/Controls';
 import InputPanel from './components/InputPanel';
@@ -73,6 +74,7 @@ export default function App() {
     setStructureMap,
     setRecords,
     resetSessionStats,
+    setWpm,
   } = useReaderContext();
 
   const { wordWindow, play, pause, reset, faster, slower, prevWord, nextWord } = useRSVPEngine();
@@ -90,6 +92,16 @@ export default function App() {
     highlightIndex,
   );
 
+  // Adaptive speed calibration — tracks rewinds & session completion
+  const { finalizeSession } = useAdaptiveSpeed(
+    currentWordIndex,
+    words.length,
+    isPlaying,
+  );
+
+  // Whether WPM was manually adjusted in this session (suppresses adaptive apply)
+  const manualWpmRef = useRef(false);
+
   const [showHelp, setShowHelp] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [showPaste, setShowPaste] = useState(false);
@@ -100,9 +112,17 @@ export default function App() {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  /** Persist reading progress to the record whenever reading is paused */
+  /** Persist reading progress; finalize adaptive speed when session ends */
   useEffect(() => {
     if (!isPlaying && words.length > 0 && fileMetadata) {
+      // Compute adaptive adjustment and persist new baseline for future sessions.
+      // Only apply to current session WPM if user didn't manually change speed.
+      const newBaseline = finalizeSession(wpm);
+      if (!manualWpmRef.current && newBaseline !== wpm) {
+        setWpm(newBaseline);
+      }
+      manualWpmRef.current = false; // reset manual flag after each session
+
       const meta = records.find((r) => r.name === fileMetadata.name);
       if (meta) {
         const updated = saveRecord({
@@ -273,10 +293,12 @@ export default function App() {
           break;
         case 'ArrowUp':
           e.preventDefault();
+          manualWpmRef.current = true;
           faster();
           break;
         case 'ArrowDown':
           e.preventDefault();
+          manualWpmRef.current = true;
           slower();
           break;
         case 'ArrowLeft':
@@ -381,8 +403,8 @@ export default function App() {
           onPlay={play}
           onPause={pause}
           onReset={reset}
-          onFaster={faster}
-          onSlower={slower}
+          onFaster={() => { manualWpmRef.current = true; faster(); }}
+          onSlower={() => { manualWpmRef.current = true; slower(); }}
           onPrevWord={prevWord}
           onNextWord={nextWord}
           onPasteToggle={togglePaste}

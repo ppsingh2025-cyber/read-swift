@@ -4,6 +4,7 @@
  * Hamburger icon (top-left) that opens a slide-in settings drawer.
  *
  * Drawer contains (in order):
+ *   • Reading Profile selector (quick presets)
  *   • Display: window size, orientation, highlight colour
  *   • Reading features: peripheral fade, ORP, punctuation pause, long-word delay
  *   • Reading History (collapsible, re-uses existing component)
@@ -15,6 +16,8 @@
  *   - All settings write directly to ReaderContext which persists to localStorage.
  *   - Drawer is closed whenever a file is selected from history.
  *   - Theme toggle is in the top bar (ThemeToggle component), not here.
+ *   - During active reading (isPlaying), Display and Reading Features sections
+ *     are collapsed by default; a "Show Settings" button expands them.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -29,8 +32,22 @@ import { useAuth } from '../auth/useAuth';
 import { clearAllRecords } from '../utils/recordsUtils';
 import toast from 'react-hot-toast';
 import styles from '../styles/BurgerMenu.module.css';
+import {
+  READING_PROFILES,
+  DEFAULT_PROFILE_ID,
+  LS_KEY_PROFILE,
+  type ReadingProfile,
+} from '../config/profiles';
 
 const FEEDBACK_FORM_URL = 'https://forms.gle/dCBSTs4SjvhmA3Zh6';
+
+/** Apply the "Balanced" profile on first launch if no profile was previously saved */
+function initDefaultProfile(): string {
+  if (!localStorage.getItem(LS_KEY_PROFILE)) {
+    localStorage.setItem(LS_KEY_PROFILE, DEFAULT_PROFILE_ID);
+  }
+  return localStorage.getItem(LS_KEY_PROFILE) ?? DEFAULT_PROFILE_ID;
+}
 
 // Named preset highlight colours — 10 options
 const PRESET_COLORS = [
@@ -87,13 +104,28 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
     setWpm,
     records,
     setRecords,
+    isPlaying,
   } = useReaderContext();
 
   const { user } = useAuth();
   const [historyOpen, setHistoryOpen] = useState(false);
   const [colorExpanded, setColorExpanded] = useState(false);
 
+  // Active profile ID (persisted to localStorage)
+  const [activeProfileId, setActiveProfileId] = useState<string>(() => initDefaultProfile());
+
+  // During active reading, advanced settings are collapsed unless user expands them.
+  // Resets every time the menu is opened while playing (so re-opening the menu during
+  // an active session always starts collapsed).
+  const [showAdvancedDuringReading, setShowAdvancedDuringReading] = useState(false);
+
   const panelRef = useRef<HTMLDivElement>(null);
+
+  // Open menu; collapse advanced settings if reading is in progress
+  const handleOpen = useCallback(() => {
+    if (isPlaying) setShowAdvancedDuringReading(false);
+    setOpen(true);
+  }, [isPlaying]);
 
   const close = useCallback(() => setOpen(false), []);
 
@@ -123,6 +155,29 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
     [close, onFileSelect],
   );
 
+  // Apply a reading profile — updates all relevant settings at once
+  const applyProfile = useCallback(
+    (profile: ReadingProfile) => {
+      setWindowSize(profile.windowSize);
+      setOrientation(profile.orientation);
+      setHighlightColor(profile.highlightColor);
+      setChunkMode(profile.chunkMode);
+      setPeripheralFade(profile.peripheralFade);
+      setPunctuationPause(profile.punctuationPause);
+      setLongWordCompensation(profile.longWordCompensation);
+      setMainWordFontSize(profile.mainWordFontSize);
+      setWpm(profile.wpm);
+      setActiveProfileId(profile.id);
+      localStorage.setItem(LS_KEY_PROFILE, profile.id);
+      toast.success(`${profile.name} profile applied`);
+    },
+    [
+      setWindowSize, setOrientation, setHighlightColor, setChunkMode,
+      setPeripheralFade, setPunctuationPause, setLongWordCompensation,
+      setMainWordFontSize, setWpm,
+    ],
+  );
+
   // Reset all user preferences to their defaults
   const handleResetDefaults = useCallback(() => {
     setTheme(DEFAULT_THEME);
@@ -136,6 +191,8 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
     setMainWordFontSize(DEFAULT_MAIN_FONT_SIZE);
     setChunkMode(DEFAULT_CHUNK_MODE);
     setWpm(DEFAULT_WPM);
+    setActiveProfileId(DEFAULT_PROFILE_ID);
+    localStorage.setItem(LS_KEY_PROFILE, DEFAULT_PROFILE_ID);
     // Clear IndexedDB preferences
     IndexedDBService.savePreferences({
       theme: DEFAULT_THEME,
@@ -174,7 +231,7 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
       {/* Hamburger button */}
       <button
         className={styles.burgerBtn}
-        onClick={() => setOpen(true)}
+        onClick={handleOpen}
         aria-label="Open settings menu"
         aria-expanded={open}
         aria-haspopup="dialog"
@@ -211,7 +268,42 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
 
             <div className={styles.drawerBody}>
 
+              {/* ── Reading Profiles ───────────────────────────────── */}
+              <section className={styles.section}>
+                <h3 className={styles.sectionTitle}>Reading Profile</h3>
+                <div className={styles.profileGrid}>
+                  {READING_PROFILES.map((profile) => (
+                    <button
+                      key={profile.id}
+                      className={`${styles.profileBtn}${activeProfileId === profile.id ? ` ${styles.profileBtnActive}` : ''}`}
+                      onClick={() => applyProfile(profile)}
+                      title={profile.description}
+                      aria-pressed={activeProfileId === profile.id}
+                    >
+                      <span className={styles.profileName}>{profile.name}</span>
+                      <span className={styles.profileWpm}>{profile.wpm} WPM</span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+
+              {/* ── Minimal-UI notice during active reading ─────────── */}
+              {isPlaying && !showAdvancedDuringReading && (
+                <div className={styles.readingActiveBar}>
+                  <span className={styles.readingActiveDot} aria-hidden="true" />
+                  <span className={styles.readingActiveLabel}>Reading in progress</span>
+                  <button
+                    className={styles.showSettingsBtn}
+                    onClick={() => setShowAdvancedDuringReading(true)}
+                  >
+                    Show Settings
+                  </button>
+                </div>
+              )}
+
               {/* ── Display ────────────────────────────────────────── */}
+              {(!isPlaying || showAdvancedDuringReading) && (
+              <>
               <section className={styles.section}>
                 <div className={styles.sectionHeader}>
                   <h3 className={styles.sectionTitle}>Display</h3>
@@ -397,6 +489,7 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
                   </select>
                 </label>
               </section>
+              </>) /* end (!isPlaying || showAdvancedDuringReading) */}
 
               {/* ── Reading History ─────────────────────────────── */}
               <section className={styles.section}>
