@@ -161,6 +161,8 @@ body {
   display: flex;
   flex-direction: column;
   transition: background 0.2s, color 0.2s;
+  /* Respect device safe areas (status bar, home indicator) on iOS/Android */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 #root {
@@ -189,6 +191,8 @@ body {
   z-index: 200;
   max-width: 100%;
   background: var(--bg);
+  /* Re-apply safe-area padding since position:fixed overrides body padding */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 /* ─── 1. Top bar ─────────────────────────────────────────────── */
