@@ -4,7 +4,7 @@
  * Once dismissed (or acted on), it never shows again.
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from './useAuth';
 import styles from '../styles/SignInPrompt.module.css';
 
@@ -18,18 +18,19 @@ interface SignInPromptProps {
 
 export default function SignInPrompt({ sessionCompleted, onDismiss }: SignInPromptProps) {
   const { isAuthenticated, isSupabaseConfigured, signInWithGoogle } = useAuth();
-  const [show, setShow] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
-  useEffect(() => {
-    if (!isSupabaseConfigured) return;
-    if (isAuthenticated) return;
-    if (localStorage.getItem(LS_KEY)) return;
-    if (sessionCompleted) setShow(true);
-  }, [sessionCompleted, isAuthenticated, isSupabaseConfigured]);
+  // Derive visibility without a side-effect setState
+  const show =
+    isSupabaseConfigured &&
+    !isAuthenticated &&
+    sessionCompleted &&
+    !dismissed &&
+    !localStorage.getItem(LS_KEY);
 
   const dismiss = () => {
     localStorage.setItem(LS_KEY, '1');
-    setShow(false);
+    setDismissed(true);
     onDismiss();
   };
 

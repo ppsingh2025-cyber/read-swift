@@ -1,31 +1,12 @@
 /**
  * AuthContext
- * React Context that provides authentication state throughout the app.
+ * React Context provider for authentication state.
  * Works gracefully when Supabase is not configured.
  */
 
-import { createContext, useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { AuthService, type AuthUser, type AuthSession } from './AuthService';
-
-export interface AuthContextValue {
-  user: AuthUser | null;
-  session: AuthSession | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  isSupabaseConfigured: boolean;
-  signInWithGoogle: () => Promise<void>;
-  signOut: () => Promise<void>;
-}
-
-export const AuthContext = createContext<AuthContextValue>({
-  user: null,
-  session: null,
-  isLoading: false,
-  isAuthenticated: false,
-  isSupabaseConfigured: false,
-  signInWithGoogle: async () => {},
-  signOut: async () => {},
-});
+import { AuthContext } from './authContextDef';
 
 interface AuthProviderProps {
   children: ReactNode;
