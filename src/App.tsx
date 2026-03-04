@@ -13,7 +13,7 @@
  * The paste/URL panel slides in above the bottom bar when the 📋 button is pressed.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useReaderContext } from './context/useReaderContext';
 import { useRSVPEngine } from './hooks/useRSVPEngine';
 import { useChunkEngine } from './hooks/useChunkEngine';
@@ -95,6 +95,9 @@ export default function App() {
   const [isFocused, setIsFocused] = useState(false);
   const [showPaste, setShowPaste] = useState(false);
   const [sessionCompleted, setSessionCompleted] = useState(false);
+
+  /** Hidden file input for the top bar upload button */
+  const topBarFileInputRef = useRef<HTMLInputElement>(null);
 
   /** Apply theme as a data attribute on <html> so CSS variables cascade */
   useEffect(() => {
@@ -303,7 +306,46 @@ export default function App() {
 
       {/* ── 1. Top bar ──────────────────────────────────────────── */}
       <header className="topBar">
-        <BurgerMenu onFileSelect={handleFileSelect} />
+        <div className="topBarLeft">
+          <BurgerMenu onFileSelect={handleFileSelect} />
+          <input
+            ref={topBarFileInputRef}
+            type="file"
+            accept=".pdf,.epub,.txt,.md,.html,.htm,.rtf,.srt,.docx"
+            className="topBarHiddenInput"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) { handleFileSelect(file); e.currentTarget.value = ''; }
+            }}
+            aria-label="Upload file"
+          />
+          <button
+            className="topBarIconBtn"
+            onClick={() => topBarFileInputRef.current?.click()}
+            disabled={isLoading}
+            title="Upload file (PDF, EPUB, TXT, MD, HTML, RTF, SRT, DOCX)"
+            aria-label="Upload file"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 15V3m0 0l-4 4m4-4l4 4"/>
+              <path d="M2 17v2a2 2 0 002 2h16a2 2 0 002-2v-2"/>
+            </svg>
+          </button>
+          <button
+            className={`topBarIconBtn${showPaste ? ' topBarIconBtnActive' : ''}`}
+            onClick={togglePaste}
+            title="Paste text"
+            aria-label="Toggle paste panel"
+            aria-pressed={showPaste}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="9" y="2" width="6" height="4" rx="1"/>
+              <path d="M9 2H7a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V4a2 2 0 00-2-2h-2"/>
+              <line x1="9" y1="12" x2="15" y2="12"/>
+              <line x1="9" y1="16" x2="13" y2="16"/>
+            </svg>
+          </button>
+        </div>
         <div className="topBarBrand">
           <img
             src={theme === 'day' ? '/icons/icon-day.svg' : '/icons/icon-night.svg'}

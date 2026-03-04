@@ -211,6 +211,7 @@ export default function Controls({
               <path d="M12 15V3m0 0l-4 4m4-4l4 4"/>
               <path d="M2 17v2a2 2 0 002 2h16a2 2 0 002-2v-2"/>
             </svg>
+            <span className={styles.btnLabel}>Upload</span>
           </button>
         )}
 
@@ -229,6 +230,7 @@ export default function Controls({
               <line x1="9" y1="12" x2="15" y2="12"/>
               <line x1="9" y1="16" x2="13" y2="16"/>
             </svg>
+            <span className={styles.btnLabel}>Paste</span>
           </button>
         )}
 
@@ -242,6 +244,7 @@ export default function Controls({
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
+          <span className={styles.btnLabel}>Back</span>
         </button>
 
         <button
@@ -252,17 +255,16 @@ export default function Controls({
           aria-label={isPlaying ? 'Pause' : 'Play'}
         >
           {isPlaying ? (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <circle cx="12" cy="12" r="10" fill="var(--color-primary, #1E3A8A)"/>
-              <rect x="8" y="7" width="3" height="10" rx="1" fill="white"/>
-              <rect x="13" y="7" width="3" height="10" rx="1" fill="white"/>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true">
+              <rect x="6" y="4" width="4" height="16" rx="1"/>
+              <rect x="14" y="4" width="4" height="16" rx="1"/>
             </svg>
           ) : (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <circle cx="12" cy="12" r="10" fill="var(--color-primary, #1E3A8A)"/>
-              <polygon points="10,8 18,12 10,16" fill="white"/>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true">
+              <polygon points="6,4 20,12 6,20"/>
             </svg>
           )}
+          <span className={styles.btnLabel}>{isPlaying ? 'Pause' : 'Play'}</span>
         </button>
 
         <button
@@ -275,6 +277,7 @@ export default function Controls({
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <polyline points="9 18 15 12 9 6"/>
           </svg>
+          <span className={styles.btnLabel}>Next</span>
         </button>
 
         <button
@@ -288,6 +291,7 @@ export default function Controls({
             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
             <path d="M3 3v5h5"/>
           </svg>
+          <span className={styles.btnLabel}>Reset</span>
         </button>
       </div>
 

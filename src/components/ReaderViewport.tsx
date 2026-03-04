@@ -194,20 +194,18 @@ const ReaderViewport = memo(function ReaderViewport({
             aria-hidden="true"
             tabIndex={-1}
           />
-          <button
-            className={styles.placeholderBtn}
-            onClick={handleUploadClick}
-            aria-label="Upload a file to start reading"
-          >
-            📂 Upload File
-          </button>
-          <button
-            className={styles.placeholderBtn}
-            onClick={() => onShowPaste?.()}
-            aria-label="Paste text to start reading"
-          >
-            📋 Paste Text
-          </button>
+          <p className={styles.helpHeading}>Ready to speed-read?</p>
+          <p className={styles.helpBody}>
+            <button className={styles.helpLink} onClick={handleUploadClick} aria-label="Upload a file to start reading">
+              Upload a file
+            </button>
+            {' '}(PDF, EPUB, TXT, MD, HTML, RTF, SRT, DOCX){' '}
+            or{' '}
+            <button className={styles.helpLink} onClick={() => onShowPaste?.()} aria-label="Paste text to start reading">
+              paste text
+            </button>
+            {' '}to get started.
+          </p>
         </div>
       ) : orientation === 'vertical' ? (
         /*
