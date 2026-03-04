@@ -56,12 +56,12 @@ function getColorName(hex: string): string {
 // Default preference values (mirrored from ReaderContext)
 const DEFAULT_WPM = 250;
 const DEFAULT_THEME = 'night' as const;
-const DEFAULT_WINDOW_SIZE = 1 as WindowSize;
+const DEFAULT_WINDOW_SIZE = 3 as WindowSize;
 const DEFAULT_HIGHLIGHT_COLOR = '#ff0000';
 const DEFAULT_ORIENTATION = 'horizontal' as Orientation;
 const DEFAULT_ORP = false;
 const DEFAULT_PUNCT_PAUSE = true;
-const DEFAULT_PERIPHERAL_FADE = false;
+const DEFAULT_PERIPHERAL_FADE = true;
 const DEFAULT_LONG_WORD_COMP = true;
 const DEFAULT_MAIN_FONT_SIZE = 100;
 const DEFAULT_CHUNK_MODE = 'fixed' as ChunkMode;
@@ -90,27 +90,24 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
   } = useReaderContext();
 
   const { user } = useAuth();
-  const [showClearHistoryConfirm, setShowClearHistoryConfirm] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [colorExpanded, setColorExpanded] = useState(false);
 
   const panelRef = useRef<HTMLDivElement>(null);
 
   const close = useCallback(() => setOpen(false), []);
 
-  // Close on Escape — dismiss confirm dialog first, then close menu
+  // Close on Escape
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (showClearHistoryConfirm) {
-          setShowClearHistoryConfirm(false);
-        } else {
-          close();
-        }
+        close();
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [open, close, showClearHistoryConfirm]);
+  }, [open, close]);
 
   // Trap focus inside panel when open (accessibility)
   useEffect(() => {
@@ -169,7 +166,6 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
       } catch { /* ignore Supabase errors */ }
     }
 
-    setShowClearHistoryConfirm(false);
     toast.success('Reading history cleared');
   }, [setRecords, user]);
 
@@ -262,43 +258,52 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
                   </select>
                 </label>
 
+                {/* Compact colour picker: circle preview + expandable swatches */}
                 <div className={styles.row}>
                   <span className={styles.label}>Highlight colour</span>
+                  <button
+                    className={styles.colorCircleBtn}
+                    style={{ background: highlightColor }}
+                    onClick={() => setColorExpanded((v) => !v)}
+                    aria-label={`Highlight colour: ${getColorName(highlightColor)}. Click to change.`}
+                    aria-expanded={colorExpanded}
+                    title={`${getColorName(highlightColor)} — click to change`}
+                  />
                 </div>
-                <div className={styles.colorPalette}>
-                  <div className={styles.colorSwatches}>
-                    {PRESET_COLORS.map((c) => (
-                      <button
-                        key={c.hex}
-                        className={`${styles.colorSwatch}${highlightColor.toLowerCase() === c.hex.toLowerCase() ? ` ${styles.colorSwatchActive}` : ''}`}
-                        style={{ background: c.hex }}
-                        onClick={() => setHighlightColor(c.hex)}
-                        title={c.name}
-                        aria-label={`Highlight colour: ${c.name}`}
-                        aria-pressed={highlightColor.toLowerCase() === c.hex.toLowerCase()}
+                {colorExpanded && (
+                  <div className={styles.colorPalette}>
+                    <div className={styles.colorSwatches}>
+                      {PRESET_COLORS.map((c) => (
+                        <button
+                          key={c.hex}
+                          className={`${styles.colorSwatch}${highlightColor.toLowerCase() === c.hex.toLowerCase() ? ` ${styles.colorSwatchActive}` : ''}`}
+                          style={{ background: c.hex }}
+                          onClick={() => { setHighlightColor(c.hex); setColorExpanded(false); }}
+                          title={c.name}
+                          aria-label={`Highlight colour: ${c.name}`}
+                          aria-pressed={highlightColor.toLowerCase() === c.hex.toLowerCase()}
+                        />
+                      ))}
+                    </div>
+                    <div className={styles.customColorRow}>
+                      <input
+                        type="color"
+                        className={styles.customColorInput}
+                        value={highlightColor}
+                        onChange={(e) => setHighlightColor(e.target.value)}
+                        aria-label="Custom highlight colour"
+                        title="Custom colour"
                       />
-                    ))}
+                      <span className={styles.customColorLabel}>Custom colour</span>
+                      <span className={styles.customColorHex}>{highlightColor}</span>
+                    </div>
                   </div>
-                  <div className={styles.colorLabel}>{getColorName(highlightColor)}</div>
-                  <div className={styles.customColorRow}>
-                    <input
-                      type="color"
-                      className={styles.customColorInput}
-                      value={highlightColor}
-                      onChange={(e) => setHighlightColor(e.target.value)}
-                      aria-label="Custom highlight colour"
-                      title="Custom colour"
-                    />
-                    <span className={styles.customColorLabel}>Custom colour</span>
-                    <span className={styles.customColorHex}>{highlightColor}</span>
-                  </div>
-                </div>
+                )}
 
-                {windowSize === 1 && (
                 <label className={styles.row}>
                   <span className={styles.label}>
                     Main word size
-                    <span className={styles.hint}> (ORP word)</span>
+                    <span className={styles.hint}> (focus word)</span>
                   </span>
                   <select
                     className={styles.select}
@@ -314,7 +319,6 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
                     <option value={180}>Huge (180%)</option>
                   </select>
                 </label>
-                )}
               </section>
 
               {/* ── Reading features ───────────────────────────── */}
@@ -397,13 +401,25 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
               {/* ── Reading History ─────────────────────────────── */}
               <section className={styles.section}>
                 <div className={styles.sectionHeader}>
-                  <h3 className={styles.sectionTitle}>
-                    Reading History{records.length > 0 && <span className={styles.sectionCount}> ({records.length})</span>}
-                  </h3>
+                  <button
+                    className={styles.accordionToggle}
+                    onClick={() => setHistoryOpen((v) => !v)}
+                    aria-expanded={historyOpen}
+                    aria-controls="history-accordion-body"
+                  >
+                    <h3 className={styles.sectionTitle}>
+                      Reading History{records.length > 0 && <span className={styles.sectionCount}> ({records.length})</span>}
+                    </h3>
+                    <span
+                      className={styles.chevron}
+                      style={{ transform: historyOpen ? 'rotate(0deg)' : 'rotate(-90deg)' }}
+                      aria-hidden="true"
+                    >▼</span>
+                  </button>
                   {records.length > 0 && (
                   <button
                     className={`${styles.sectionActionBtn} ${styles.sectionActionBtnDanger}`}
-                    onClick={() => setShowClearHistoryConfirm(true)}
+                    onClick={handleClearHistory}
                     title="Clear Reading History"
                     aria-label="Clear Reading History"
                   >
@@ -418,32 +434,13 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
                   </button>
                   )}
                 </div>
-                {records.length === 0 ? (
-                  <p className={styles.emptyHint}>No reading history yet.</p>
-                ) : (
-                  <ReadingHistory onFileSelect={handleHistoryFileSelect} />
-                )}
-
-                {/* Inline confirmation for clearing history */}
-                {showClearHistoryConfirm && (
-                  <div className={styles.confirmBox} role="dialog" aria-modal="true" aria-label="Confirm clear reading history">
-                    <p className={styles.confirmText}>
-                      Are you sure you want to permanently delete all reading history?
-                    </p>
-                    <div className={styles.confirmActions}>
-                      <button
-                        className={`${styles.linkBtn} ${styles.dangerBtn}`}
-                        onClick={handleClearHistory}
-                      >
-                        Yes, delete all
-                      </button>
-                      <button
-                        className={styles.linkBtn}
-                        onClick={() => setShowClearHistoryConfirm(false)}
-                      >
-                        Cancel
-                      </button>
-                    </div>
+                {historyOpen && (
+                  <div id="history-accordion-body">
+                    {records.length === 0 ? (
+                      <p className={styles.emptyHint}>No reading history yet.</p>
+                    ) : (
+                      <ReadingHistory onFileSelect={handleHistoryFileSelect} />
+                    )}
                   </div>
                 )}
               </section>

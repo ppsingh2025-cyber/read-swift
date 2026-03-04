@@ -317,38 +317,71 @@
 /* Compress the control bar so the reading area gets more vertical space */
 @media (max-height: 480px) and (orientation: landscape) {
   .controls {
-    padding: 0.3rem 0.75rem;
-    gap: 0.25rem;
+    padding: 0.3rem 0.5rem;
+    gap: 0.2rem;
   }
 
   .progressRow {
-    min-height: 1rem;
+    min-height: 0.875rem;
+  }
+
+  .wordCounter {
+    font-size: 0.68rem;
+    padding: 0.1rem 0.3rem;
+  }
+
+  .progressPct {
+    font-size: 0.68rem;
+    min-width: 2rem;
   }
 
   .playbackRow {
-    gap: 0.4rem;
+    gap: 0.3rem;
+    flex-wrap: nowrap;
   }
 
   .navBtn,
   .uploadBtn,
-  .resetBtn,
+  .resetBtn {
+    width: 38px;
+    min-height: 40px;
+    padding: 2px 0;
+  }
+
+  .navBtn svg,
+  .uploadBtn svg,
+  .resetBtn svg {
+    width: 16px;
+    height: 16px;
+  }
+
   .playBtn {
-    width: 40px;
-    min-height: 44px;
+    width: 42px;
+    min-height: 40px;
+    padding: 2px 0;
+  }
+
+  .playBtn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .btnLabel {
+    font-size: 0.48rem;
   }
 
   .speedRow {
-    gap: 0.3rem;
+    gap: 0.25rem;
   }
 
   .speedBtn {
-    width: 38px;
-    height: 30px;
-    font-size: 1.1rem;
+    width: 34px;
+    height: 28px;
+    font-size: 1rem;
   }
 
   .wpmLabel {
-    font-size: 0.75rem;
-    min-width: 3.8rem;
+    font-size: 0.68rem;
+    min-width: 3.4rem;
   }
 }

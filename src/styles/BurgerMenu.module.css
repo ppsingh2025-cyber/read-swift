@@ -281,7 +281,59 @@
   font-family: monospace;
 }
 
-/* ── Colour palette picker ──────────────────────────────────────── */
+/* ── Compact colour circle button ───────────────────────────────── */
+
+.colorCircleBtn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--border-input, #2a2a2a);
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  transition: border-color 0.15s, transform 0.1s;
+  outline: none;
+}
+
+.colorCircleBtn:hover {
+  border-color: var(--text-muted, #888);
+  transform: scale(1.1);
+}
+
+.colorCircleBtn:focus-visible {
+  border-color: var(--state-focus, #22d3ee);
+  outline: 2px solid var(--state-focus, #22d3ee);
+  outline-offset: 2px;
+}
+
+/* ── Accordion toggle for sections ──────────────────────────────── */
+
+.accordionToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  gap: 0.5rem;
+  text-align: left;
+}
+
+.accordionToggle .sectionTitle {
+  margin-bottom: 0;
+}
+
+.chevron {
+  font-size: 0.6rem;
+  color: var(--text-faint, #555);
+  transition: transform 0.2s ease;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+
 
 .colorPalette {
   display: flex;

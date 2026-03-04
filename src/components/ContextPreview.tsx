@@ -20,7 +20,7 @@ import styles from '../styles/ContextPreview.module.css';
 /** Number of words shown before and after the current position */
 const CONTEXT_HALF = 80;
 
-const LS_KEY_EXPANDED = 'contextPreview_expanded';
+const LS_KEY_COLLAPSED = 'contextPreview_collapsed';
 
 export default function ContextPreview() {
   const {
@@ -32,27 +32,21 @@ export default function ContextPreview() {
 
   const activeRef = useRef<HTMLSpanElement>(null);
 
-  const [isExpanded, setIsExpanded] = useState<boolean>(() => {
-    const saved = localStorage.getItem(LS_KEY_EXPANDED);
-    return saved !== null ? saved === 'true' : true;
+  // Track whether the user explicitly collapsed the panel.
+  // When text is loaded (hasWords becomes true) the panel is open unless the
+  // user has manually closed it. Default: not collapsed (will open with text).
+  const [userCollapsed, setUserCollapsed] = useState<boolean>(() => {
+    return localStorage.getItem(LS_KEY_COLLAPSED) === 'true';
   });
 
-  // Always use a rolling window centered on the current word index.
-  // This gives a true continuous reading experience with no page boundaries.
-  const start = Math.max(0, currentWordIndex - CONTEXT_HALF);
-  const end = Math.min(words.length, currentWordIndex + CONTEXT_HALF + 1);
-
-  const visibleWords = words.slice(start, end);
-
-  // Auto-scroll the active word into view on index change
-  useEffect(() => {
-    activeRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-  }, [currentWordIndex]);
+  const hasWords = words.length > 0;
+  // Expanded when text is present AND the user has not explicitly collapsed it
+  const isExpanded = hasWords && !userCollapsed;
 
   const handleToggle = useCallback(() => {
-    setIsExpanded((prev) => {
+    setUserCollapsed((prev) => {
       const next = !prev;
-      localStorage.setItem(LS_KEY_EXPANDED, String(next));
+      localStorage.setItem(LS_KEY_COLLAPSED, String(next));
       return next;
     });
   }, []);
@@ -63,6 +57,16 @@ export default function ContextPreview() {
     },
     [goToWord],
   );
+
+  // Always use a rolling window centered on the current word index.
+  const start = Math.max(0, currentWordIndex - CONTEXT_HALF);
+  const end = Math.min(words.length, currentWordIndex + CONTEXT_HALF + 1);
+  const visibleWords = words.slice(start, end);
+
+  // Auto-scroll the active word into view on index change
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [currentWordIndex]);
 
   if (!words.length || isLoading) return null;
 
