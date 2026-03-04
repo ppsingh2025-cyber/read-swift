@@ -255,15 +255,13 @@ export default function Controls({
           aria-label={isPlaying ? 'Pause' : 'Play'}
         >
           {isPlaying ? (
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <circle cx="12" cy="12" r="10" fill="var(--color-primary, #1E3A8A)"/>
-              <rect x="8" y="7" width="3" height="10" rx="1" fill="white"/>
-              <rect x="13" y="7" width="3" height="10" rx="1" fill="white"/>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true">
+              <rect x="6" y="4" width="4" height="16" rx="1"/>
+              <rect x="14" y="4" width="4" height="16" rx="1"/>
             </svg>
           ) : (
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <circle cx="12" cy="12" r="10" fill="var(--color-primary, #1E3A8A)"/>
-              <polygon points="10,8 18,12 10,16" fill="white"/>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true">
+              <polygon points="6,4 20,12 6,20"/>
             </svg>
           )}
           <span className={styles.btnLabel}>{isPlaying ? 'Pause' : 'Play'}</span>

@@ -211,38 +211,24 @@
   composes: controlBtn;
 }
 
-/* Play/Pause — primary action, circular, prominent */
+/* Play/Pause — primary action; uses same box as other buttons but with a
+   brighter blue accent so it reads as the main CTA at a glance */
 .playBtn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  width: 48px;
-  min-height: 52px;
-  padding: 4px 0;
-  font-size: 1.55rem;
-  line-height: 1;
-  background: transparent;
-  color: #fff;
-  border: none;
-  border-radius: var(--radius-full, 9999px);
-  cursor: pointer;
-  transition: transform 0.1s, filter 0.15s;
-  flex-shrink: 0;
+  composes: controlBtn;
+  background: #1a3a6e;
+  color: #a8cbff;
+  border-color: #2d5aaa;
 }
 
 .playBtn:hover:not(:disabled) {
-  filter: brightness(1.15);
+  background: #224285;
+  color: #c0d8ff;
+  border-color: #4477cc;
 }
 
 .playBtn:active:not(:disabled) {
-  transform: scale(0.93);
-}
-
-.playBtn:disabled {
-  opacity: var(--state-disabled, 0.25);
-  cursor: not-allowed;
+  background: #2a4e90;
+  color: #8fb9ff;
 }
 
 /* Reset */
@@ -319,14 +305,10 @@
     gap: 0.4rem;
   }
 
-  .playBtn {
-    width: 42px;
-    font-size: 1.35rem;
-  }
-
   .navBtn,
   .uploadBtn,
-  .resetBtn {
+  .resetBtn,
+  .playBtn {
     width: 43px;
   }
 }
@@ -347,15 +329,10 @@
     gap: 0.4rem;
   }
 
-  .playBtn {
-    width: 36px;
-    min-height: 44px;
-    font-size: 1.3rem;
-  }
-
   .navBtn,
   .uploadBtn,
-  .resetBtn {
+  .resetBtn,
+  .playBtn {
     width: 40px;
     min-height: 44px;
   }
