@@ -246,19 +246,16 @@ const ReaderViewport = memo(function ReaderViewport({
                   </Fragment>
                 );
               }
-              /* Non-center words — render in the center column only */
+              /* Non-center words — render in grid column 2 via CSS */
               return (
-                <Fragment key={i}>
-                  <span aria-hidden="true" />
-                  <span
-                    className={`${styles.wordSlot} ${styles.orpVertWord}`}
-                    style={opacity < 1 ? { opacity } : undefined}
-                    aria-hidden={word === '' ? true : undefined}
-                  >
-                    {word || EMPTY_SLOT_PLACEHOLDER}
-                  </span>
-                  <span aria-hidden="true" />
-                </Fragment>
+                <span
+                  key={i}
+                  className={`${styles.wordSlot} ${styles.orpVertWord}`}
+                  style={opacity < 1 ? { opacity } : undefined}
+                  aria-hidden={word === '' ? true : undefined}
+                >
+                  {word || EMPTY_SLOT_PLACEHOLDER}
+                </span>
               );
             })}
           </div>

@@ -30,10 +30,12 @@ const PUNCT_MAJOR_MULT = 1.4;    // pause after . ? ! mid-sentence (e.g., abbrev
 const PUNCT_MINOR_MULT = 1.2;    // pause multiplier after , ; :
 /** Minimum active reading time (ms) before WPM is considered valid */
 const MIN_VALID_ACTIVE_MS = 2_000;
-/** Words played at warm-up stage 1 (80% speed) */
+/** Words played at warm-up stage 1 end (at 80% speed) */
 const WARMUP_STAGE1 = 15;
-/** Words played at warm-up stage 2 (ramp from 80% to 100%) */
+/** Words played at warm-up stage 2 end (full speed reached) */
 const WARMUP_STAGE2 = 30;
+/** Duration of the ramp phase (words 16-30): WARMUP_STAGE2 - WARMUP_STAGE1 */
+const WARMUP_RAMP_LENGTH = WARMUP_STAGE2 - WARMUP_STAGE1;
 
 /** Calculate the delay multiplier for a given word.
  * @param word        The word just shown.
@@ -215,7 +217,7 @@ export function useRSVPEngine() {
           if (n <= WARMUP_STAGE1) {
             speedMult = 0.8;
           } else if (n <= WARMUP_STAGE2) {
-            speedMult = 0.8 + 0.2 * ((n - WARMUP_STAGE1) / WARMUP_STAGE1);
+            speedMult = 0.8 + 0.2 * ((n - WARMUP_STAGE1) / WARMUP_RAMP_LENGTH);
           }
         }
 

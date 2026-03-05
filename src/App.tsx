@@ -163,6 +163,9 @@ export default function App() {
       } else {
         setIsFocused(false);
       }
+    } else {
+      // When the setting is turned off while playing, exit focus mode
+      setIsFocused(false);
     }
   }, [isPlaying, autoFocusOnPlay]);
 
