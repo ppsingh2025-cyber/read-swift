@@ -64,6 +64,7 @@ export default function App() {
     theme,
     mainWordFontSize,
     chunkMode,
+    focusMarkerEnabled,
     setWords,
     setCurrentWordIndex,
     setFileMetadata,
@@ -379,6 +380,7 @@ export default function App() {
             mainWordFontSize={mainWordFontSize}
             onFileSelect={handleFileSelect}
             onShowPaste={togglePaste}
+            focusMarkerEnabled={focusMarkerEnabled}
           />
           {/* Maximize / minimize button */}
           <button

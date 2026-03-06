@@ -27,6 +27,7 @@ const LS_KEY_LONG_WORD_COMP = 'fastread_long_word_comp';
 const LS_KEY_MAIN_FONT_SIZE = 'fastread_main_font_size';
 const LS_KEY_CHUNK_MODE = 'fastread_chunk_mode';
 const LS_KEY_SESSION_STATS = 'fastread_session_stats';
+const LS_KEY_FOCUS_MARKER = 'fastread_focus_marker';
 const DEFAULT_WPM = 250;
 const DEFAULT_WINDOW_SIZE: WindowSize = 3;
 const DEFAULT_HIGHLIGHT_COLOR = '#ff0000';
@@ -38,6 +39,7 @@ const DEFAULT_PERIPHERAL_FADE = true;
 const DEFAULT_LONG_WORD_COMP = true;
 const DEFAULT_MAIN_FONT_SIZE = 100;
 const DEFAULT_CHUNK_MODE: ChunkMode = 'fixed';
+const DEFAULT_FOCUS_MARKER = true;
 
 const EMPTY_SESSION_STATS: SessionStats = {
   wordsRead: 0,
@@ -117,6 +119,10 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
       if (saved) return JSON.parse(saved) as SessionStats;
     } catch { /* ignore parse errors */ }
     return { ...EMPTY_SESSION_STATS };
+  });
+  const [focusMarkerEnabled, setFocusMarkerEnabledState] = useState<boolean>(() => {
+    const saved = localStorage.getItem(LS_KEY_FOCUS_MARKER);
+    return saved === null ? DEFAULT_FOCUS_MARKER : saved === 'true';
   });
 
   // Derive 1-indexed current page via binary search over pageBreaks
@@ -272,6 +278,11 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
     try { localStorage.setItem(LS_KEY_SESSION_STATS, JSON.stringify(fresh)); } catch { /* ignore */ }
   }, []);
 
+  const setFocusMarkerEnabled = useCallback((enabled: boolean) => {
+    setFocusMarkerEnabledState(enabled);
+    localStorage.setItem(LS_KEY_FOCUS_MARKER, String(enabled));
+  }, []);
+
   return (
     <ReaderContext.Provider
       value={{
@@ -299,6 +310,7 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
         mainWordFontSize,
         chunkMode,
         sessionStats,
+        focusMarkerEnabled,
         setWords,
         setCurrentWordIndex,
         setIsPlaying,
@@ -325,6 +337,7 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
         setChunkMode,
         updateSessionStats,
         resetSessionStats,
+        setFocusMarkerEnabled,
       }}
     >
       {children}

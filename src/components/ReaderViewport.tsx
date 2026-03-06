@@ -54,6 +54,8 @@ interface ReaderViewportProps {
   onFileSelect?: (file: File) => void;
   /** Called when the user clicks the "Paste Text" placeholder button */
   onShowPaste?: () => void;
+  /** Whether to show the subtle focus marker dot beneath the ORP character */
+  focusMarkerEnabled?: boolean;
 }
 
 /** Non-breaking space used to keep empty window slots visible without text */
@@ -98,9 +100,11 @@ function computeOrpFontSize(
 function WordWithOrp({
   word,
   baseColor,
+  focusMarkerEnabled,
 }: {
   word: string;
   baseColor: string;
+  focusMarkerEnabled: boolean;
 }) {
   const idx = calcOrpIndex(word);
   const before = word.slice(0, idx);
@@ -111,7 +115,10 @@ function WordWithOrp({
       {/* Prefix and suffix: slightly muted so the pivot stands out */}
       <span className={styles.orpContext}>{before}</span>
       {/* ORP pivot letter — full color, bold, slightly larger */}
-      <span className={styles.orpChar} style={{ color: baseColor }}>
+      <span
+        className={`${styles.orpChar}${focusMarkerEnabled ? ` ${styles.orpCharMarker}` : ''}`}
+        style={{ color: baseColor }}
+      >
         {orpChar}
       </span>
       <span className={styles.orpContext}>{after}</span>
@@ -133,6 +140,7 @@ const ReaderViewport = memo(function ReaderViewport({
   mainWordFontSize = 100,
   onFileSelect,
   onShowPaste,
+  focusMarkerEnabled = true,
 }: ReaderViewportProps) {
   /**
    * Peripheral fade: opacity decreases with distance from the center slot.
@@ -236,7 +244,7 @@ const ReaderViewport = memo(function ReaderViewport({
               >
                 {word
                   ? isCenter && orpEnabled
-                    ? <WordWithOrp word={word} baseColor={highlightColor} />
+                    ? <WordWithOrp word={word} baseColor={highlightColor} focusMarkerEnabled={focusMarkerEnabled} />
                     : word
                   : EMPTY_SLOT_PLACEHOLDER}
               </span>
@@ -288,7 +296,7 @@ const ReaderViewport = memo(function ReaderViewport({
                 >
                   {word
                     ? orpEnabled
-                      ? <WordWithOrp word={word} baseColor={highlightColor} />
+                      ? <WordWithOrp word={word} baseColor={highlightColor} focusMarkerEnabled={focusMarkerEnabled} />
                       : word
                     : EMPTY_SLOT_PLACEHOLDER}
                 </span>

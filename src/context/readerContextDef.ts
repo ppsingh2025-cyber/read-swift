@@ -97,6 +97,8 @@ interface ReaderState {
   chunkMode: ChunkMode;
   /** Lightweight session analytics for the current reading session */
   sessionStats: SessionStats;
+  /** Whether to show the focus marker dot beneath the ORP character */
+  focusMarkerEnabled: boolean;
 }
 
 interface ReaderActions {
@@ -130,6 +132,7 @@ interface ReaderActions {
   updateSessionStats: (delta: Partial<SessionStats>) => void;
   /** Reset session analytics (called when a new file is loaded) */
   resetSessionStats: () => void;
+  setFocusMarkerEnabled: (enabled: boolean) => void;
 }
 
 export type ReaderContextValue = ReaderState & ReaderActions;

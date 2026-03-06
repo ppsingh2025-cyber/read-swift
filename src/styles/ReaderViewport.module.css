@@ -154,6 +154,26 @@
   font-weight: 900;
 }
 
+/* Focus marker: subtle dot below the ORP letter via pseudo-element.
+   Only active when the .orpCharMarker class is applied (focusMarkerEnabled). */
+.orpCharMarker {
+  position: relative;
+}
+
+.orpCharMarker::after {
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 2px;
+  bottom: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: currentColor;
+  opacity: 0.3;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
 /* Non-pivot prefix/suffix letters — slightly muted to draw attention to pivot */
 .orpContext {
   opacity: 0.78;

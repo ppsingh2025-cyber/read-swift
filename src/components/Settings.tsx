@@ -23,6 +23,7 @@ export default function Settings() {
     orientation, setOrientation,
     orpEnabled, setOrpEnabled,
     punctuationPause, setPunctuationPause,
+    focusMarkerEnabled, setFocusMarkerEnabled,
   } = useReaderContext();
 
   const [open, setOpen] = useState(false);
@@ -120,6 +121,21 @@ export default function Settings() {
               checked={orpEnabled}
               onChange={(e) => setOrpEnabled(e.target.checked)}
               aria-label="Enable Optimal Recognition Point highlighting"
+            />
+          </label>
+
+          {/* Focus marker toggle — only meaningful when ORP is enabled */}
+          <label className={styles.row}>
+            <span className={styles.label}>
+              Focus marker
+              <span className={styles.hint}> (dot under ORP)</span>
+            </span>
+            <input
+              type="checkbox"
+              className={styles.checkbox}
+              checked={focusMarkerEnabled}
+              onChange={(e) => setFocusMarkerEnabled(e.target.checked)}
+              aria-label="Show focus marker dot beneath the ORP letter"
             />
           </label>
 
