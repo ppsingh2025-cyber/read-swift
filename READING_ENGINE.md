@@ -94,19 +94,21 @@ At 1500 WPM: `60,000 / 1500 = 40 ms` per word.
 
 ### Punctuation Pause (`punctuationPause`)
 
-When enabled, words ending with certain punctuation get a delay multiplier:
+When enabled, words ending with sentence-ending punctuation get a delay multiplier:
 
-| Punctuation | Characters | Multiplier |
-|------------|-----------|------------|
-| Major pause | `.` `?` `!` | × 1.4 |
-| Minor pause | `,` `;` `:` | × 1.2 |
+| Punctuation | Characters | Multiplier | Rationale |
+|------------|-----------|------------|-----------|
+| Sentence end | `.` `?` `!` | × 1.25 | Research-validated (Masson 1983) |
+| Minor pause | `,` `;` `:` | × 1.00 | Removed — not validated, causes stuttering in literary text |
 
 ```typescript
-const PUNCT_MAJOR_MULT = 1.4;  // after . ? !
-const PUNCT_MINOR_MULT = 1.2;  // after , ; :
+const PUNCT_SENTENCE_MULT = 1.25;  // after . ? ! — reduced from 1.4
+// Minor punctuation (,;:) gets no multiplier
 ```
 
-The multiplier is applied to the *following* delay — i.e. the word that ended with punctuation stays on screen longer. This gives the reader time to process clause and sentence boundaries.
+The multiplier is applied to the *following* delay — i.e. the word that ended with punctuation stays on screen longer. This gives the reader time to process sentence boundaries.
+
+**Rationale for removing minor punctuation pauses:** At 250 WPM (240ms base), a 1.2× multiplier adds ~48ms per comma. In comma-dense literary text (Dickens, Dostoevsky), this accumulated stuttering breaks reading flow. Masson (1983) validated only sentence-end pauses; no equivalent research supports comma pauses in RSVP.
 
 ### Long-Word Compensation (`longWordCompensation`)
 
@@ -136,7 +138,7 @@ function wordDelayMultiplier(word, punctuationPause, longWordComp): number {
 }
 ```
 
-Maximum possible multiplier (major punct + very long word): e.g. 1.4 × (1 + 0.04 × 10) = 1.96. At 300 WPM base, a 20-char word ending in `.` displays for ≈ 392 ms.
+Maximum possible multiplier (sentence punct + very long word): e.g. 1.25 × (1 + 0.04 × 10) = 1.75. At 300 WPM base, a 20-char word ending in `.` displays for ≈ 350 ms.
 
 ---
 

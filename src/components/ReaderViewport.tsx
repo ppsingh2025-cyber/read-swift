@@ -180,10 +180,12 @@ const ReaderViewport = memo(function ReaderViewport({
    * Only applied when peripheralFade is enabled AND more than one word is shown.
    */
   const slotOpacity = (i: number): number => {
-    if (!peripheralFade || wordWindow.length === 1) return 1;
+    if (wordWindow.length === 1) return 1;
     // Slot 0 = current word — always full opacity
     if (i === 0) return 1;
-    // Upcoming words fade progressively
+    // Context words: slightly dimmed even without peripheralFade to maintain visual hierarchy
+    if (!peripheralFade) return 0.65;
+    // peripheralFade ON — progressive dimming by slot position
     if (i === 1) return 0.55;
     if (i === 2) return 0.35;
     return 0.2;
@@ -206,6 +208,7 @@ const ReaderViewport = memo(function ReaderViewport({
   // Focal line and ORP only make sense in single-word mode (wordWindow.length === 1).
   // In multi-word mode the eye has context and no fixed anchor is needed.
   const isSingleWord = wordWindow.length === 1;
+  const isMultiWord = !isSingleWord;
   // Color the entire center word only when focalLine is OFF or vertical orientation.
   // When focalLine is ON + horizontal (single-word), only the ORP character gets highlightColor.
   const showFocalLayout = isSingleWord && focalLine && orientation === 'horizontal';
@@ -294,37 +297,61 @@ const ReaderViewport = memo(function ReaderViewport({
             );
           })}
         </div>
+      ) : isMultiWord ? (
+        /*
+         * Multi-word horizontal layout — left-anchored flex row.
+         *
+         * Slot 0 (main word) is always full opacity, never clipped, uses the
+         * same font size as single-word mode. Slots 1+ (context words) are
+         * smaller, dimmed, and self-clip with ellipsis.
+         *
+         * Rules:
+         *  - Container overflow: visible — slot 0 must never be clipped.
+         *  - align-items: baseline — mixed font sizes stay on the same baseline.
+         *  - Slot 0: flex-shrink 0, overflow visible.
+         *  - Slots 1+: flex-shrink 1, overflow hidden, text-overflow: ellipsis.
+         */
+        <div className={styles.wordLayoutMulti}>
+          {wordWindow.map((word, slotIndex) => {
+            const opacity = slotOpacity(slotIndex);
+            if (slotIndex === 0) {
+              const scaledFont = computeOrpFontSize(fullHeight ?? false, userScale);
+              return (
+                <span
+                  key={slotIndex}
+                  className={`${styles.wordSlotCenter} ${styles.mainWordInRow}`}
+                  style={{
+                    ...(shouldColorCenterWord ? { color: highlightColor } : undefined),
+                    ...(scaledFont ? { fontSize: scaledFont } : undefined),
+                  }}
+                  aria-hidden={word === '' ? true : undefined}
+                >
+                  {word || EMPTY_SLOT_PLACEHOLDER}
+                </span>
+              );
+            }
+            return (
+              <span
+                key={slotIndex}
+                className={styles.contextWord}
+                style={opacity < 1 ? { opacity } : undefined}
+                aria-hidden={word === '' ? true : undefined}
+              >
+                {word || EMPTY_SLOT_PLACEHOLDER}
+              </span>
+            );
+          })}
+        </div>
       ) : (
         /*
-         * Horizontal layout with fixed center word.
-         *
-         * The center word is the inline content of .wordLayout (inline-block),
-         * which is centered by text-align on .windowHorizontal. Peripheral
-         * words are absolutely positioned relative to .wordLayout's edges so
-         * they never cause the center word to shift horizontally.
+         * Single-word horizontal layout — centered, existing behavior.
+         * This path is completely unchanged from before multi-word layout was added.
          */
         <div
           className={styles.windowHorizontal}
           style={{ '--slot-count': wordWindow.length } as CSSProperties}
         >
           <div className={styles.wordLayout}>
-            {/* Left peripheral words */}
-            <div className={styles.leftPeripherals}>
-              {wordWindow.slice(0, highlightIndex).map((word, i) => {
-                const opacity = slotOpacity(i);
-                return (
-                  <span
-                    key={i}
-                    className={styles.wordSlot}
-                    style={opacity < 1 ? { opacity } : undefined}
-                    aria-hidden={word === '' ? true : undefined}
-                  >
-                    {word || EMPTY_SLOT_PLACEHOLDER}
-                  </span>
-                );
-              })}
-            </div>
-
             {/* Center (ORP) word — always at fixed horizontal center */}
             {(() => {
               const word = wordWindow[highlightIndex] ?? '';
@@ -347,23 +374,6 @@ const ReaderViewport = memo(function ReaderViewport({
                 </span>
               );
             })()}
-
-            {/* Right peripheral words */}
-            <div className={styles.rightPeripherals}>
-              {wordWindow.slice(highlightIndex + 1).map((word, i) => {
-                const opacity = slotOpacity(highlightIndex + 1 + i);
-                return (
-                  <span
-                    key={i}
-                    className={styles.wordSlot}
-                    style={opacity < 1 ? { opacity } : undefined}
-                    aria-hidden={word === '' ? true : undefined}
-                  >
-                    {word || EMPTY_SLOT_PLACEHOLDER}
-                  </span>
-                );
-              })}
-            </div>
           </div>
         </div>
       )}

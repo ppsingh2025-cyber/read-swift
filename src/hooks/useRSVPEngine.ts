@@ -15,7 +15,8 @@
  *   The window advances by ONE word per tick regardless of window size, keeping
  *   WPM accuracy independent of window size.
  * - Punctuation pause: after a word ending with . ? ! the delay is multiplied by
- *   PUNCT_MAJOR_MULT; after , ; : it is multiplied by PUNCT_MINOR_MULT.
+ *   PUNCT_SENTENCE_MULT (1.25×). Minor punctuation (,;:) gets no additional pause —
+ *   research-validated pauses only (Masson 1983).
  * - Long-word compensation: words longer than LONG_WORD_THRESHOLD get a small
  *   extra delay proportional to excess character count.
  */
@@ -25,8 +26,7 @@ import { useReaderContext } from '../context/useReaderContext';
 
 const LONG_WORD_THRESHOLD = 8;   // characters — pause bonus kicks in above this
 const LONG_WORD_BONUS = 0.04;    // +4% per extra character
-const PUNCT_MAJOR_MULT = 1.4;    // pause multiplier after . ? !
-const PUNCT_MINOR_MULT = 1.2;    // pause multiplier after , ; :
+const PUNCT_SENTENCE_MULT = 1.25; // pause multiplier after . ? ! — reduced from 1.4 (Masson 1983)
 /** Minimum active reading time (ms) before WPM is considered valid */
 const MIN_VALID_ACTIVE_MS = 2_000;
 
@@ -36,8 +36,9 @@ function wordDelayMultiplier(word: string, punctuationPause: boolean, longWordCo
 
   if (punctuationPause) {
     const last = word.slice(-1);
-    if (/[.?!]/.test(last)) mult *= PUNCT_MAJOR_MULT;
-    else if (/[,;:]/.test(last)) mult *= PUNCT_MINOR_MULT;
+    // Sentence-ending punctuation only — research-validated (Masson 1983)
+    if (/[.?!]/.test(last)) mult *= PUNCT_SENTENCE_MULT;
+    // Minor punctuation (,;:) — no pause, not research-validated
   }
 
   if (longWordComp) {

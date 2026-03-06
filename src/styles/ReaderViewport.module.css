@@ -326,3 +326,47 @@
 [data-theme='day'] .focalTickBottom {
   border-color: #999;
 }
+
+/* ── Multi-word layout container ─────────────────────────────────── */
+
+/*
+ * MUST be overflow: visible — NOT overflow: hidden.
+ * Slot 0 (main word) is sacred and must never be clipped.
+ * Context words (slots 1+) handle their own clipping individually.
+ */
+.wordLayoutMulti {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: flex-start;
+  padding-left: var(--space-4, 16px);
+  padding-right: var(--space-4, 16px);
+  width: 100%;
+  box-sizing: border-box;
+  gap: 0.35em;
+  white-space: nowrap;
+  overflow: visible;
+  position: relative;
+  z-index: 1;
+}
+
+/* Slot 0 modifier — applied only in multi-word mode */
+.mainWordInRow {
+  flex-shrink: 0;    /* never compressed by context word siblings */
+  overflow: visible; /* never clipped */
+  white-space: nowrap;
+  /* Font size NOT defined here — inherits from .wordSlotCenter (single-word size) */
+}
+
+/* Slots 1+ — context/upcoming words */
+.contextWord {
+  font-size: clamp(0.85rem, 3.5vw, 1.3rem);
+  font-family: 'Georgia', serif;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 18vw;
+  flex-shrink: 1;
+}
