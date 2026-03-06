@@ -28,6 +28,9 @@ const LS_KEY_MAIN_FONT_SIZE = 'fastread_main_font_size';
 const LS_KEY_CHUNK_MODE = 'fastread_chunk_mode';
 const LS_KEY_SESSION_STATS = 'fastread_session_stats';
 const LS_KEY_FOCUS_MARKER = 'fastread_focus_marker';
+const LS_KEY_FIXED_ORP_ANCHOR = 'fastread_fixed_orp_anchor';
+const LS_KEY_ADAPTIVE_SPEED = 'fastread_adaptive_speed';
+const LS_KEY_FOCAL_GUIDE = 'fastread_focal_guide';
 const DEFAULT_WPM = 250;
 const DEFAULT_WINDOW_SIZE: WindowSize = 3;
 const DEFAULT_HIGHLIGHT_COLOR = '#ff0000';
@@ -123,6 +126,15 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
   const [focusMarkerEnabled, setFocusMarkerEnabledState] = useState<boolean>(() => {
     const saved = localStorage.getItem(LS_KEY_FOCUS_MARKER);
     return saved === null ? DEFAULT_FOCUS_MARKER : saved === 'true';
+  });
+  const [fixedOrpAnchor, setFixedOrpAnchorState] = useState<boolean>(() => {
+    return localStorage.getItem(LS_KEY_FIXED_ORP_ANCHOR) === 'true';
+  });
+  const [adaptiveReadingSpeed, setAdaptiveReadingSpeedState] = useState<boolean>(() => {
+    return localStorage.getItem(LS_KEY_ADAPTIVE_SPEED) === 'true';
+  });
+  const [focalGuideEnabled, setFocalGuideEnabledState] = useState<boolean>(() => {
+    return localStorage.getItem(LS_KEY_FOCAL_GUIDE) === 'true';
   });
 
   // Derive 1-indexed current page via binary search over pageBreaks
@@ -283,6 +295,21 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(LS_KEY_FOCUS_MARKER, String(enabled));
   }, []);
 
+  const setFixedOrpAnchor = useCallback((enabled: boolean) => {
+    setFixedOrpAnchorState(enabled);
+    localStorage.setItem(LS_KEY_FIXED_ORP_ANCHOR, String(enabled));
+  }, []);
+
+  const setAdaptiveReadingSpeed = useCallback((enabled: boolean) => {
+    setAdaptiveReadingSpeedState(enabled);
+    localStorage.setItem(LS_KEY_ADAPTIVE_SPEED, String(enabled));
+  }, []);
+
+  const setFocalGuideEnabled = useCallback((enabled: boolean) => {
+    setFocalGuideEnabledState(enabled);
+    localStorage.setItem(LS_KEY_FOCAL_GUIDE, String(enabled));
+  }, []);
+
   return (
     <ReaderContext.Provider
       value={{
@@ -311,6 +338,9 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
         chunkMode,
         sessionStats,
         focusMarkerEnabled,
+        fixedOrpAnchor,
+        adaptiveReadingSpeed,
+        focalGuideEnabled,
         setWords,
         setCurrentWordIndex,
         setIsPlaying,
@@ -338,6 +368,9 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
         updateSessionStats,
         resetSessionStats,
         setFocusMarkerEnabled,
+        setFixedOrpAnchor,
+        setAdaptiveReadingSpeed,
+        setFocalGuideEnabled,
       }}
     >
       {children}

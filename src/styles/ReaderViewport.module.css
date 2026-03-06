@@ -63,8 +63,11 @@
 /* Inner container sized to the center word — absolute peripherals hang off it */
 .wordLayout {
   position: relative;
-  display: inline-block;
-  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;         /* vertical center locked */
+  min-height: 1.4em;           /* prevents height collapse on single char */
+  white-space: nowrap;         /* prevents line wrapping that shifts height */
+  overflow: hidden;
 }
 
 /* Left peripherals — absolutely positioned, right-aligned against center word */
@@ -146,6 +149,8 @@
   /* Stable minimum width prevents jitter when short words replace long words */
   min-width: 3ch;
   text-align: center;
+  line-height: 1;
+  vertical-align: baseline;
 }
 
 /* ORP focal letter — slightly enlarged and full-color for eye anchoring */
@@ -248,4 +253,51 @@
   background: var(--color-accent, #22d3ee);
   border-radius: var(--radius-sm, 4px);
   transition: width 0.3s ease;
+}
+
+/* ─── Fixed ORP Anchor ────────────────────────────────────────── */
+
+/*
+ * When fixedOrpAnchor is enabled, the word is rendered in a fixed-width
+ * flex container so the ORP character always lands at the exact same
+ * horizontal pixel position, regardless of word length.
+ *
+ * --orp-anchor-width defaults to 12ch and can be overridden inline to
+ * accommodate the longest expected word at a given font size.
+ */
+.orpAnchorContainer {
+  display: inline-flex;
+  align-items: baseline;
+  /* Total width fixed — never changes between words */
+  width: var(--orp-anchor-width, 12ch);
+}
+
+.orpLeft {
+  flex: 1;
+  text-align: right;
+  opacity: 0.78;
+}
+
+.orpRight {
+  flex: 1;
+  text-align: left;
+  opacity: 0.78;
+}
+
+/* ─── Focal Guide Line ────────────────────────────────────────── */
+
+/*
+ * Subtle vertical line through the ORP position — gives the eye a stable
+ * resting point at all times, including when paused. Always behind words.
+ */
+.focalGuide {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  background: color-mix(in srgb, var(--color-accent, #22d3ee) 12%, transparent);
+  pointer-events: none;
+  z-index: 0;
 }

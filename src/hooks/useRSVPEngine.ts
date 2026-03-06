@@ -31,7 +31,12 @@ const PUNCT_MINOR_MULT = 1.2;    // pause multiplier after , ; :
 const MIN_VALID_ACTIVE_MS = 2_000;
 
 /** Calculate the delay multiplier for a given word */
-function wordDelayMultiplier(word: string, punctuationPause: boolean, longWordComp: boolean): number {
+function wordDelayMultiplier(
+  word: string,
+  punctuationPause: boolean,
+  longWordComp: boolean,
+  adaptiveSpeed: boolean,
+): number {
   let mult = 1.0;
 
   if (punctuationPause) {
@@ -47,6 +52,22 @@ function wordDelayMultiplier(word: string, punctuationPause: boolean, longWordCo
     }
   }
 
+  if (adaptiveSpeed) {
+    const len = word.replace(/[^a-zA-Z0-9]/g, '').length;
+
+    // Additional modifiers (stacked on top of existing)
+    if (len > 13)        mult += 0.30;
+    else if (len > 9)    mult += 0.15;
+    else if (len < 4)    mult -= 0.08;
+
+    if (word.length > 0 && (/["']/.test(word[0]) || /["']/.test(word[word.length - 1]))) {
+      mult -= 0.05;
+    }
+
+    // Clamp final multiplier only when adaptive speed is on
+    mult = Math.max(0.85, Math.min(1.40, mult));
+  }
+
   return mult;
 }
 
@@ -59,6 +80,7 @@ export function useRSVPEngine() {
     windowSize,
     punctuationPause,
     longWordCompensation,
+    adaptiveReadingSpeed,
     setCurrentWordIndex,
     setIsPlaying,
     resetReader,
@@ -76,6 +98,7 @@ export function useRSVPEngine() {
   const wpmRef = useRef<number>(wpm);
   const punctuationPauseRef = useRef<boolean>(punctuationPause);
   const longWordCompRef = useRef<boolean>(longWordCompensation);
+  const adaptiveSpeedRef = useRef<boolean>(adaptiveReadingSpeed);
   const wordsRef = useRef<string[]>(words);
   const isPlayingRef = useRef<boolean>(isPlaying);
   // --- Session analytics (pure refs — no stale-closure issues) ---
@@ -92,6 +115,7 @@ export function useRSVPEngine() {
   useEffect(() => { wpmRef.current = wpm; }, [wpm]);
   useEffect(() => { punctuationPauseRef.current = punctuationPause; }, [punctuationPause]);
   useEffect(() => { longWordCompRef.current = longWordCompensation; }, [longWordCompensation]);
+  useEffect(() => { adaptiveSpeedRef.current = adaptiveReadingSpeed; }, [adaptiveReadingSpeed]);
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
 
   // Reset analytics refs when a new file is loaded (words array replaced)
@@ -158,7 +182,7 @@ export function useRSVPEngine() {
 
         // Calculate delay for the NEXT word (the one just shown)
         const currentWord = wordsRef.current[nextIndex] ?? '';
-        const mult = wordDelayMultiplier(currentWord, punctuationPauseRef.current, longWordCompRef.current);
+        const mult = wordDelayMultiplier(currentWord, punctuationPauseRef.current, longWordCompRef.current, adaptiveSpeedRef.current);
         const nextBaseMs = 60_000 / wpmRef.current;
         nextTickRef.current = now + nextBaseMs * mult;
       }
