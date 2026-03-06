@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.0.4]
+### Added
+- 3 app themes: Midnight (default), Warm, Day
+- Theme switcher in burger menu (replaces day/night toggle)
+
+### Changed
+- Peripheral fade is now uniform across all context slots (0.45 when ON, 0.65 when OFF)
+- Mode tiles: emoji stacked above label — 2-line compact layout, no overflow
+- "Word Window" label removed — unified as "Words" everywhere
+- All accent colors unified to var(--color-accent) — progress bar, icons, wizard
+- Custom mode wizard updated: max 3 words, uniform fade, correct defaults
+- Default startup: focalLine ON, peripheral fade ON, 250 WPM, Focus mode, 1 word
+
 ## [1.0.3]
 ### Changed
 - Maximum word window reduced from 5 to 3

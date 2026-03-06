@@ -39,15 +39,15 @@ const DEFAULT_WPM = 250;
 const DEFAULT_WINDOW_SIZE: WindowSize = 1;
 const DEFAULT_HIGHLIGHT_COLOR = '#ff0000';
 const DEFAULT_ORIENTATION: Orientation = 'horizontal';
-const DEFAULT_THEME: Theme = 'night';
-const DEFAULT_ORP = false;
+const DEFAULT_THEME: Theme = 'midnight';
+const DEFAULT_ORP = true;
 const DEFAULT_PUNCT_PAUSE = true;
 const DEFAULT_PERIPHERAL_FADE = true;
 const DEFAULT_LONG_WORD_COMP = true;
 const DEFAULT_MAIN_FONT_SIZE = 100;
 const DEFAULT_CHUNK_MODE: ChunkMode = 'fixed';
 const DEFAULT_FOCUS_MARKER = true;
-const DEFAULT_FOCAL_LINE = false;
+const DEFAULT_FOCAL_LINE = true;
 
 const EMPTY_SESSION_STATS: SessionStats = {
   wordsRead: 0,
@@ -93,8 +93,12 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
     return DEFAULT_ORIENTATION;
   });
   const [theme, setThemeState] = useState<Theme>(() => {
-    const saved = localStorage.getItem(LS_KEY_THEME);
-    return (saved === 'day' ? 'day' : DEFAULT_THEME) as Theme;
+    const saved = localStorage.getItem(LS_KEY_THEME) as Theme | null;
+    const valid: Theme[] = ['midnight', 'warm', 'day'];
+    const resolved = (saved && valid.includes(saved)) ? saved : DEFAULT_THEME;
+    // Apply theme immediately so the DOM reflects the saved preference before first paint
+    document.documentElement.setAttribute('data-theme', resolved);
+    return resolved;
   });
   const [orpEnabled, setOrpEnabledState] = useState<boolean>(() => {
     const saved = localStorage.getItem(LS_KEY_ORP);
@@ -380,6 +384,7 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
   const setTheme = useCallback((t: Theme) => {
     setThemeState(t);
     localStorage.setItem(LS_KEY_THEME, t);
+    document.documentElement.setAttribute('data-theme', t);
   }, []);
 
   const setMainWordFontSize = useCallback((size: number) => {

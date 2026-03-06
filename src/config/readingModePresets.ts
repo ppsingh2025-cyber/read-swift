@@ -39,10 +39,10 @@ export const PRESET_MODES: Record<PresetModeId, {
     icon: '📖',
     description: 'Natural reading with context and rhythm.',
     settings: {
-      windowSize: 1,
+      windowSize: 3,            // 3 words — max (v11)
       orpEnabled: false,
-      focalLine: false,
-      peripheralFade: true,
+      focalLine: true,          // ticks still useful as anchor in multi-word
+      peripheralFade: true,     // uniform 0.45 on context words
       punctuationPause: true,
       longWordCompensation: true,
       chunkMode: 'intelligent',

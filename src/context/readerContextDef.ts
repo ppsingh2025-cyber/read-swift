@@ -31,7 +31,7 @@ export type WindowSize = 1 | 2 | 3;
 export type Orientation = 'horizontal' | 'vertical';
 
 /** App colour theme */
-export type Theme = 'day' | 'night';
+export type Theme = 'midnight' | 'warm' | 'day';
 
 /** Chunking mode: fixed window vs. intelligent phrase-based grouping */
 export type ChunkMode = 'fixed' | 'intelligent';

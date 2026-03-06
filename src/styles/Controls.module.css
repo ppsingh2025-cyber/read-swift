@@ -78,7 +78,7 @@
 
 .progressFill {
   height: 100%;
-  background: #4a7fa0;
+  background: var(--color-accent);
   border-radius: 3px;
   transition: width 0.15s ease;
   pointer-events: none;
@@ -212,24 +212,24 @@
   composes: controlBtn;
 }
 
-/* Play/Pause — primary action; uses same box as other buttons but with a
-   brighter blue accent so it reads as the main CTA at a glance */
+/* Play/Pause — primary action; uses same box as other buttons but with
+   the theme accent color so it reads as the main CTA at a glance */
 .playBtn {
   composes: controlBtn;
-  background: #1a3a6e;
-  color: #a8cbff;
-  border-color: #2d5aaa;
+  background: var(--color-accent);
+  color: var(--bg);
+  border-color: var(--color-accent);
 }
 
 .playBtn:hover:not(:disabled) {
-  background: #224285;
-  color: #c0d8ff;
-  border-color: #4477cc;
+  background: color-mix(in srgb, var(--color-accent) 85%, white);
+  border-color: color-mix(in srgb, var(--color-accent) 85%, white);
+  color: var(--bg);
 }
 
 .playBtn:active:not(:disabled) {
-  background: #2a4e90;
-  color: #8fb9ff;
+  background: color-mix(in srgb, var(--color-accent) 75%, black);
+  color: var(--bg);
 }
 
 /* Reset */
@@ -284,7 +284,7 @@
 
 .slider {
   width: 100%;
-  accent-color: #4a7fa0;
+  accent-color: var(--color-accent);
   cursor: pointer;
 }
 

@@ -59,10 +59,16 @@ function getColorName(hex: string): string {
 
 // Default preference values (mirrored from ReaderContext)
 const DEFAULT_WPM = 250;
-const DEFAULT_THEME = 'night' as const;
+const DEFAULT_THEME = 'midnight' as const;
 const DEFAULT_HIGHLIGHT_COLOR = '#ff0000';
 const DEFAULT_ORIENTATION = 'horizontal' as Orientation;
 const DEFAULT_MAIN_FONT_SIZE = 100;
+
+const THEME_LABELS: Record<'midnight' | 'warm' | 'day', string> = {
+  midnight: 'Midnight',
+  warm: 'Warm',
+  day: 'Day',
+};
 
 // localStorage keys cleared when user resets to defaults
 const RESETTABLE_KEYS = [
@@ -85,7 +91,7 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
     orientation, setOrientation,
     highlightColor, setHighlightColor,
     mainWordFontSize, setMainWordFontSize,
-    setTheme,
+    theme, setTheme,
     setWpm,
     records,
     setRecords,
@@ -280,7 +286,7 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
                 </div>
 
                 <label className={styles.row}>
-                  <span className={styles.label}>Window size</span>
+                  <span className={styles.label}>Words</span>
                   <select
                     className={styles.select}
                     value={windowSize}
@@ -367,6 +373,26 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
                     <option value={180}>Huge (180%)</option>
                   </select>
                 </label>
+
+                {/* ── Theme switcher ──────────────────────────── */}
+                <div className={styles.themeSection}>
+                  <span className={styles.sectionLabel}>THEME</span>
+                  <div className={styles.themeRow}>
+                    {(['midnight', 'warm', 'day'] as const).map(t => (
+                      <button
+                        key={t}
+                        className={`${styles.themeBtn} ${theme === t ? styles.themeBtnActive : ''}`}
+                        onClick={() => setTheme(t)}
+                        aria-pressed={theme === t}
+                        title={THEME_LABELS[t]}
+                      >
+                        <span className={styles.themeSwatch} data-swatch={t} />
+                        <span className={styles.themeLabel}>{THEME_LABELS[t]}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
               </section>
 
               </>) /* end (!isPlaying || showAdvancedDuringReading) */}

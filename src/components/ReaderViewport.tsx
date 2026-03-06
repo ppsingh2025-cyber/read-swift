@@ -85,21 +85,18 @@ function computeMainWordFontSize(
   ].join('');
 }
 
-/**
- * Slot opacity for context words in multi-word mode.
- */
 function getSlotOpacity(
   slotIndex: number,
   windowSize: number,
   peripheralFade: boolean,
 ): number {
   if (windowSize === 1) return 1;
-  if (slotIndex === 0) return 1;
-  if (!peripheralFade) return 0.65;
-  if (slotIndex === 1) return 0.55;
-  // slotIndex 2 = last context slot (windowSize is capped at 3 in v11).
-  // If windowSize were ever raised again, slots beyond 2 would need additional cases.
-  return 0.2;
+  if (slotIndex === 0) return 1;            // main word always full opacity
+  // ALL context slots receive the same uniform value (no progressive gradient).
+  // fade ON:  0.45 — clearly subordinate to the main word
+  // fade OFF: 0.65 — slightly dim to maintain size-based hierarchy
+  // windowSize is capped at 3 in v11; both slots 1 and 2 receive the same value.
+  return peripheralFade ? 0.45 : 0.65;
 }
 
 const ReaderViewport = memo(function ReaderViewport({

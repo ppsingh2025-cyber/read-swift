@@ -5,10 +5,10 @@
  *
  * Steps:
  *   0  — Name (text input, max 20 chars)
- *   1  — How many words at once?
+ *   1  — How many words at once? (1–3)
  *   2  — Highlight the key letter in each word?
  *   3  — Show focal guide tick marks?
- *   4  — Fade out surrounding words?
+ *   4  — Dim upcoming words?
  *   5  — Pause briefly at punctuation?
  *   6  — Slow down for long words?
  *   7  — Group words into natural phrases?
@@ -148,7 +148,7 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
           {/* ── Step 1: Window size ──────────────────────────── */}
           {step === 1 && (
             <div className={styles.stepContent}>
-              <p className={styles.question}>How many words at once?</p>
+              <p className={styles.question}>How many words at once? (1–3)</p>
               <div className={styles.options}>
                 {([1, 2, 3] as const).map((n) => (
                   <button
@@ -205,7 +205,7 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
           {/* ── Step 4: Peripheral fade ──────────────────────── */}
           {step === 4 && (
             <div className={styles.stepContent}>
-              <p className={styles.question}>Fade out surrounding words?</p>
+              <p className={styles.question}>Dim upcoming words?</p>
               <div className={styles.options}>
                 <button
                   className={`${styles.optionBtn} ${settings.peripheralFade ? styles.optionBtnActive : ''}`}

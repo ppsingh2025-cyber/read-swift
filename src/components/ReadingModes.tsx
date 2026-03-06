@@ -69,7 +69,8 @@ export default function ReadingModes() {
             className={`${styles.tab} ${activeMode === id ? styles.tabActive : ''}`}
             onClick={() => selectPresetMode(id)}
           >
-            {PRESET_MODES[id].icon} {PRESET_MODES[id].label}
+            <span className={styles.tabEmoji}>{PRESET_MODES[id].icon}</span>
+            <span className={styles.tabLabel}>{PRESET_MODES[id].label}</span>
           </button>
         ))}
         <button
@@ -78,7 +79,8 @@ export default function ReadingModes() {
           className={`${styles.tab} ${activeMode === 'custom' ? styles.tabActive : ''}`}
           onClick={() => setActiveMode('custom')}
         >
-          ⚙️ Custom
+          <span className={styles.tabEmoji}>⚙️</span>
+          <span className={styles.tabLabel}>Custom</span>
         </button>
       </div>
 
@@ -134,8 +136,8 @@ export default function ReadingModes() {
 
             <label className={styles.toggleRow}>
               <span className={styles.toggleInfo}>
-                <span className={styles.toggleName}>Word Window</span>
-                <span className={styles.toggleDesc}>Words shown at once</span>
+                <span className={styles.toggleName}>Words</span>
+                <span className={styles.toggleDesc}>Words shown at once (1–3)</span>
               </span>
               <select
                 className={styles.select}
