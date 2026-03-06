@@ -105,6 +105,9 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
     records,
     setRecords,
     isPlaying,
+    fixedOrpAnchor, setFixedOrpAnchor,
+    adaptiveReadingSpeed, setAdaptiveReadingSpeed,
+    focalGuideEnabled, setFocalGuideEnabled,
   } = useReaderContext();
 
   const { user } = useAuth();
@@ -487,6 +490,48 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
                     <option value="fixed">Fixed window</option>
                     <option value="intelligent">Intelligent phrases</option>
                   </select>
+                </label>
+
+                <label className={styles.row}>
+                  <span className={styles.label}>
+                    Fixed ORP Anchor
+                    <span className={styles.hint}> (stable eye position)</span>
+                  </span>
+                  <input
+                    type="checkbox"
+                    className={styles.checkbox}
+                    checked={fixedOrpAnchor}
+                    onChange={(e) => setFixedOrpAnchor(e.target.checked)}
+                    aria-label="Keep ORP character at a fixed pixel position"
+                  />
+                </label>
+
+                <label className={styles.row}>
+                  <span className={styles.label}>
+                    Adaptive Reading Speed
+                    <span className={styles.hint}> (per-word pacing)</span>
+                  </span>
+                  <input
+                    type="checkbox"
+                    className={styles.checkbox}
+                    checked={adaptiveReadingSpeed}
+                    onChange={(e) => setAdaptiveReadingSpeed(e.target.checked)}
+                    aria-label="Enable adaptive per-word reading speed"
+                  />
+                </label>
+
+                <label className={styles.row}>
+                  <span className={styles.label}>
+                    Focal Guide Line
+                    <span className={styles.hint}> (eye anchor)</span>
+                  </span>
+                  <input
+                    type="checkbox"
+                    className={styles.checkbox}
+                    checked={focalGuideEnabled}
+                    onChange={(e) => setFocalGuideEnabled(e.target.checked)}
+                    aria-label="Show subtle focal guide line"
+                  />
                 </label>
               </section>
               </>) /* end (!isPlaying || showAdvancedDuringReading) */}

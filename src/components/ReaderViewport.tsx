@@ -56,6 +56,10 @@ interface ReaderViewportProps {
   onShowPaste?: () => void;
   /** Whether to show the subtle focus marker dot beneath the ORP character */
   focusMarkerEnabled?: boolean;
+  /** Whether to use a fixed-width flex container so the ORP char always lands at the same X position */
+  fixedOrpAnchor?: boolean;
+  /** Whether to show a subtle vertical focal guide line through the ORP position */
+  focalGuideEnabled?: boolean;
 }
 
 /** Non-breaking space used to keep empty window slots visible without text */
@@ -101,26 +105,44 @@ function WordWithOrp({
   word,
   baseColor,
   focusMarkerEnabled,
+  fixedOrpAnchor,
 }: {
   word: string;
   baseColor: string;
   focusMarkerEnabled: boolean;
+  fixedOrpAnchor?: boolean;
 }) {
   const idx = calcOrpIndex(word);
   const before = word.slice(0, idx);
   const orpChar = word[idx] ?? '';
   const after = word.slice(idx + 1);
+
+  // Shared ORP pivot span used by both layout paths
+  const orpCharSpan = (
+    <span
+      className={`${styles.orpChar}${focusMarkerEnabled ? ` ${styles.orpCharMarker}` : ''}`}
+      style={{ color: baseColor }}
+    >
+      {orpChar}
+    </span>
+  );
+
+  if (fixedOrpAnchor) {
+    return (
+      <span className={styles.orpAnchorContainer}>
+        <span className={styles.orpLeft}>{before}</span>
+        {orpCharSpan}
+        <span className={styles.orpRight}>{after}</span>
+      </span>
+    );
+  }
+
   return (
     <>
       {/* Prefix and suffix: slightly muted so the pivot stands out */}
       <span className={styles.orpContext}>{before}</span>
       {/* ORP pivot letter — full color, bold, slightly larger */}
-      <span
-        className={`${styles.orpChar}${focusMarkerEnabled ? ` ${styles.orpCharMarker}` : ''}`}
-        style={{ color: baseColor }}
-      >
-        {orpChar}
-      </span>
+      {orpCharSpan}
       <span className={styles.orpContext}>{after}</span>
     </>
   );
@@ -141,6 +163,8 @@ const ReaderViewport = memo(function ReaderViewport({
   onFileSelect,
   onShowPaste,
   focusMarkerEnabled = true,
+  fixedOrpAnchor = false,
+  focalGuideEnabled = false,
 }: ReaderViewportProps) {
   /**
    * Peripheral fade: opacity decreases with distance from the center slot.
@@ -176,6 +200,10 @@ const ReaderViewport = memo(function ReaderViewport({
       aria-live="assertive"
       aria-atomic="true"
     >
+      {/* Focal guide line — behind all words (z-index: 0) */}
+      {focalGuideEnabled && (
+        <div className={styles.focalGuide} aria-hidden="true" />
+      )}
       {isLoading ? (
         <div className={styles.loading}>
           <p>Parsing file… {loadingProgress}%</p>
@@ -244,7 +272,7 @@ const ReaderViewport = memo(function ReaderViewport({
               >
                 {word
                   ? isCenter && orpEnabled
-                    ? <WordWithOrp word={word} baseColor={highlightColor} focusMarkerEnabled={focusMarkerEnabled} />
+                    ? <WordWithOrp word={word} baseColor={highlightColor} focusMarkerEnabled={focusMarkerEnabled} fixedOrpAnchor={fixedOrpAnchor} />
                     : word
                   : EMPTY_SLOT_PLACEHOLDER}
               </span>
@@ -296,7 +324,7 @@ const ReaderViewport = memo(function ReaderViewport({
                 >
                   {word
                     ? orpEnabled
-                      ? <WordWithOrp word={word} baseColor={highlightColor} focusMarkerEnabled={focusMarkerEnabled} />
+                      ? <WordWithOrp word={word} baseColor={highlightColor} focusMarkerEnabled={focusMarkerEnabled} fixedOrpAnchor={fixedOrpAnchor} />
                       : word
                     : EMPTY_SLOT_PLACEHOLDER}
                 </span>

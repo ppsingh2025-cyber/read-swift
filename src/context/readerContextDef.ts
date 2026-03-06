@@ -99,6 +99,12 @@ interface ReaderState {
   sessionStats: SessionStats;
   /** Whether to show the focus marker dot beneath the ORP character */
   focusMarkerEnabled: boolean;
+  /** Whether to use a fixed-width flex container so the ORP char always lands at the same X position */
+  fixedOrpAnchor: boolean;
+  /** Whether to apply adaptive per-word pacing on top of existing modifiers */
+  adaptiveReadingSpeed: boolean;
+  /** Whether to show a subtle vertical focal guide line through the ORP position */
+  focalGuideEnabled: boolean;
 }
 
 interface ReaderActions {
@@ -133,6 +139,9 @@ interface ReaderActions {
   /** Reset session analytics (called when a new file is loaded) */
   resetSessionStats: () => void;
   setFocusMarkerEnabled: (enabled: boolean) => void;
+  setFixedOrpAnchor: (enabled: boolean) => void;
+  setAdaptiveReadingSpeed: (enabled: boolean) => void;
+  setFocalGuideEnabled: (enabled: boolean) => void;
 }
 
 export type ReaderContextValue = ReaderState & ReaderActions;
