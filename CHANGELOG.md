@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.6]
+### Changed
+- All control buttons unified into one visual system matching +/- style
+- Progress bar removed — word count and page pill remain
+- Info row and page navigation merged into one compact row
+- PLAY/PAUSE is visually primary — accent filled, slightly larger
+- RESET is visually muted — faint color, no accent hover
+- Icon + small label below on all action buttons
+- Controls area reorganised from 3 rows to 2 main rows (info + actions + slim WPM row)
+
 ## [1.0.5]
 ### Changed
 - ORP coloring is now a separate toggle from ORP alignment — "Highlight key letter"

@@ -1,404 +1,305 @@
-/* Controls.module.css – sticky bottom bar: progress | playback | speed */
+/* Controls.module.css — v1.0.6: unified button system, no progress bar */
+
+/* ─── Wrapper ───────────────────────────────────────────────────── */
 
 .controls {
   display: flex;
   flex-direction: column;
   gap: var(--space-2, 8px);
-  padding: var(--space-3, 12px) var(--space-4, 16px);
-  background: var(--bg-panel, #0f1117);
-  border-top: 1px solid var(--border, #1e1e1e);
-  /* Stick to the bottom of the viewport while scrolling */
+  padding: var(--space-2, 8px) var(--space-4, 16px) var(--space-3, 12px);
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border);
   position: sticky;
   bottom: 0;
   z-index: 100;
   width: 100%;
 }
 
-/* In landscape sidebar mode, controls fill the sidebar and lose sticky */
 @media (max-height: 480px) and (orientation: landscape) {
   .controls {
     position: static;
     border-top: none;
-    padding: var(--space-2, 8px) var(--space-3, 12px);
+    padding: var(--space-1, 4px) var(--space-3, 12px);
     gap: var(--space-1, 4px);
     flex: 1;
     justify-content: center;
   }
 }
 
-/* ─── Row 1: Progress ───────────────────────────────────────────── */
+/* ─── Row 1: Info ─────────────────────────────────────────────────── */
 
-.progressRow {
+.infoRow {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 0.5rem;
-  min-height: 1.5rem;
-  position: relative;
-}
-
-.wordCounter {
-  background: transparent;
-  border: none;
-  color: var(--text-muted, #777);
-  font-size: 0.78rem;
-  font-variant-numeric: tabular-nums;
-  cursor: pointer;
-  white-space: nowrap;
-  padding: 0.2rem 0.4rem;
-  border-radius: 5px;
-  transition: color 0.15s, background 0.15s;
-  flex-shrink: 0;
-  line-height: 1;
-}
-
-.wordCounter:hover {
-  color: var(--text, #ccc);
-  background: var(--bg-input, #1e1e1e);
-}
-
-.sep {
-  color: #444;
-  margin: 0 0.15rem;
-}
-
-.progressTrack {
-  flex: 1;
-  height: 6px;
-  background: var(--bg-input, #222);
-  border-radius: 3px;
-  cursor: pointer;
-  overflow: hidden;
-  position: relative;
-  transition: background 0.15s;
-}
-
-.progressTrack:hover {
-  background: var(--border-input, #2a2a2a);
-}
-
-.progressFill {
-  height: 100%;
-  background: var(--color-accent);
-  border-radius: 3px;
-  transition: width 0.15s ease;
-  pointer-events: none;
-}
-
-.progressPct {
-  color: var(--text-faint, #555);
-  font-size: 0.75rem;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  flex-shrink: 0;
-  min-width: 2.4rem;
-  text-align: right;
-}
-
-.emptyHint {
-  color: var(--text-faint, #444);
-  font-size: 0.85rem;
   width: 100%;
-  text-align: center;
+  min-height: 28px;
+  padding: 0 var(--space-1, 4px);
 }
 
-.wordInput {
-  width: 6.5rem;
-  height: 1.75rem;
-  padding: 0.15rem 0.5rem;
-  background: var(--bg-input, #1a1a1a);
-  color: var(--text, #f0f0f0);
-  border: 1px solid var(--text-muted, #666);
-  border-radius: 6px;
-  font-size: 0.82rem;
+.wordCount {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--text-faint);
   font-variant-numeric: tabular-nums;
-  text-align: center;
-  outline: none;
-  flex-shrink: 0;
-  -moz-appearance: textfield;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
-.wordInput::-webkit-inner-spin-button,
-.wordInput::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
+/* ─── Row 2: Action buttons ──────────────────────────────────────── */
 
-/* ─── Row 2: Playback ───────────────────────────────────────────── */
-
-.playbackRow {
+.actionRow {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  gap: 0.625rem;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 var(--space-1, 4px);
 }
 
 .hiddenInput {
   display: none;
 }
 
-/* Base control button style — shared by upload, nav, and reset buttons */
+/* ── Base: Upload / Paste / Back / Next ── */
 .controlBtn {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  width: 48px;
-  min-height: 52px;
-  padding: 4px 0;
-  background: #172340;
-  color: #6fa3ef;
-  border: 1px solid #1f3a6b;
-  border-radius: var(--radius-md, 10px);
+  gap: 3px;
+
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-muted);
+
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
   flex-shrink: 0;
 }
 
 .controlBtn:hover:not(:disabled) {
-  background: #1e2f52;
-  color: #8fb9ff;
-  border-color: #3366bb;
+  background: var(--state-hover);
+  color: var(--text);
+  border-color: var(--text-muted);
 }
 
 .controlBtn:active:not(:disabled) {
-  background: #243a66;
-  color: #5080d0;
+  background: var(--state-active);
 }
 
 .controlBtn:disabled {
-  opacity: 0.35;
+  opacity: var(--state-disabled, 0.35);
   cursor: not-allowed;
 }
 
 .controlBtn svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
   flex-shrink: 0;
 }
 
-/* Small text label below button icon */
-.btnLabel {
-  font-size: 0.55rem;
-  line-height: 1;
-  letter-spacing: 0.02em;
+.controlBtnLabel {
+  font-size: 9px;
+  font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1;
   color: inherit;
-  opacity: 0.8;
   pointer-events: none;
   user-select: none;
 }
 
-/* Upload / Paste toggle buttons */
-.uploadBtn {
-  composes: controlBtn;
+/* Active/pressed state for paste toggle */
+.controlBtnActive {
+  background: var(--color-accent-dim);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 
-.btnIcon {
-  width: 20px;
-  height: 20px;
+/* ── PLAY / PAUSE — primary action ── */
+.playBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-sm, 8px);
+  border: none;
+  background: var(--color-accent);
+  color: var(--bg);
+
+  cursor: pointer;
+  transition: background 0.15s;
   flex-shrink: 0;
 }
 
-/* Active/pressed state when paste panel is open */
-.uploadBtnActive {
-  background: #1e3a1e;
-  border-color: #2a6a2a;
-  color: #6fcf6f;
-}
-
-/* Prev / Next word arrows */
-.navBtn {
-  composes: controlBtn;
-}
-
-/* Play/Pause — primary action; uses same box as other buttons but with
-   the theme accent color so it reads as the main CTA at a glance */
-.playBtn {
-  composes: controlBtn;
-  background: var(--color-accent);
-  color: var(--bg);
-  border-color: var(--color-accent);
-}
-
 .playBtn:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-accent) 85%, white);
-  border-color: color-mix(in srgb, var(--color-accent) 85%, white);
-  color: var(--bg);
+  background: color-mix(in srgb, var(--color-accent) 82%, white);
 }
 
 .playBtn:active:not(:disabled) {
-  background: color-mix(in srgb, var(--color-accent) 75%, black);
-  color: var(--bg);
+  background: color-mix(in srgb, var(--color-accent) 70%, black);
 }
 
-/* Reset */
+.playBtn:disabled {
+  opacity: var(--state-disabled, 0.35);
+  cursor: not-allowed;
+}
+
+.playBtn svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+.playBtnLabel {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  color: inherit;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── RESET — muted / secondary ── */
 .resetBtn {
-  composes: controlBtn;
-}
-
-/* ─── Row 3: Speed ──────────────────────────────────────────────── */
-
-.speedRow {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+  gap: 3px;
+
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-faint);
+
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  flex-shrink: 0;
 }
 
-.speedBtn {
+.resetBtn:hover:not(:disabled) {
+  background: var(--state-hover);
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+
+.resetBtn:active:not(:disabled) {
+  background: var(--state-active);
+}
+
+.resetBtn:disabled {
+  opacity: var(--state-disabled, 0.35);
+  cursor: not-allowed;
+}
+
+.resetBtn svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+.resetBtnLabel {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  color: inherit;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ─── Row 3: WPM ─────────────────────────────────────────────────── */
+
+.wpmRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  width: 100%;
+  padding: 0 var(--space-1, 4px);
+}
+
+/* WPM +/- buttons — same visual family as controlBtn but text-only */
+.wpmAdjBtn {
   display: flex;
   align-items: center;
   justify-content: center;
+
   width: 44px;
-  height: 38px;
-  font-size: 1.3rem;
+  height: 44px;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-muted);
+  font-size: 1.25rem;
   font-weight: 700;
-  background: var(--bg-input, #1a1a1a);
-  color: var(--text-muted, #bbb);
-  border: 1px solid var(--border-input, #2a2a2a);
-  border-radius: var(--radius-md, 10px);
+  line-height: 1;
+
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
   flex-shrink: 0;
 }
 
-.speedBtn:hover:not(:disabled) {
-  background: var(--bg-panel, #242424);
-  color: var(--text, #f0f0f0);
+.wpmAdjBtn:hover:not(:disabled) {
+  background: var(--state-hover);
+  color: var(--text);
 }
 
-.speedBtn:active:not(:disabled) {
-  background: var(--border-input, #2e2e2e);
+.wpmAdjBtn:active:not(:disabled) {
+  background: var(--state-active);
 }
 
-.speedBtn:disabled {
-  opacity: 0.3;
+.wpmAdjBtn:disabled {
+  opacity: var(--state-disabled, 0.35);
   cursor: not-allowed;
 }
 
-.sliderWrapper {
+.wpmSlider {
   flex: 1;
-  display: flex;
-  align-items: center;
-}
-
-.slider {
-  width: 100%;
   accent-color: var(--color-accent);
   cursor: pointer;
 }
 
 .wpmLabel {
-  color: var(--text-muted, #999);
-  font-size: 0.83rem;
-  white-space: nowrap;
+  font-size: var(--font-size-sm, 0.83rem);
+  font-weight: 700;
+  color: var(--text-muted);
   font-variant-numeric: tabular-nums;
-  min-width: 4.5rem;
+  min-width: 5ch;
   text-align: right;
+  white-space: nowrap;
   flex-shrink: 0;
 }
 
-/* ─── Touch / mobile tweaks ─────────────────────────────────────── */
+/* ─── Page nav ───────────────────────────────────────────────────── */
 
-/* On very small screens, slightly reduce the play button and gaps */
-@media (max-width: 360px) {
-  .playbackRow {
-    gap: 0.4rem;
-  }
-
-  .navBtn,
-  .uploadBtn,
-  .resetBtn,
-  .playBtn {
-    width: 43px;
-  }
-}
-
-/* ─── Landscape mode on mobile ───────────────────────────────────── */
-/* Compress the control bar so the reading area gets more vertical space */
-@media (max-height: 480px) and (orientation: landscape) {
-  .controls {
-    padding: 0.3rem 0.5rem;
-    gap: 0.2rem;
-  }
-
-  .progressRow {
-    min-height: 0.875rem;
-  }
-
-  .wordCounter {
-    font-size: 0.68rem;
-    padding: 0.1rem 0.3rem;
-  }
-
-  .progressPct {
-    font-size: 0.68rem;
-    min-width: 2rem;
-  }
-
-  .playbackRow {
-    gap: 0.3rem;
-    flex-wrap: nowrap;
-  }
-
-  .navBtn,
-  .uploadBtn,
-  .resetBtn {
-    width: 38px;
-    min-height: 40px;
-    padding: 2px 0;
-  }
-
-  .navBtn svg,
-  .uploadBtn svg,
-  .resetBtn svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  .playBtn {
-    width: 42px;
-    min-height: 40px;
-    padding: 2px 0;
-  }
-
-  .playBtn svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  .btnLabel {
-    font-size: 0.48rem;
-  }
-
-  .speedRow {
-    gap: 0.25rem;
-  }
-
-  .speedBtn {
-    width: 34px;
-    height: 28px;
-    font-size: 1rem;
-  }
-
-  .wpmLabel {
-    font-size: 0.68rem;
-    min-width: 3.4rem;
-  }
-}
-
-/* ── Page nav pill ──────────────────────────────────────────── */
 .pageNav {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-1, 4px);
   flex-shrink: 0;
   position: relative;
 }
 
 .pageSkipBtn {
   width: 28px;
-  min-height: 44px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -410,6 +311,7 @@
   font-weight: 700;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
 }
 
 .pageSkipBtn:disabled {
@@ -473,4 +375,70 @@
   font-size: var(--font-size-xs);
   color: var(--text-muted);
   text-align: center;
+}
+
+/* ─── Mobile tweaks ──────────────────────────────────────────────── */
+
+@media (max-width: 360px) {
+  .controlBtn,
+  .resetBtn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .playBtn {
+    width: 48px;
+    height: 48px;
+  }
+
+  .controlBtnLabel,
+  .playBtnLabel,
+  .resetBtnLabel {
+    display: none;
+  }
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+  .actionRow {
+    padding: 0;
+  }
+
+  .controlBtn,
+  .resetBtn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .controlBtn svg,
+  .resetBtn svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .playBtn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .playBtn svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .controlBtnLabel,
+  .playBtnLabel,
+  .resetBtnLabel {
+    display: none;
+  }
+
+  .wpmAdjBtn {
+    width: 34px;
+    height: 34px;
+    font-size: 1rem;
+  }
+
+  .wpmLabel {
+    font-size: 0.68rem;
+    min-width: 3.4rem;
+  }
 }
