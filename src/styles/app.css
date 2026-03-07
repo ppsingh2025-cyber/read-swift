@@ -459,13 +459,13 @@ body {
   width: 44px;
   height: 44px;
   background: transparent;
-  border: 1px solid var(--border, #1e1e1e);
+  border: 1px solid var(--color-accent);
   border-radius: 10px;
   font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
   flex-shrink: 0;
-  color: var(--text-muted, #888);
+  color: var(--color-accent);
   transition: background 0.15s, border-color 0.15s, color 0.15s;
   line-height: 1;
 }
@@ -478,6 +478,20 @@ body {
 
 [data-theme='day'] .helpBtn:hover {
   background: var(--bg-panel, #eeeeea);
+}
+
+.helpBtnPulse {
+  animation: helpPulse 2s ease-in-out infinite;
+}
+
+@keyframes helpPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--color-accent-dim);
+  }
+  50% {
+    box-shadow: 0 0 0 6px var(--color-accent-dim);
+  }
 }
 
 /* ─── Landscape mode on mobile ──────────────────────────────────── */

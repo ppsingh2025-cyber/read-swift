@@ -105,6 +105,7 @@ export default function App() {
   const manualWpmRef = useRef(false);
 
   const [showHelp, setShowHelp] = useState(false);
+  const [helpSeen, setHelpSeen] = useState(() => localStorage.getItem('fastread_help_seen') === 'true');
   const [isFocused, setIsFocused] = useState(false);
   const [showPaste, setShowPaste] = useState(false);
   const [sessionCompleted, setSessionCompleted] = useState(false);
@@ -352,12 +353,18 @@ export default function App() {
           <SyncStatusIndicator />
           <UserAvatar />
           <button
-            className="helpBtn"
-            onClick={() => setShowHelp(true)}
+            className={`helpBtn${!helpSeen ? ' helpBtnPulse' : ''}`}
+            onClick={() => {
+              if (!helpSeen) {
+                localStorage.setItem('fastread_help_seen', 'true');
+                setHelpSeen(true);
+              }
+              setShowHelp(true);
+            }}
             title="How to Use ReadSwift"
             aria-label="How to Use ReadSwift"
           >
-            ?
+            <span style={{ fontWeight: 800, fontSize: '1rem' }} aria-hidden="true">?</span>
           </button>
           <ThemeToggle />
         </div>
