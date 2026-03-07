@@ -1,97 +1,86 @@
 /**
- * ContextPreview
+ * ContextPreview — "Page Preview"
  *
- * Shows a scrollable excerpt centered on the current word position.
- * Uses a fixed ±window approach (continuous reading engine) rather than
- * page-bounded display, eliminating the page-reset bug where the preview
- * would jump back to the top of a page on page changes.
+ * Page-based static rendering. Zero scroll jitter.
  *
- * The current word is highlighted in the brand colour and every word is
- * clickable to jump directly to it.
+ * Words are divided into fixed pages of PAGE_SIZE.
+ * The rendered word list only changes when currentWordIndex
+ * crosses a page boundary. The accent highlight moves within
+ * the static list without any scrollIntoView or scroll at all.
  *
- * The component auto-scrolls so the active word stays visible whenever the
- * current word index changes.
+ * When collapsed: content area is not rendered (null).
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useReaderContext } from '../context/useReaderContext';
 import styles from '../styles/ContextPreview.module.css';
 
-/** Number of words shown before and after the current position */
-const CONTEXT_HALF = 80;
-
-const LS_KEY_COLLAPSED = 'contextPreview_collapsed';
+const PAGE_SIZE = 80;
+const LS_KEY = 'contextPreview_collapsed';
 
 export default function ContextPreview() {
-  const {
-    words,
-    currentWordIndex,
-    goToWord,
-    isLoading,
-  } = useReaderContext();
+  const { words, currentWordIndex, goToWord, isLoading } = useReaderContext();
 
-  const activeRef = useRef<HTMLSpanElement>(null);
-
-  // Track whether the user explicitly collapsed the panel.
-  // Default: collapsed — user must tap to expand. Persists in localStorage.
-  const [userCollapsed, setUserCollapsed] = useState<boolean>(() => {
-    const stored = localStorage.getItem(LS_KEY_COLLAPSED);
-    // Not set (first run) → collapsed by default
-    // 'false' → explicitly expanded
-    // 'true' or anything else → collapsed
-    return stored === null ? true : stored !== 'false';
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    const s = localStorage.getItem(LS_KEY);
+    return s === null ? true : s !== 'false';
   });
 
   const hasWords = words.length > 0;
-  // Expanded when text is present AND the user has not explicitly collapsed it
-  const isExpanded = hasWords && !userCollapsed;
-
-  const collapsedSnippet = useMemo(() => {
-    if (!hasWords) return '';
-    const s = Math.max(0, currentWordIndex - 4);
-    const e = Math.min(words.length, currentWordIndex + 14);
-    return words.slice(s, e).join(' ');
-  }, [words, currentWordIndex, hasWords]);
+  const isExpanded = hasWords && !collapsed;
 
   const handleToggle = useCallback(() => {
-    setUserCollapsed((prev) => {
+    setCollapsed(prev => {
       const next = !prev;
-      localStorage.setItem(LS_KEY_COLLAPSED, String(next));
+      localStorage.setItem(LS_KEY, String(next));
       return next;
     });
   }, []);
 
-  const handleWordClick = useCallback(
-    (globalIndex: number) => {
-      goToWord(globalIndex);
-    },
-    [goToWord],
-  );
+  // Page boundaries — only recomputed when currentWordIndex crosses a boundary
+  const pageNum = Math.floor(currentWordIndex / PAGE_SIZE);
 
-  // Always use a rolling window centered on the current word index.
-  const start = Math.max(0, currentWordIndex - CONTEXT_HALF);
-  const end = Math.min(words.length, currentWordIndex + CONTEXT_HALF + 1);
-  const visibleWords = words.slice(start, end);
+  // pageWords only changes when the page changes — stable reference mid-page
+  const { pageStart, pageWords } = useMemo(() => {
+    const start = pageNum * PAGE_SIZE;
+    const end   = Math.min(words.length, start + PAGE_SIZE);
+    return { pageStart: start, pageWords: words.slice(start, end) };
+  }, [words, pageNum]);
 
-  // Auto-scroll the active word into view on index change
-  useEffect(() => {
-    activeRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-  }, [currentWordIndex]);
+  // Collapsed snippet: a few words around current position
+  const snippet = useMemo(() => {
+    if (!hasWords) return '';
+    const s = Math.max(0, currentWordIndex - 3);
+    const e = Math.min(words.length, currentWordIndex + 12);
+    return words.slice(s, e).join(' ');
+  }, [words, currentWordIndex, hasWords]);
 
-  if (!words.length || isLoading) return null;
+  // Page indicator: "p.3 / 12"
+  const totalPages = Math.ceil(words.length / PAGE_SIZE);
+
+  if (!hasWords || isLoading) return null;
 
   return (
-    <div className={styles.preview} aria-label="Reading context preview">
+    <div className={styles.preview} aria-label="Page preview">
+
+      {/* ── Header toggle ── */}
       <button
         className={styles.heading}
         onClick={handleToggle}
         aria-expanded={isExpanded}
-        aria-controls="context-preview-content"
+        aria-controls="page-preview-content"
       >
-        {!isExpanded && hasWords ? (
-          <span className={styles.collapsedSnippet} aria-hidden="true">…{collapsedSnippet}…</span>
+        {!isExpanded ? (
+          <span className={styles.snippet} aria-hidden="true">…{snippet}…</span>
         ) : (
-          <span className={styles.headingLabel}>Context</span>
+          <span className={styles.headingLabel}>
+            Page Preview
+            {totalPages > 1 && (
+              <span className={styles.pageIndicator}>
+                p.{pageNum + 1}/{totalPages}
+              </span>
+            )}
+          </span>
         )}
         <span
           className={styles.chevron}
@@ -99,23 +88,24 @@ export default function ContextPreview() {
           aria-hidden="true"
         >▼</span>
       </button>
+
+      {/* ── Content — only rendered when expanded ── */}
       {isExpanded && (
-        <div id="context-preview-content" className={styles.content}>
-          {visibleWords.map((word, i) => {
-            const globalIndex = start + i;
-            const isActive = globalIndex === currentWordIndex;
+        <div id="page-preview-content" className={styles.content}>
+          {pageWords.map((word, i) => {
+            const globalIndex = pageStart + i;
+            const isActive    = globalIndex === currentWordIndex;
             return (
               <span
                 key={globalIndex}
-                ref={isActive ? activeRef : undefined}
-                className={isActive ? styles.activeWord : styles.wordSpan}
-                onClick={() => handleWordClick(globalIndex)}
+                className={isActive ? styles.activeWord : styles.word}
+                onClick={() => goToWord(globalIndex)}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => {
+                onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    handleWordClick(globalIndex);
+                    goToWord(globalIndex);
                   }
                 }}
                 aria-label={`${word}${isActive ? ' (current)' : ''}`}
@@ -127,6 +117,7 @@ export default function ContextPreview() {
           })}
         </div>
       )}
+
     </div>
   );
 }

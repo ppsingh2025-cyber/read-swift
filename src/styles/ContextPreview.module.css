@@ -1,60 +1,111 @@
-/* ContextPreview.module.css — full-width below-viewport strip */
+/* ContextPreview.module.css — page-based, no scroll jitter */
 
 .preview {
-  width: 100%; display: flex; flex-direction: column;
-  background: var(--bg-panel); border-radius: var(--radius-md);
-  overflow: hidden; border: 1px solid var(--border);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-panel);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border);
 }
 
+/* ── Header toggle ── */
 .heading {
-  display: flex; align-items: center; justify-content: space-between;
-  width: 100%; min-height: 34px; padding: 0 0.85rem;
-  background: transparent; border: none; cursor: pointer;
-  text-align: left; gap: 0.5rem; transition: background 0.12s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 34px;
+  padding: 0 0.85rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  gap: 0.5rem;
+  transition: background 0.12s;
 }
 .heading:hover { background: var(--state-hover); }
 
 .headingLabel {
-  font-size: 0.68rem; letter-spacing: 0.09em; text-transform: uppercase;
-  color: var(--text-faint); font-weight: 600; flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  font-weight: 600;
+  flex-shrink: 0;
 }
 
-.collapsedSnippet {
-  font-size: 0.78rem; color: var(--text-faint);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  flex: 1; min-width: 0; font-style: italic;
+.pageIndicator {
+  font-size: 0.65rem;
+  color: var(--text-faint);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 0.05rem 0.45rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+/* Collapsed: one-line italic snippet */
+.snippet {
+  font-size: 0.78rem;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+  font-style: italic;
 }
 
 .chevron {
-  font-size: 0.55rem; color: var(--text-faint);
-  flex-shrink: 0; transition: transform 0.2s ease; display: inline-block;
+  font-size: 0.55rem;
+  color: var(--text-faint);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+  display: inline-block;
 }
 
+/* ── Content — static word block ── */
 .content {
-  height: 110px; overflow-y: auto;
-  padding: 0.5rem 0.85rem 0.65rem;
-  line-height: 1.8; font-size: 0.82rem; color: var(--text-muted);
-  word-break: break-word; scrollbar-width: thin;
-  scrollbar-color: var(--border-input) transparent;
+  /* Fixed height — no scrollbar needed; page turns replace scrolling */
+  height: 108px;
+  overflow: hidden;          /* intentionally no scroll — page-based */
+  padding: 0.5rem 0.85rem 0.6rem;
+  line-height: 1.8;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  word-break: break-word;
 }
-.content::-webkit-scrollbar { width: 4px; }
-.content::-webkit-scrollbar-track { background: transparent; }
-.content::-webkit-scrollbar-thumb { background: var(--border-input); border-radius: 2px; }
 
-@media (max-width: 640px) { .content { height: 88px; } }
+@media (max-width: 640px) { .content { height: 92px; } }
 
-.wordSpan {
-  cursor: pointer; border-radius: 3px; padding: 0 1px;
-  transition: color 0.1s, background 0.1s;
+/* ── Words ── */
+.word {
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 0 1px;
+  transition: color 0.08s;
 }
-.wordSpan:hover { color: var(--text); background: var(--state-hover); }
-.wordSpan:focus-visible { outline: 1px solid var(--text-muted); border-radius: 3px; }
+.word:hover { color: var(--text); background: var(--state-hover); }
+.word:focus-visible { outline: 1px solid var(--text-muted); border-radius: 3px; }
 
 .activeWord {
-  cursor: pointer; border-radius: 3px; padding: 0 2px;
-  color: var(--color-accent); font-weight: 700;
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 0 2px;
+  color: var(--color-accent);
+  font-weight: 700;
   background: color-mix(in srgb, var(--color-accent) 12%, transparent);
 }
-.activeWord:hover { background: color-mix(in srgb, var(--color-accent) 22%, transparent); }
+.activeWord:hover {
+  background: color-mix(in srgb, var(--color-accent) 22%, transparent);
+}
 .activeWord:focus-visible { outline: 1px solid var(--color-accent); border-radius: 3px; }
 
