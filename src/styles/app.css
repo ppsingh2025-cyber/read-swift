@@ -456,28 +456,40 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   background: transparent;
-  border: 1px solid var(--border, #1e1e1e);
-  border-radius: 10px;
-  font-size: 1.1rem;
-  font-weight: 700;
+  border: none;
+  border-radius: var(--radius-sm, 6px);
   cursor: pointer;
   flex-shrink: 0;
   color: var(--text-muted, #888);
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-  line-height: 1;
+  transition: background 0.15s, color 0.15s;
 }
 
 .helpBtn:hover {
-  background: var(--bg-panel, #111);
-  border-color: var(--border-input, #2a2a2a);
+  background: var(--state-hover);
   color: var(--text, #f0f0f0);
 }
 
-[data-theme='day'] .helpBtn:hover {
-  background: var(--bg-panel, #eeeeea);
+/* Pulse animation for new users */
+.helpPulse {
+  position: relative;
+}
+
+.helpPulse::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--color-accent);
+  opacity: 0;
+  animation: helpPulse 2s ease-out 1.5s 3;
+}
+
+@keyframes helpPulse {
+  0%   { opacity: 0.8; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.5); }
 }
 
 /* ─── Landscape mode on mobile ──────────────────────────────────── */

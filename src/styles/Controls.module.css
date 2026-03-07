@@ -1,6 +1,4 @@
-/* Controls.module.css — v1.0.6: unified button system, no progress bar */
-
-/* ─── Wrapper ───────────────────────────────────────────────────── */
+/* Controls.module.css — v1.1.0 */
 
 .controls {
   display: flex;
@@ -26,55 +24,35 @@
   }
 }
 
-/* ─── Row 1: Info ─────────────────────────────────────────────────── */
-
-.infoRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  min-height: 28px;
-  padding: 0 var(--space-1, 4px);
+.hiddenInput {
+  display: none;
 }
 
-.wordCount {
-  font-size: var(--font-size-xs, 0.75rem);
-  color: var(--text-faint);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-}
-
-/* ─── Row 2: Action buttons ──────────────────────────────────────── */
+/* ── Action row ──────────────────────────────────────────────── */
 
 .actionRow {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
+  padding: 0 var(--space-2, 8px);
   width: 100%;
-  padding: 0 var(--space-1, 4px);
 }
 
-.hiddenInput {
-  display: none;
-}
+/* ── Base control button (Upload/Paste/Back/Next) ─────────────── */
 
-/* ── Base: Upload / Paste / Back / Next ── */
 .controlBtn {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-
+  gap: 4px;
   width: 52px;
-  height: 52px;
+  height: 56px;
   border-radius: var(--radius-sm, 8px);
   border: 1px solid var(--border);
   background: var(--bg-input);
   color: var(--text-muted);
-
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
   flex-shrink: 0;
@@ -91,18 +69,13 @@
 }
 
 .controlBtn:disabled {
-  opacity: var(--state-disabled, 0.35);
+  opacity: var(--state-disabled, 0.38);
   cursor: not-allowed;
 }
 
-.controlBtn svg {
-  width: 18px;
-  height: 18px;
-  fill: currentColor;
-  flex-shrink: 0;
-}
+/* ── Label shared by controlBtn / resetBtn ────────────────────── */
 
-.controlBtnLabel {
+.lbl {
   font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
@@ -113,28 +86,20 @@
   user-select: none;
 }
 
-/* Active/pressed state for paste toggle */
-.controlBtnActive {
-  background: var(--color-accent-dim);
-  border-color: var(--color-accent);
-  color: var(--color-accent);
-}
+/* ── Play / Pause — primary ──────────────────────────────────── */
 
-/* ── PLAY / PAUSE — primary action ── */
 .playBtn {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-
+  gap: 4px;
   width: 56px;
-  height: 56px;
+  height: 60px;
   border-radius: var(--radius-sm, 8px);
   border: none;
   background: var(--color-accent);
   color: var(--bg);
-
   cursor: pointer;
   transition: background 0.15s;
   flex-shrink: 0;
@@ -149,18 +114,11 @@
 }
 
 .playBtn:disabled {
-  opacity: var(--state-disabled, 0.35);
+  opacity: var(--state-disabled, 0.38);
   cursor: not-allowed;
 }
 
-.playBtn svg {
-  width: 20px;
-  height: 20px;
-  fill: currentColor;
-  flex-shrink: 0;
-}
-
-.playBtnLabel {
+.playLbl {
   font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
@@ -171,21 +129,20 @@
   user-select: none;
 }
 
-/* ── RESET — muted / secondary ── */
+/* ── Reset — ghost ──────────────────────────────────────────── */
+
 .resetBtn {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-
+  gap: 4px;
   width: 52px;
-  height: 52px;
+  height: 56px;
   border-radius: var(--radius-sm, 8px);
   border: 1px solid transparent;
   background: transparent;
   color: var(--text-faint);
-
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
   flex-shrink: 0;
@@ -202,29 +159,17 @@
 }
 
 .resetBtn:disabled {
-  opacity: var(--state-disabled, 0.35);
+  opacity: var(--state-disabled, 0.38);
   cursor: not-allowed;
 }
 
-.resetBtn svg {
-  width: 18px;
-  height: 18px;
-  fill: currentColor;
-  flex-shrink: 0;
-}
+/* ── WPM section ─────────────────────────────────────────────── */
 
-.resetBtnLabel {
-  font-size: 9px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  line-height: 1;
-  color: inherit;
-  pointer-events: none;
-  user-select: none;
+.wpmSection {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
-
-/* ─── Row 3: WPM ─────────────────────────────────────────────────── */
 
 .wpmRow {
   display: flex;
@@ -232,15 +177,12 @@
   align-items: center;
   gap: var(--space-2, 8px);
   width: 100%;
-  padding: 0 var(--space-1, 4px);
 }
 
-/* WPM +/- buttons — same visual family as controlBtn but text-only */
-.wpmAdjBtn {
+.wpmBtn {
   display: flex;
   align-items: center;
   justify-content: center;
-
   width: 44px;
   height: 44px;
   border-radius: var(--radius-sm, 8px);
@@ -250,23 +192,22 @@
   font-size: 1.25rem;
   font-weight: 700;
   line-height: 1;
-
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
   flex-shrink: 0;
 }
 
-.wpmAdjBtn:hover:not(:disabled) {
+.wpmBtn:hover:not(:disabled) {
   background: var(--state-hover);
   color: var(--text);
 }
 
-.wpmAdjBtn:active:not(:disabled) {
+.wpmBtn:active:not(:disabled) {
   background: var(--state-active);
 }
 
-.wpmAdjBtn:disabled {
-  opacity: var(--state-disabled, 0.35);
+.wpmBtn:disabled {
+  opacity: var(--state-disabled, 0.38);
   cursor: not-allowed;
 }
 
@@ -276,124 +217,31 @@
   cursor: pointer;
 }
 
-.wpmLabel {
-  font-size: var(--font-size-sm, 0.83rem);
-  font-weight: 700;
-  color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
-  min-width: 5ch;
-  text-align: right;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-/* ─── Page nav ───────────────────────────────────────────────────── */
-
-.pageNav {
+.wpmVal {
   display: flex;
-  align-items: center;
-  gap: var(--space-1, 4px);
-  flex-shrink: 0;
-  position: relative;
-}
-
-.pageSkipBtn {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
   justify-content: center;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-xs, 0.75rem);
   font-weight: 700;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-  flex-shrink: 0;
-}
-
-.pageSkipBtn:disabled {
-  opacity: var(--state-disabled);
-  cursor: not-allowed;
-}
-
-.pageSkipBtn:hover:not(:disabled) {
-  background: var(--state-hover);
-  color: var(--text);
-}
-
-.pagePill {
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border);
-  background: var(--bg-input);
   color: var(--text-muted);
-  font-size: var(--font-size-xs);
   font-variant-numeric: tabular-nums;
-  cursor: pointer;
-  white-space: nowrap;
-  min-height: 28px;
-  display: flex;
-  align-items: center;
-  transition: background 0.15s, color 0.15s;
 }
 
-.pagePill:hover {
-  background: var(--state-hover);
-  color: var(--text);
-}
-
-.pageJumpPopover {
-  position: absolute;
-  bottom: calc(100% + var(--space-2));
-  right: 0;
-  background: var(--bg-panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: var(--space-3);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  z-index: 100;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-}
-
-.pageJumpInput {
-  width: 80px;
-  padding: var(--space-2);
-  background: var(--bg-input);
-  border: 1px solid var(--border-input);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  font-size: var(--font-size-md);
-  text-align: center;
-}
-
-.pageJumpHint {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-  text-align: center;
-}
-
-/* ─── Mobile tweaks ──────────────────────────────────────────────── */
+/* ── Mobile tweaks ───────────────────────────────────────────── */
 
 @media (max-width: 360px) {
   .controlBtn,
   .resetBtn {
     width: 44px;
-    height: 44px;
+    height: 48px;
   }
 
   .playBtn {
     width: 48px;
-    height: 48px;
+    height: 52px;
   }
 
-  .controlBtnLabel,
-  .playBtnLabel,
-  .resetBtnLabel {
+  .lbl,
+  .playLbl {
     display: none;
   }
 }
@@ -406,39 +254,22 @@
   .controlBtn,
   .resetBtn {
     width: 40px;
-    height: 40px;
-  }
-
-  .controlBtn svg,
-  .resetBtn svg {
-    width: 15px;
-    height: 15px;
+    height: 44px;
   }
 
   .playBtn {
     width: 44px;
-    height: 44px;
+    height: 48px;
   }
 
-  .playBtn svg {
-    width: 17px;
-    height: 17px;
-  }
-
-  .controlBtnLabel,
-  .playBtnLabel,
-  .resetBtnLabel {
+  .lbl,
+  .playLbl {
     display: none;
   }
 
-  .wpmAdjBtn {
+  .wpmBtn {
     width: 34px;
     height: 34px;
     font-size: 1rem;
-  }
-
-  .wpmLabel {
-    font-size: 0.68rem;
-    min-width: 3.4rem;
   }
 }

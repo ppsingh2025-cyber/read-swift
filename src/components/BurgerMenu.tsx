@@ -1,469 +1,308 @@
 /**
- * BurgerMenu
+ * BurgerMenu — v1.1.0
  *
- * Hamburger icon (top-left) that opens a slide-in settings drawer.
+ * Drawer slides in from LEFT (translateX(-100%) → 0), 88% width, max 360px.
+ * 4 sections separated by hairline borders.
  *
- * Drawer contains (in order):
- *   • Reading Profile selector (quick presets)
- *   • Display: window size, orientation, highlight colour
- *   • Reading features: peripheral fade, ORP, punctuation pause, long-word delay
- *   • Reading History (collapsible, re-uses existing component)
- *   • Links: feedback form
- *   • About: app version, Techscript credit
- *
- * State notes:
- *   - Opens/closes locally (no reading-state side effects).
- *   - All settings write directly to ReaderContext which persists to localStorage.
- *   - Drawer is closed whenever a file is selected from history.
- *   - Theme toggle is in the top bar (ThemeToggle component), not here.
- *   - During active reading (isPlaying), Display and Reading Features sections
- *     are collapsed by default; a "Show Settings" button expands them.
+ * Section 1 — ⚡ MODES         (4 horizontal mode tabs)
+ * Section 2 — 🎨 DISPLAY       (theme · font size · words at once · layout)
+ * Section 3 — 👁 READING       (ORP color swatches · 5 toggles)
+ * Section 4 — ♿ ACCESSIBILITY (color-blind ORP · break reminder)
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useReaderContext } from '../context/useReaderContext';
-import ReadingHistory from './ReadingHistory';
-import SessionStats from './SessionStats';
-import ReadingModes from './ReadingModes';
-import type { Orientation } from '../context/readerContextDef';
+import type { PresetModeId } from '../context/readerContextDef';
 import { APP_VERSION } from '../version';
-import { IndexedDBService } from '../sync/IndexedDBService';
-import { ORP_COLORS, getThemeOrpAccent } from '../config/orpColors';
-import { supabase, isSupabaseConfigured } from '../config/supabase';
-import { useAuth } from '../auth/useAuth';
-import { clearAllRecords } from '../utils/recordsUtils';
-import toast from 'react-hot-toast';
+import { ORP_COLORS } from '../config/orpColors';
+import { PRESET_MODES } from '../config/readingModePresets';
 import styles from '../styles/BurgerMenu.module.css';
 
 const FEEDBACK_FORM_URL = 'https://forms.gle/dCBSTs4SjvhmA3Zh6';
 
-// Default preference values (mirrored from ReaderContext)
-const DEFAULT_WPM = 250;
-const DEFAULT_THEME = 'midnight' as const;
-const DEFAULT_HIGHLIGHT_COLOR = getThemeOrpAccent(DEFAULT_THEME); // midnight accent
-const DEFAULT_ORIENTATION = 'horizontal' as Orientation;
-const DEFAULT_MAIN_FONT_SIZE = 100;
-
-const THEME_LABELS: Record<'midnight' | 'warm' | 'day', string> = {
-  midnight: 'Midnight',
-  warm: 'Warm',
-  day: 'Day',
+const THEME_SWATCHES: Record<'midnight' | 'warm' | 'day', string> = {
+  midnight: '#5b8dee',
+  warm: '#e8a830',
+  day: '#2a7a6e',
 };
 
-// localStorage keys cleared when user resets to defaults
-const RESETTABLE_KEYS = [
-  'fastread_window_size', 'fastread_wpm', 'fastread_orientation',
-  'fastread_focal_line', 'fastread_orp', 'fastread_peripheral_fade',
-  'fastread_punct_pause', 'fastread_long_word_comp', 'fastread_chunk_mode',
-  'fastread_main_font_size', 'fastread_highlight_color', 'fastread_active_mode',
-  'fastread_active_custom_mode_id', 'fastread_theme',
-] as const;
-
 interface BurgerMenuProps {
-  onFileSelect: (file: File) => void;
+  onFileSelect?: (file: File) => void;
 }
 
-export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export default function BurgerMenu(_props: BurgerMenuProps) {
   const [open, setOpen] = useState(false);
-
-  const {
-    setWindowSize,
-    orientation, setOrientation,
-    highlightColor, setHighlightColor,
-    mainWordFontSize, setMainWordFontSize,
-    theme, setTheme,
-    setWpm,
-    records,
-    setRecords,
-    isPlaying,
-    setFocalLine,
-    setOrpEnabled,
-    orpColored, setOrpColored,
-    setPeripheralFade,
-    setPunctuationPause,
-    setLongWordCompensation,
-    setChunkMode,
-    setActiveMode,
-    setActiveCustomModeId,
-  } = useReaderContext();
-  const { user } = useAuth();
-  const [historyOpen, setHistoryOpen] = useState(false);
-  const [confirmReset, setConfirmReset] = useState(false);
-
-  // During active reading, advanced settings are collapsed unless user expands them.
-  // Resets every time the menu is opened while playing (so re-opening the menu during
-  // an active session always starts collapsed).
-  const [showAdvancedDuringReading, setShowAdvancedDuringReading] = useState(false);
-
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Open menu; collapse advanced settings if reading is in progress
-  const handleOpen = useCallback(() => {
-    if (isPlaying) setShowAdvancedDuringReading(false);
-    setOpen(true);
-  }, [isPlaying]);
+  const {
+    theme, setTheme,
+    windowSize, setWindowSize,
+    mainWordFontSize, setMainWordFontSize,
+    orientation, setOrientation,
+    orpColored, setOrpColored,
+    focalLine, setFocalLine,
+    peripheralFade, setPeripheralFade,
+    punctuationPause, setPunctuationPause,
+    highlightColor, setHighlightColor,
+    activeMode, selectPresetMode,
+  } = useReaderContext();
 
-  const close = useCallback(() => setOpen(false), []);
-
-  // Close on Escape
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        close();
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [open, close]);
-
-  // Trap focus inside panel when open (accessibility)
-  useEffect(() => {
-    if (open) panelRef.current?.focus();
-  }, [open]);
-
-  // Wrap file select so the menu closes when a history item triggers re-load
-  const handleHistoryFileSelect = useCallback(
-    (file: File) => {
-      close();
-      onFileSelect(file);
-    },
-    [close, onFileSelect],
+  // New settings not yet in context — persisted to localStorage
+  const [adaptiveOrp, setAdaptiveOrp] = useState(
+    () => localStorage.getItem('fastread_adaptive_orp') !== 'false',
+  );
+  const [colorBlindMode, setColorBlindMode] = useState(
+    () => localStorage.getItem('fastread_color_blind_mode') === 'deuteranopia',
+  );
+  const [fatigueReminder, setFatigueReminder] = useState(
+    () => localStorage.getItem('fastread_fatigue_reminder') === 'true',
   );
 
-  // Reset all user preferences to new-user defaults
-  const handleResetDefaults = useCallback(() => {
-    RESETTABLE_KEYS.forEach(key => { try { localStorage.removeItem(key); } catch { /* ignore */ } });
-    setTheme(DEFAULT_THEME);
-    setHighlightColor(DEFAULT_HIGHLIGHT_COLOR);
-    setOrientation(DEFAULT_ORIENTATION);
-    setMainWordFontSize(DEFAULT_MAIN_FONT_SIZE);
-    setWpm(DEFAULT_WPM);
-    setWindowSize(1);
-    setFocalLine(true);
-    setOrpEnabled(true);
-    setPeripheralFade(false);
-    setPunctuationPause(true);
-    setLongWordCompensation(true);
-    setChunkMode('fixed');
-    setActiveMode('focus');
-    setActiveCustomModeId(null);
-    // Clear IndexedDB preferences
-    IndexedDBService.savePreferences({
-      theme: DEFAULT_THEME,
-      fontSize: DEFAULT_MAIN_FONT_SIZE,
-      wordWindow: 1,
-      highlightColor: DEFAULT_HIGHLIGHT_COLOR,
-      updatedAt: new Date(),
-    }).catch(() => { /* ignore */ });
-    setConfirmReset(false);
-    toast.success('Settings reset to defaults');
-  }, [setTheme, setHighlightColor, setOrientation, setMainWordFontSize, setWpm,
-    setWindowSize, setFocalLine, setOrpEnabled, setPeripheralFade,
-    setPunctuationPause, setLongWordCompensation, setChunkMode,
-    setActiveMode, setActiveCustomModeId]);
+  useEffect(() => { localStorage.setItem('fastread_adaptive_orp', String(adaptiveOrp)); }, [adaptiveOrp]);
+  useEffect(() => {
+    localStorage.setItem('fastread_color_blind_mode', colorBlindMode ? 'deuteranopia' : '');
+  }, [colorBlindMode]);
+  useEffect(() => { localStorage.setItem('fastread_fatigue_reminder', String(fatigueReminder)); }, [fatigueReminder]);
 
-  // Clear all reading history
-  const handleClearHistory = useCallback(async () => {
-    // Clear localStorage records
-    setRecords(clearAllRecords());
+  const openMenu = useCallback(() => setOpen(true), []);
+  const closeMenu = useCallback(() => setOpen(false), []);
 
-    // Clear IndexedDB sessions
-    try {
-      await IndexedDBService.clearAllSessions();
-    } catch { /* ignore IndexedDB errors */ }
+  // Click outside to close
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) closeMenu();
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open, closeMenu]);
 
-    // If signed in, delete from Supabase
-    if (isSupabaseConfigured && supabase && user?.id) {
-      try {
-        await supabase.from('reading_sessions').delete().eq('user_id', user.id);
-      } catch { /* ignore Supabase errors */ }
-    }
+  // Escape to close
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') closeMenu(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [open, closeMenu]);
 
-    toast.success('Reading history cleared');
-  }, [setRecords, user]);
+  const handleModeSelect = (id: PresetModeId) => {
+    selectPresetMode(id);
+    closeMenu();
+  };
+
+  const orp_colors = ORP_COLORS[theme];
+  const presetIds: PresetModeId[] = ['speed', 'focus', 'read'];
 
   return (
     <>
-      {/* Hamburger button */}
-      <button
-        className={styles.burgerBtn}
-        onClick={handleOpen}
-        aria-label="Open settings menu"
-        aria-expanded={open}
-        aria-haspopup="dialog"
-      >
-        <span className={styles.bar} />
-        <span className={styles.bar} />
-        <span className={styles.bar} />
+      <button className={styles.burgerBtn} onClick={openMenu} aria-label="Open menu" aria-expanded={open}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
       </button>
 
       {open && (
-        /* Backdrop */
-        <div className={styles.backdrop} onClick={close} aria-hidden="true">
-          {/* Drawer — stop propagation so clicks inside don't close */}
-          <div
-            ref={panelRef}
-            className={styles.panel}
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Settings menu"
-            tabIndex={-1}
-          >
-            {/* ── Drawer header ───────────────────────────────── */}
-            <div className={styles.drawerHeader}>
-              <span className={styles.drawerTitle}>ReadSwift</span>
-              <button
-                className={styles.closeBtn}
-                onClick={close}
-                aria-label="Close settings menu"
-              >
-                ✕
-              </button>
+        <div className={styles.overlay}>
+          <div ref={panelRef} className={styles.drawer} role="dialog" aria-modal="true" aria-label="Settings">
+
+            {/* ── Section 1: MODES ──────────────────────────────── */}
+            <div className={styles.section}>
+              <div className={styles.sectionHeader}>⚡ MODES</div>
+              <div className={styles.modeTabs}>
+                {presetIds.map(id => {
+                  const m = PRESET_MODES[id];
+                  const isActive = activeMode === id;
+                  return (
+                    <button
+                      key={id}
+                      className={`${styles.modeTab} ${isActive ? styles.modeTabActive : ''}`}
+                      onClick={() => handleModeSelect(id)}
+                    >
+                      <span className={styles.modeIcon}>{m.icon}</span>
+                      <span className={styles.modeLabel}>{m.label}</span>
+                    </button>
+                  );
+                })}
+                <button className={`${styles.modeTab} ${activeMode === 'custom' ? styles.modeTabActive : ''}`}>
+                  <span className={styles.modeIcon}>⚙️</span>
+                  <span className={styles.modeLabel}>Custom</span>
+                </button>
+              </div>
+              <p className={styles.modeDesc}>
+                {activeMode !== 'custom' && activeMode in PRESET_MODES
+                  ? PRESET_MODES[activeMode as PresetModeId].description
+                  : 'Your current settings combination.'}
+              </p>
             </div>
 
-            <div className={styles.drawerBody}>
+            <div className={styles.divider} />
 
-              {/* ── Reading Modes ──────────────────────────────────── */}
-              <section className={styles.section}>
-                <h3 className={styles.sectionTitle}>Reading Mode</h3>
-                <ReadingModes />
-              </section>
+            {/* ── Section 2: DISPLAY ─────────────────────────────── */}
+            <div className={styles.section}>
+              <div className={styles.sectionHeader}>🎨 DISPLAY</div>
 
-              {/* ── Minimal-UI notice during active reading ─────────── */}
-              {isPlaying && !showAdvancedDuringReading && (
-                <div className={styles.readingActiveBar}>
-                  <span className={styles.readingActiveDot} aria-hidden="true" />
-                  <span className={styles.readingActiveLabel}>Reading in progress</span>
+              {/* Theme */}
+              <div className={styles.settingLabel}>Theme</div>
+              <div className={styles.themeRow}>
+                {(['midnight', 'warm', 'day'] as const).map(t => (
                   <button
-                    className={styles.showSettingsBtn}
-                    onClick={() => setShowAdvancedDuringReading(true)}
+                    key={t}
+                    className={`${styles.themeBtn} ${theme === t ? styles.themeBtnActive : ''}`}
+                    onClick={() => setTheme(t)}
                   >
-                    Show Settings
-                  </button>
-                </div>
-              )}
-
-              {/* ── Display ────────────────────────────────────────── */}
-              {(!isPlaying || showAdvancedDuringReading) && (
-              <>
-              <section className={styles.section}>
-                <div className={styles.sectionHeader}>
-                  <h3 className={styles.sectionTitle}>Display</h3>
-                  <button
-                    className={styles.sectionActionBtn}
-                    onClick={handleResetDefaults}
-                    title="Reset to Default Settings"
-                    aria-label="Reset to Default Settings"
-                  >
-                    {/* Refresh / reset icon */}
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                      <path d="M3 3v5h5"/>
-                    </svg>
-                  </button>
-                </div>
-
-                <label className={styles.row}>
-                  <span className={styles.label}>Orientation</span>
-                  <select
-                    className={styles.select}
-                    value={orientation}
-                    onChange={(e) => setOrientation(e.target.value as Orientation)}
-                    aria-label="Word window orientation"
-                  >
-                    <option value="horizontal">Horizontal</option>
-                    <option value="vertical">Vertical</option>
-                  </select>
-                </label>
-
-                {/* Highlight key letter toggle */}
-                <label className={styles.row}>
-                  <span className={styles.label}>Highlight key letter</span>
-                  <input
-                    type="checkbox"
-                    checked={orpColored}
-                    onChange={(e) => setOrpColored(e.target.checked)}
-                    aria-label="Color the key letter in each word"
-                  />
-                </label>
-
-                {/* ORP key letter color: 4 science-backed options per theme */}
-                <div className={styles.orpColorSection}>
-                  <span className={styles.sectionLabel}>KEY LETTER COLOR</span>
-                  <div className={styles.orpColorRow}>
-                    {ORP_COLORS[theme].map(option => (
-                      <button
-                        key={option.id}
-                        className={`${styles.orpColorBtn} ${highlightColor === option.value ? styles.orpColorBtnActive : ''}`}
-                        onClick={() => setHighlightColor(option.value)}
-                        aria-label={`${option.label}: ${option.reason}`}
-                        title={option.reason}
-                      >
-                        <span
-                          className={styles.orpColorSwatch}
-                          style={{ background: option.value }}
-                        />
-                        <span className={styles.orpColorLabel}>{option.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <label className={styles.row}>
-                  <span className={styles.label}>
-                    Main word size
-                    <span className={styles.hint}> (focus word)</span>
-                  </span>
-                  <select
-                    className={styles.select}
-                    value={mainWordFontSize}
-                    onChange={(e) => setMainWordFontSize(parseInt(e.target.value, 10))}
-                    aria-label="Main word font size"
-                  >
-                    <option value={70}>Small (70%)</option>
-                    <option value={85}>Medium (85%)</option>
-                    <option value={100}>Normal (100%)</option>
-                    <option value={120}>Large (120%)</option>
-                    <option value={150}>Extra Large (150%)</option>
-                    <option value={180}>Huge (180%)</option>
-                  </select>
-                </label>
-
-                {/* ── Theme switcher ──────────────────────────── */}
-                <div className={styles.themeSection}>
-                  <span className={styles.sectionLabel}>THEME</span>
-                  <div className={styles.themeRow}>
-                    {(['midnight', 'warm', 'day'] as const).map(t => (
-                      <button
-                        key={t}
-                        className={`${styles.themeBtn} ${theme === t ? styles.themeBtnActive : ''}`}
-                        onClick={() => setTheme(t)}
-                        aria-pressed={theme === t}
-                        title={THEME_LABELS[t]}
-                      >
-                        <span className={styles.themeSwatch} data-swatch={t} />
-                        <span className={styles.themeLabel}>{THEME_LABELS[t]}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-              </section>
-
-              </>) /* end (!isPlaying || showAdvancedDuringReading) */}
-
-              {/* ── Reading History ─────────────────────────────── */}
-              <section className={styles.section}>
-                <div className={styles.sectionHeader}>
-                  <button
-                    className={styles.accordionToggle}
-                    onClick={() => setHistoryOpen((v) => !v)}
-                    aria-expanded={historyOpen}
-                    aria-controls="history-accordion-body"
-                  >
-                    <h3 className={styles.sectionTitle}>
-                      Reading History{records.length > 0 && <span className={styles.sectionCount}> ({records.length})</span>}
-                    </h3>
                     <span
-                      className={styles.chevron}
-                      style={{ transform: historyOpen ? 'rotate(0deg)' : 'rotate(-90deg)' }}
-                      aria-hidden="true"
-                    >▼</span>
+                      className={styles.themeSwatch}
+                      style={{ background: THEME_SWATCHES[t] }}
+                    />
+                    <span>{t.charAt(0).toUpperCase() + t.slice(1)}</span>
                   </button>
-                  {records.length > 0 && (
+                ))}
+              </div>
+
+              {/* Font size */}
+              <div className={styles.settingLabel}>Font size</div>
+              <div className={styles.fontSizeRow}>
+                <span className={styles.fontSizeSmall}>A</span>
+                <input
+                  type="range"
+                  min={60}
+                  max={200}
+                  step={5}
+                  value={mainWordFontSize}
+                  onChange={e => setMainWordFontSize(Number(e.target.value))}
+                  className={styles.fontSlider}
+                  aria-label="Font size"
+                />
+                <span className={styles.fontSizeLarge}>A</span>
+              </div>
+
+              {/* Words at once */}
+              <div className={styles.settingLabel}>Words at once</div>
+              <div className={styles.segControl}>
+                {([1, 2, 3] as const).map(n => (
                   <button
-                    className={`${styles.sectionActionBtn} ${styles.sectionActionBtnDanger}`}
-                    onClick={handleClearHistory}
-                    title="Clear Reading History"
-                    aria-label="Clear Reading History"
+                    key={n}
+                    className={`${styles.segBtn} ${windowSize === n ? styles.segBtnActive : ''}`}
+                    onClick={() => setWindowSize(n)}
                   >
-                    {/* Trash icon */}
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                      <path d="M10 11v6"/>
-                      <path d="M14 11v6"/>
-                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                    </svg>
+                    {n}
                   </button>
-                  )}
+                ))}
+              </div>
+
+              {/* Horizontal layout toggle */}
+              <div className={styles.toggleRow}>
+                <div>
+                  <div className={styles.toggleName}>Horizontal layout</div>
+                  <div className={styles.toggleDesc}>Left-to-right word display</div>
                 </div>
-                {historyOpen && (
-                  <div id="history-accordion-body">
-                    {records.length === 0 ? (
-                      <p className={styles.emptyHint}>No reading history yet.</p>
-                    ) : (
-                      <ReadingHistory onFileSelect={handleHistoryFileSelect} />
-                    )}
-                  </div>
-                )}
-              </section>
+                <input
+                  type="checkbox"
+                  className={styles.toggle}
+                  checked={orientation === 'horizontal'}
+                  onChange={e => setOrientation(e.target.checked ? 'horizontal' : 'vertical')}
+                  aria-label="Horizontal layout"
+                />
+              </div>
+            </div>
 
-              {/* ── Session Analytics ───────────────────────────── */}
-              <section className={styles.section}>
-                <h3 className={styles.sectionTitle}>Session Analytics</h3>
-                <SessionStats />
-              </section>
+            <div className={styles.divider} />
 
-              {/* ── Reset to Defaults ───────────────────────────────── */}
-              <section className={styles.section}>
-                {confirmReset ? (
-                  <div className={styles.confirmReset}>
-                    <span className={styles.confirmResetText}>Reset all settings to defaults?</span>
-                    <div className={styles.confirmResetActions}>
-                      <button
-                        className={styles.confirmResetYes}
-                        onClick={handleResetDefaults}
-                      >
-                        Yes, reset
-                      </button>
-                      <button
-                        className={styles.confirmResetNo}
-                        onClick={() => setConfirmReset(false)}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
+            {/* ── Section 3: READING ────────────────────────────── */}
+            <div className={styles.section}>
+              <div className={styles.sectionHeader}>👁 READING</div>
+
+              {/* ORP color swatches */}
+              <div className={styles.settingLabel}>Key letter color</div>
+              <div className={styles.colorSwatches}>
+                {orp_colors.map(opt => (
                   <button
-                    className={styles.resetBtn}
-                    onClick={() => setConfirmReset(true)}
+                    key={opt.id}
+                    className={`${styles.swatchBtn} ${highlightColor === opt.value ? styles.swatchBtnActive : ''}`}
+                    onClick={() => setHighlightColor(opt.value)}
+                    title={opt.reason}
+                    aria-label={opt.label}
                   >
-                    Reset to Defaults
+                    <span className={styles.swatch} style={{ background: opt.value }} />
+                    <span className={styles.swatchLabel}>{opt.label}</span>
                   </button>
-                )}
-              </section>
+                ))}
+              </div>
 
-              {/* ── About ───────────────────────────────────────── */}
-              <section className={styles.section}>
-                <h3 className={styles.sectionTitle}>About</h3>
-                <p className={styles.aboutText}>
-                  ReadSwift {APP_VERSION}
-                </p>
-                <p className={styles.aboutText}>
-                  Powered by{' '}
-                  <a
-                    href="https://www.techscript.ca"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.aboutLink}
-                  >
-                    Techscript
-                  </a>
-                </p>
-                <a
-                  href={FEEDBACK_FORM_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.linkBtn}
-                >
-                  💬 Send Feedback
-                </a>
-              </section>
+              {/* Reading toggles */}
+              <div className={styles.toggleRow}>
+                <div>
+                  <div className={styles.toggleName}>Highlight key letter</div>
+                  <div className={styles.toggleDesc}>Color the ORP character</div>
+                </div>
+                <input type="checkbox" className={styles.toggle} checked={orpColored} onChange={e => setOrpColored(e.target.checked)} />
+              </div>
+              <div className={styles.toggleRow}>
+                <div>
+                  <div className={styles.toggleName}>Focal line</div>
+                  <div className={styles.toggleDesc}>Show vertical tick marks</div>
+                </div>
+                <input type="checkbox" className={styles.toggle} checked={focalLine} onChange={e => setFocalLine(e.target.checked)} />
+              </div>
+              <div className={styles.toggleRow}>
+                <div>
+                  <div className={styles.toggleName}>Dim upcoming words</div>
+                  <div className={styles.toggleDesc}>Fade context words</div>
+                </div>
+                <input type="checkbox" className={styles.toggle} checked={peripheralFade} onChange={e => setPeripheralFade(e.target.checked)} />
+              </div>
+              <div className={styles.toggleRow}>
+                <div>
+                  <div className={styles.toggleName}>Pause at punctuation</div>
+                  <div className={styles.toggleDesc}>Brief delay at sentence ends</div>
+                </div>
+                <input type="checkbox" className={styles.toggle} checked={punctuationPause} onChange={e => setPunctuationPause(e.target.checked)} />
+              </div>
+              <div className={styles.toggleRow}>
+                <div>
+                  <div className={styles.toggleName}>Adaptive ORP</div>
+                  <div className={styles.toggleDesc}>Stronger highlight above 350 WPM</div>
+                </div>
+                <input type="checkbox" className={styles.toggle} checked={adaptiveOrp} onChange={e => setAdaptiveOrp(e.target.checked)} />
+              </div>
+            </div>
 
+            <div className={styles.divider} />
+
+            {/* ── Section 4: ACCESSIBILITY ─────────────────────── */}
+            <div className={styles.section}>
+              <div className={styles.sectionHeader}>♿ ACCESSIBILITY</div>
+
+              <div className={styles.toggleRow}>
+                <div>
+                  <div className={styles.toggleName}>Color-blind ORP</div>
+                  <div className={styles.toggleDesc}>Uses cyan — safe for all vision types</div>
+                </div>
+                <input type="checkbox" className={styles.toggle} checked={colorBlindMode} onChange={e => {
+                  setColorBlindMode(e.target.checked);
+                  if (e.target.checked) setHighlightColor('#5bc8dc');
+                }} />
+              </div>
+              <div className={styles.toggleRow}>
+                <div>
+                  <div className={styles.toggleName}>Break reminder</div>
+                  <div className={styles.toggleDesc}>Notify after 20 min of reading</div>
+                </div>
+                <input type="checkbox" className={styles.toggle} checked={fatigueReminder} onChange={e => setFatigueReminder(e.target.checked)} />
+              </div>
+            </div>
+
+            <div className={styles.divider} />
+
+            {/* ── Footer ────────────────────────────────────────── */}
+            <div className={styles.footer}>
+              <a className={styles.feedbackLink} href={FEEDBACK_FORM_URL} target="_blank" rel="noopener noreferrer">
+                💬 Send feedback
+              </a>
+              <span className={styles.version}>{APP_VERSION} · ReadSwift by TechScript</span>
             </div>
           </div>
         </div>
