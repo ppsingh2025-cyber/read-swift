@@ -20,7 +20,7 @@
  *   currentWordIndex is NEVER in the dependency array — ticks are static.
  */
 
-import { memo, useEffect, useRef } from 'react';
+import { memo, useCallback, useEffect, useRef } from 'react';
 import type { CSSProperties } from 'react';
 import type { Orientation } from '../context/readerContextDef';
 import styles from '../styles/ReaderViewport.module.css';
@@ -153,20 +153,21 @@ const ReaderViewport = memo(function ReaderViewport({
   const postOrpText = currentWord.slice(orpIdx + 1);
 
   /**
-   * Measure font metrics to set CSS variables for ORP-aligned layout.
+   * Measure font metrics and update CSS variables for ORP-aligned layout.
    *
-   * --pre-orp-col : 3 × charWidth — fixed pre-ORP column (right-aligned)
-   * --focal-tick-x: padding-left + pre-orp-col + 0.5 × charWidth — tick center
+   * --pre-orp-col : 3 × charWidth
+   * --focal-tick-x: padding-left + pre-orp-col + 0.5 × charWidth
+   * --focal-tick-h: max(10px, lineHeight × 0.55)
    *
-   * Dependency: [mainWordFontSize] only.
-   * currentWordIndex is DELIBERATELY EXCLUDED — layout does not change per word.
-   * This runs at mount (initial measurement) and whenever font size changes.
+   * Called: on mount, on mainWordFontSize change, on viewport resize.
+   * currentWordIndex is DELIBERATELY NEVER a dependency — ORP is fixed, not per-word.
    */
-  useEffect(() => {
+  const measureAndSetVars = useCallback(() => {
     if (!measureRef.current || !viewportRef.current) return;
 
-    const charRect  = measureRef.current.getBoundingClientRect();
-    const charWidth = charRect.width;
+    const spanRect   = measureRef.current.getBoundingClientRect();
+    const charWidth  = spanRect.width;
+    const lineHeight = spanRect.height;
 
     // PADDING_LEFT matches the hardcoded 16px in .wordRow CSS.
     // Both must be kept in sync. The CSS spec says --space-4 = 16px (immutable).
@@ -175,11 +176,34 @@ const ReaderViewport = memo(function ReaderViewport({
 
     const preOrpColWidth = PRE_ORP_CHARS * charWidth;
     const tickX          = PADDING_LEFT + preOrpColWidth + charWidth * 0.5;
+    const tickHeight     = Math.max(10, Math.round(lineHeight * 0.55));
 
-    viewportRef.current.style.setProperty('--pre-orp-col',    `${preOrpColWidth}px`);
-    viewportRef.current.style.setProperty('--focal-tick-x',   `${tickX}px`);
-  }, [mainWordFontSize]);
-  // ⚠️ currentWordIndex DELIBERATELY EXCLUDED — ORP position is fixed, not per-word.
+    viewportRef.current.style.setProperty('--pre-orp-col',  `${preOrpColWidth}px`);
+    viewportRef.current.style.setProperty('--focal-tick-x', `${tickX}px`);
+    viewportRef.current.style.setProperty('--focal-tick-h', `${tickHeight}px`);
+  }, []);
+  // ⚠️ currentWordIndex is DELIBERATELY ABSENT from deps.
+  // mainWordFontSize is NOT in deps here — the useEffect below handles that trigger.
+
+  // Effect 1: re-measure when font size preference changes
+  useEffect(() => {
+    measureAndSetVars();
+  }, [mainWordFontSize, measureAndSetVars]);
+  // ⚠️ currentWordIndex DELIBERATELY EXCLUDED.
+
+  // Effect 2: re-measure when the viewport container is resized
+  // (handles vw-based clamp font changes on window resize)
+  useEffect(() => {
+    if (!viewportRef.current) return;
+
+    const ro = new ResizeObserver(() => {
+      measureAndSetVars();
+    });
+
+    ro.observe(viewportRef.current);
+    return () => ro.disconnect();
+  }, [measureAndSetVars]);
+  // ⚠️ currentWordIndex DELIBERATELY EXCLUDED.
 
   const scaledFont = computeMainWordFontSize(fullHeight ?? false, userScale);
 

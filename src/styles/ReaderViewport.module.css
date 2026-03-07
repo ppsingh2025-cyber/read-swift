@@ -274,8 +274,8 @@
   left: var(--focal-tick-x, 16px);  /* fallback = padding-left only */
   transform: translateX(-50%);
   width: 0;
-  /* Short 16px ticks — absolute pixels, never percentage */
-  height: 16px;
+  /* Tick height scales with the rendered line height — set by JS via --focal-tick-h */
+  height: var(--focal-tick-h, 16px);
   border-left: 1.5px solid #666;
   pointer-events: none;
   z-index: 0;
@@ -288,7 +288,7 @@
   left: var(--focal-tick-x, 16px);  /* fallback = padding-left only */
   transform: translateX(-50%);
   width: 0;
-  height: 16px;
+  height: var(--focal-tick-h, 16px);
   border-left: 1.5px solid #666;
   pointer-events: none;
   z-index: 0;
