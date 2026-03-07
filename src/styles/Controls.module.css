@@ -6,7 +6,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2, 8px);
-  padding: var(--space-2, 8px) var(--space-4, 16px) var(--space-3, 12px);
+  padding: var(--space-2, 8px) var(--space-4, 16px);
   background: var(--bg-panel);
   border-top: 1px solid var(--border);
   position: sticky;
@@ -26,15 +26,48 @@
   }
 }
 
+/* ─── Inner container — constrains rows on wide screens ─────────── */
+
+.inner {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 10px);
+  padding: var(--space-2, 8px) var(--space-3, 12px) var(--space-3, 12px);
+}
+
+/* On narrow screens (mobile), card chrome is redundant — remove it */
+@media (max-width: 520px) {
+  .inner {
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    max-width: 100%;
+  }
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+  .inner {
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    max-width: 100%;
+    gap: var(--space-1, 4px);
+  }
+}
+
 /* ─── Row 1: Info ─────────────────────────────────────────────────── */
 
 .infoRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
   min-height: 28px;
-  padding: 0 var(--space-1, 4px);
 }
 
 .wordCount {
@@ -52,8 +85,6 @@
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
-  padding: 0 var(--space-1, 4px);
 }
 
 .hiddenInput {
@@ -231,8 +262,6 @@
   flex-direction: row;
   align-items: center;
   gap: var(--space-2, 8px);
-  width: 100%;
-  padding: 0 var(--space-1, 4px);
 }
 
 /* WPM +/- buttons — same visual family as controlBtn but text-only */

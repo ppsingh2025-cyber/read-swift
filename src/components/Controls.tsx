@@ -114,6 +114,7 @@ export default function Controls({
 
   return (
     <div className={styles.controls}>
+      <div className={styles.inner}>
 
       {/* ── Row 1: Info — word count (left) + page nav (right) ── */}
       <div className={styles.infoRow}>
@@ -317,6 +318,7 @@ export default function Controls({
         <span className={styles.wpmLabel}>{wpm} WPM</span>
       </div>
 
+      </div>
     </div>
   );
 }
