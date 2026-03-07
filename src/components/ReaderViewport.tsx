@@ -20,7 +20,7 @@
  *   currentWordIndex is NEVER in the dependency array — ticks are static.
  */
 
-import { memo, useEffect, useRef } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import type { Orientation } from '../context/readerContextDef';
 import styles from '../styles/ReaderViewport.module.css';
@@ -55,6 +55,16 @@ interface ReaderViewportProps {
   focalLine?: boolean;
   /** All loaded words — used to gate tick mark visibility */
   words?: string[];
+  /** Current 0-based word index — used for the word-count overlay */
+  currentWordIndex?: number;
+  /** Total word count — used for the word-count overlay */
+  totalWordCount?: number;
+  /** Current 1-indexed page — used for page-nav overlay */
+  currentPage?: number;
+  /** Total page count — used for page-nav overlay */
+  totalPages?: number;
+  /** Jump to page callback — used for page-nav overlay */
+  goToPage?: (page: number) => void;
 }
 
 /**
@@ -118,6 +128,11 @@ const ReaderViewport = memo(function ReaderViewport({
   onShowPaste,
   focalLine = false,
   words = [],
+  currentWordIndex,
+  totalWordCount,
+  currentPage,
+  totalPages,
+  goToPage,
 }: ReaderViewportProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   /** Outermost viewport div — receives --pre-orp-col and --focal-tick-x CSS variables */
@@ -130,6 +145,22 @@ const ReaderViewport = memo(function ReaderViewport({
     const file = e.target.files?.[0];
     if (file && onFileSelect) onFileSelect(file);
   };
+
+  /* ── Page-jump popover ──────────────────────────────────────── */
+  const [showPageJump, setShowPageJump] = useState(false);
+  const [pageJumpDraft, setPageJumpDraft] = useState('');
+  const pageJumpRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showPageJump) return;
+    const handler = (e: MouseEvent) => {
+      if (pageJumpRef.current && !pageJumpRef.current.contains(e.target as Node)) {
+        setShowPageJump(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showPageJump]);
 
   const userScale   = mainWordFontSize / 100;
   const isMultiWord = wordWindow.length > 1;
@@ -153,20 +184,21 @@ const ReaderViewport = memo(function ReaderViewport({
   const postOrpText = currentWord.slice(orpIdx + 1);
 
   /**
-   * Measure font metrics to set CSS variables for ORP-aligned layout.
+   * Measure font metrics and update CSS variables for ORP-aligned layout.
    *
-   * --pre-orp-col : 3 × charWidth — fixed pre-ORP column (right-aligned)
-   * --focal-tick-x: padding-left + pre-orp-col + 0.5 × charWidth — tick center
+   * --pre-orp-col : 3 × charWidth
+   * --focal-tick-x: padding-left + pre-orp-col + 0.5 × charWidth
+   * --focal-tick-h: max(10px, lineHeight × 0.55)
    *
-   * Dependency: [mainWordFontSize] only.
-   * currentWordIndex is DELIBERATELY EXCLUDED — layout does not change per word.
-   * This runs at mount (initial measurement) and whenever font size changes.
+   * Called: on mount, on mainWordFontSize change, on viewport resize.
+   * currentWordIndex is DELIBERATELY NEVER a dependency — ORP is fixed, not per-word.
    */
-  useEffect(() => {
+  const measureAndSetVars = useCallback(() => {
     if (!measureRef.current || !viewportRef.current) return;
 
-    const charRect  = measureRef.current.getBoundingClientRect();
-    const charWidth = charRect.width;
+    const spanRect   = measureRef.current.getBoundingClientRect();
+    const charWidth  = spanRect.width;
+    const lineHeight = spanRect.height;
 
     // PADDING_LEFT matches the hardcoded 16px in .wordRow CSS.
     // Both must be kept in sync. The CSS spec says --space-4 = 16px (immutable).
@@ -175,11 +207,34 @@ const ReaderViewport = memo(function ReaderViewport({
 
     const preOrpColWidth = PRE_ORP_CHARS * charWidth;
     const tickX          = PADDING_LEFT + preOrpColWidth + charWidth * 0.5;
+    const tickHeight     = Math.max(10, Math.round(lineHeight * 0.55));
 
-    viewportRef.current.style.setProperty('--pre-orp-col',    `${preOrpColWidth}px`);
-    viewportRef.current.style.setProperty('--focal-tick-x',   `${tickX}px`);
-  }, [mainWordFontSize]);
-  // ⚠️ currentWordIndex DELIBERATELY EXCLUDED — ORP position is fixed, not per-word.
+    viewportRef.current.style.setProperty('--pre-orp-col',  `${preOrpColWidth}px`);
+    viewportRef.current.style.setProperty('--focal-tick-x', `${tickX}px`);
+    viewportRef.current.style.setProperty('--focal-tick-h', `${tickHeight}px`);
+  }, []);
+  // ⚠️ currentWordIndex is DELIBERATELY ABSENT from deps.
+  // mainWordFontSize is NOT in deps here — the useEffect below handles that trigger.
+
+  // Effect 1: re-measure when font size preference changes
+  useEffect(() => {
+    measureAndSetVars();
+  }, [mainWordFontSize, measureAndSetVars]);
+  // ⚠️ currentWordIndex DELIBERATELY EXCLUDED.
+
+  // Effect 2: re-measure when the viewport container is resized
+  // (handles vw-based clamp font changes on window resize)
+  useEffect(() => {
+    if (!viewportRef.current) return;
+
+    const ro = new ResizeObserver(() => {
+      measureAndSetVars();
+    });
+
+    ro.observe(viewportRef.current);
+    return () => ro.disconnect();
+  }, [measureAndSetVars]);
+  // ⚠️ currentWordIndex DELIBERATELY EXCLUDED.
 
   const scaledFont = computeMainWordFontSize(fullHeight ?? false, userScale);
 
@@ -368,6 +423,74 @@ const ReaderViewport = memo(function ReaderViewport({
             })}
 
           </div>
+
+        </div>
+      )}
+      {/* ── Bottom overlays — page nav (left) + word count (right) ── */}
+      {hasWords && !isLoading && (
+        <div className={styles.overlayBar}>
+
+          {currentPage !== undefined && totalPages !== undefined && totalPages > 1 && goToPage && (
+            <div className={styles.pageNavOverlay} ref={pageJumpRef}>
+              <button
+                className={styles.pageNavBtn}
+                onClick={() => goToPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage <= 1}
+                aria-label="Previous page"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                     strokeLinecap="round" strokeLinejoin="round" width="10" height="10" aria-hidden="true">
+                  <polyline points="15 6 9 12 15 18"/>
+                </svg>
+              </button>
+              <button
+                className={styles.pagePillOverlay}
+                onClick={() => { setPageJumpDraft(String(currentPage)); setShowPageJump(p => !p); }}
+                aria-label={`Page ${currentPage} of ${totalPages}`}
+              >
+                p.{currentPage}/{totalPages}
+              </button>
+              <button
+                className={styles.pageNavBtn}
+                onClick={() => goToPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage >= totalPages}
+                aria-label="Next page"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                     strokeLinecap="round" strokeLinejoin="round" width="10" height="10" aria-hidden="true">
+                  <polyline points="9 6 15 12 9 18"/>
+                </svg>
+              </button>
+              {showPageJump && (
+                <div className={styles.pageJumpPopover}>
+                  <input
+                    type="number" min={1} max={totalPages}
+                    value={pageJumpDraft}
+                    className={styles.pageJumpInput}
+                    onChange={e => setPageJumpDraft(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        const v = parseInt(pageJumpDraft, 10);
+                        if (v >= 1 && v <= totalPages) { goToPage(v); setShowPageJump(false); }
+                      }
+                      if (e.key === 'Escape') setShowPageJump(false);
+                    }}
+                    autoFocus
+                    aria-label="Jump to page"
+                  />
+                  <span className={styles.pageJumpHint}>Enter to jump</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {currentWordIndex !== undefined && totalWordCount !== undefined && (
+            <span className={styles.wordCountOverlay}>
+              {(currentWordIndex + 1).toLocaleString()}
+              <span className={styles.wcSep}>/</span>
+              {totalWordCount.toLocaleString()}
+            </span>
+          )}
 
         </div>
       )}

@@ -1,40 +1,16 @@
 /**
  * Controls
  *
- * Three-row playback panel (v1.0.6):
- *   Row 1 – Info: word count (left) + page navigation (right)
- *   Row 2 – Action buttons: Upload · Paste · Back · Play/Pause · Next · Reset
- *   Row 3 – Speed: − · logarithmic slider · + · WPM readout
+ * Two-row playback panel:
+ *   Row 1 – Action buttons: Upload · Paste · Back · Play/Pause · Next · Reload
+ *   Row 2 – WPM pill stepper: [−] 300 WPM [+]
  *
  * All interactive elements meet the 44 px minimum touch-target size.
- * Progress bar removed — word count and page pill are sufficient navigation.
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useReaderContext } from '../context/useReaderContext';
 import styles from '../styles/Controls.module.css';
-
-const MIN_WPM = 60;
-const MAX_WPM = 1500;
-const SLIDER_MIN = 0;
-const SLIDER_MAX = 100;
-
-function wpmToSlider(wpm: number): number {
-  return (
-    ((Math.log(wpm) - Math.log(MIN_WPM)) /
-      (Math.log(MAX_WPM) - Math.log(MIN_WPM))) *
-    (SLIDER_MAX - SLIDER_MIN)
-  );
-}
-
-function sliderToWpm(sliderVal: number): number {
-  return Math.round(
-    Math.exp(
-      Math.log(MIN_WPM) +
-        (sliderVal / SLIDER_MAX) * (Math.log(MAX_WPM) - Math.log(MIN_WPM)),
-    ),
-  );
-}
 
 interface ControlsProps {
   onFileSelect: (file: File) => void;
@@ -66,25 +42,14 @@ export default function Controls({
   pasteOpen,
   focused,
 }: ControlsProps) {
-  const { isPlaying, wpm, setWpm, words, isLoading, currentWordIndex,
-    totalPages, currentPage, goToPage } =
+  const { isPlaying, wpm, setWpm, words, isLoading, currentWordIndex } =
     useReaderContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  /* ── Page-jump popover ──────────────────────────────────────── */
-  const [showPageJump, setShowPageJump] = useState(false);
-  const pageJumpRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!showPageJump) return;
-    const handler = (e: MouseEvent) => {
-      if (pageJumpRef.current && !pageJumpRef.current.contains(e.target as Node)) {
-        setShowPageJump(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [showPageJump]);
+  /* ── WPM inline edit ─────────────────────────────────────────── */
+  const [wpmEditing, setWpmEditing] = useState(false);
+  const [wpmDraft,   setWpmDraft]   = useState('');
+  const wpmInputRef = useRef<HTMLInputElement>(null);
 
   /* ── File upload ─────────────────────────────────────────────── */
   const handleFileClick = useCallback(() => {
@@ -102,79 +67,13 @@ export default function Controls({
     [onFileSelect],
   );
 
-  /* ── Speed slider ────────────────────────────────────────────── */
-  const handleSliderChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setWpm(sliderToWpm(Number(e.target.value)));
-    },
-    [setWpm],
-  );
-
   const hasWords = words.length > 0;
 
   return (
     <div className={styles.controls}>
+      <div className={styles.inner}>
 
-      {/* ── Row 1: Info — word count (left) + page nav (right) ── */}
-      <div className={styles.infoRow}>
-        <span className={styles.wordCount}>
-          {hasWords
-            ? `${(currentWordIndex + 1).toLocaleString()} / ${words.length.toLocaleString()}`
-            : '—'}
-        </span>
-
-        {hasWords && totalPages > 1 && (
-          <div className={styles.pageNav} ref={pageJumpRef}>
-            <button
-              className={styles.pageSkipBtn}
-              onClick={() => goToPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage <= 1}
-              aria-label="Previous page"
-            >−</button>
-
-            <button
-              className={styles.pagePill}
-              onClick={() => setShowPageJump(prev => !prev)}
-              aria-label={`Page ${currentPage} of ${totalPages}`}
-            >
-              p.{currentPage}/{totalPages}
-            </button>
-
-            <button
-              className={styles.pageSkipBtn}
-              onClick={() => goToPage(Math.min(totalPages, currentPage + 1))}
-              disabled={currentPage >= totalPages}
-              aria-label="Next page"
-            >+</button>
-
-            {showPageJump && (
-              <div className={styles.pageJumpPopover}>
-                <input
-                  type="number"
-                  min={1}
-                  max={totalPages}
-                  defaultValue={currentPage}
-                  className={styles.pageJumpInput}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') {
-                      const val = Number((e.target as HTMLInputElement).value);
-                      if (val >= 1 && val <= totalPages) {
-                        goToPage(val);
-                        setShowPageJump(false);
-                      }
-                    }
-                    if (e.key === 'Escape') setShowPageJump(false);
-                  }}
-                  autoFocus
-                />
-                <span className={styles.pageJumpHint}>Enter page number + Enter to jump</span>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* ── Row 2: Action buttons ───────────────────────────────── */}
+      {/* ── Row 1: Action buttons ───────────────────────────────── */}
       <div className={styles.actionRow}>
         <input
           ref={fileInputRef}
@@ -228,9 +127,9 @@ export default function Controls({
           title="Previous word (←)"
           aria-label="Previous word"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
                strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <polyline points="15 18 9 12 15 6"/>
+            <polyline points="15 6 9 12 15 18"/>
           </svg>
           <span className={styles.controlBtnLabel}>Back</span>
         </button>
@@ -262,9 +161,9 @@ export default function Controls({
           title="Next word (→)"
           aria-label="Next word"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
                strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <polyline points="9 18 15 12 9 6"/>
+            <polyline points="9 6 15 12 9 18"/>
           </svg>
           <span className={styles.controlBtnLabel}>Next</span>
         </button>
@@ -273,50 +172,81 @@ export default function Controls({
           className={styles.resetBtn}
           onClick={onReset}
           disabled={!hasWords}
-          title="Restart from beginning"
-          aria-label="Restart"
+          title="Reload from beginning"
+          aria-label="Reload"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+          {/* Clockwise circular reload arrow — matches browser refresh */}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"
                strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-            <path d="M3 3v5h5"/>
+            <path d="M21 12a9 9 0 1 1-2.64-6.36L21 3v6h-6"/>
           </svg>
-          <span className={styles.resetBtnLabel}>Reset</span>
+          <span className={styles.resetBtnLabel}>Reload</span>
         </button>
       </div>
 
-      {/* ── Row 3: WPM slider ───────────────────────────────────── */}
-      <div className={styles.wpmRow}>
+      {/* ── WPM pill stepper ── */}
+      <div className={styles.wpmPill}>
         <button
-          className={styles.wpmAdjBtn}
+          className={styles.wpmPillBtn}
           onClick={onSlower}
           disabled={isLoading}
-          title="Slower (↓)"
           aria-label="Decrease speed"
-        >−</button>
+          title="Slower (↓)"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+               strokeLinecap="round" strokeLinejoin="round" width="14" height="14" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
 
-        <input
-          type="range"
-          min={SLIDER_MIN}
-          max={SLIDER_MAX}
-          step={1}
-          value={wpmToSlider(wpm)}
-          onChange={handleSliderChange}
-          className={styles.wpmSlider}
-          aria-label={`Reading speed: ${wpm} words per minute`}
-        />
+        {wpmEditing ? (
+          <input
+            ref={wpmInputRef}
+            type="number"
+            className={styles.wpmPillInput}
+            value={wpmDraft}
+            min={60}
+            max={1500}
+            onChange={(e) => setWpmDraft(e.target.value)}
+            onBlur={() => {
+              const v = parseInt(wpmDraft, 10);
+              if (!isNaN(v)) setWpm(Math.min(1500, Math.max(60, v)));
+              setWpmEditing(false);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+              if (e.key === 'Escape') setWpmEditing(false);
+            }}
+            autoFocus
+            aria-label="Words per minute"
+          />
+        ) : (
+          <button
+            className={styles.wpmPillValue}
+            onClick={() => { setWpmDraft(String(wpm)); setWpmEditing(true); }}
+            aria-label={`${wpm} words per minute, tap to edit`}
+            title="Tap to set exact WPM"
+          >
+            {wpm} <span className={styles.wpmUnit}>WPM</span>
+          </button>
+        )}
 
         <button
-          className={styles.wpmAdjBtn}
+          className={styles.wpmPillBtn}
           onClick={onFaster}
           disabled={isLoading}
-          title="Faster (↑)"
           aria-label="Increase speed"
-        >+</button>
-
-        <span className={styles.wpmLabel}>{wpm} WPM</span>
+          title="Faster (↑)"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+               strokeLinecap="round" strokeLinejoin="round" width="14" height="14" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5"  y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
       </div>
 
+      </div>
     </div>
   );
 }

@@ -1,113 +1,96 @@
 /**
- * HelpModal — "How to Use"
- *
- * Step-by-step guide written from the user's perspective.
- * Tone: clear, direct, action-oriented.
+ * HelpModal — iOS Settings-style reference list.
+ * Single scroll, 4 sections, every item always visible.
+ * No tabs, no accordions, no expand/collapse.
  */
-
 import styles from '../styles/HelpModal.module.css';
 
-interface HelpModalProps {
-  onClose: () => void;
-}
+interface HelpModalProps { onClose: () => void; }
+interface HelpItem { icon: string; color: string; title: string; desc: string; }
+interface HelpSection { heading: string; items: HelpItem[]; }
+
+const SECTIONS: HelpSection[] = [
+  {
+    heading: 'Getting Started',
+    items: [
+      { icon: '📂', color: '#4a7fa0', title: 'Upload a file',      desc: 'Tap UPLOAD to load a PDF, EPUB, TXT, MD, HTML, RTF, SRT, or DOCX (up to 100 MB).' },
+      { icon: '📋', color: '#7a6fa0', title: 'Paste text or URL',  desc: 'Tap PASTE to open the text panel. Paste directly or enter a URL to fetch an article.' },
+      { icon: '▶',  color: '#3a8f5a', title: 'Press Play',         desc: 'Tap PLAY or press Space. Words flash one at a time at your chosen speed.' },
+      { icon: '⚡', color: '#b87a20', title: 'Set your speed',     desc: 'Drag the slider or tap − / + to adjust WPM. Start at 200–300 and increase gradually.' },
+    ],
+  },
+  {
+    heading: 'Playback & Navigation',
+    items: [
+      { icon: '⏮',  color: '#4a6a8a', title: 'Back & Next',          desc: 'Step one word backward or forward. Keyboard: ← and →.' },
+      { icon: '↩',  color: '#7a4a4a', title: 'Reset',                 desc: 'Returns to word 0. Your text stays loaded.' },
+      { icon: '📄', color: '#4a5a7a', title: 'Page navigation',       desc: 'For PDFs and EPUBs, use − p.2/967 + in the info row. Tap the page pill to type any page number.' },
+      { icon: '#',  color: '#4a7a6a', title: 'Jump to any word',      desc: 'Click the word counter (e.g. 42 / 3000), type a number, press Enter.' },
+      { icon: '📜', color: '#5a6a7a', title: 'Context preview',       desc: 'The panel below the viewport shows surrounding text. Tap to see more context.' },
+    ],
+  },
+  {
+    heading: 'Display & Modes',
+    items: [
+      { icon: '☰',  color: '#3a6a7a', title: 'Reading modes',         desc: 'Open ☰ and choose a Reading Mode preset. Each bundles optimal settings for that goal.' },
+      { icon: '🎯', color: '#8a4a4a', title: 'ORP — Key letter',      desc: 'The coloured letter is your eye\'s anchor. Keep your gaze on the tick marks — words come to you.' },
+      { icon: '|',  color: '#6a6a8a', title: 'Focal line',            desc: 'Tick marks show where the key letter always lands. Train your eye to rest here before pressing Play.' },
+      { icon: '1',  color: '#5a7a4a', title: 'Words at once',         desc: '1 word = maximum focus. 2–3 words = more natural flow. Set under Display in ☰.' },
+      { icon: '🌫', color: '#5a5a7a', title: 'Peripheral fade',       desc: 'Dims context words so the main word stands out. Enable under Reading Features in ☰.' },
+      { icon: '⊞',  color: '#4a5a6a', title: 'Focus mode',           desc: 'Tap ⊞ on the viewport for fullscreen — word and tick marks only, no UI.' },
+      { icon: '🎨', color: '#7a5a3a', title: 'Themes',               desc: 'Midnight · Warm · Day. Switch in ☰ → Display. Midnight and Warm reduce eye fatigue.' },
+      { icon: '☀',  color: '#7a6a3a', title: 'Theme toggle',         desc: 'Also available as ☀ / 🌙 button in the top-right corner for quick switching.' },
+    ],
+  },
+  {
+    heading: 'Tips & Shortcuts',
+    items: [
+      { icon: '🐢', color: '#4a7a4a', title: 'Start slow',            desc: 'Begin at 200–300 WPM. Increase by 25 WPM each session. Rushing destroys comprehension.' },
+      { icon: '👁',  color: '#4a4a7a', title: 'Lock your gaze',      desc: 'Keep eyes completely still on the tick marks. RSVP brings words to you — never chase them.' },
+      { icon: '↺',  color: '#4a6a7a', title: 'Resume reading',       desc: 'Open ☰ → Reading History → Resume. Re-upload the file when prompted. Exact word restored.' },
+      { icon: '⌨',  color: '#5a4a7a', title: 'Keyboard shortcuts',   desc: 'Space: Play/Pause  ·  ← →: Step words  ·  ↑ ↓: Speed  ·  Esc: Close panels' },
+      { icon: '⏱',  color: '#7a4a6a', title: 'Short sessions first', desc: 'RSVP is cognitively intense. Build from 5–10 min sessions before attempting long reads.' },
+    ],
+  },
+];
 
 export default function HelpModal({ onClose }: HelpModalProps) {
   return (
-    /* Backdrop — click outside to close */
     <div className={styles.backdrop} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="How to Use ReadSwift">
+      <div
+        className={styles.modal}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="How to use ReadSwift"
+      >
         <div className={styles.header}>
-          <h2 className={styles.title}>📖 How to Use ReadSwift</h2>
+          <h2 className={styles.title}>How to use ReadSwift</h2>
           <button className={styles.closeBtn} onClick={onClose} aria-label="Close help">✕</button>
         </div>
 
-        <div className={styles.body}>
-
-          {/* ── Load content ── */}
-          <section className={styles.section}>
-            <h3 className={styles.sectionTitle}>1. Upload or Paste Content</h3>
-            <ul className={styles.featureList}>
-              <li>Click <strong>📂 Upload File</strong> to open a PDF, EPUB, TXT, MD, HTML, RTF, SRT, or DOCX (up to 100 MB).</li>
-              <li>Click <strong>📋 Paste / URL</strong> to paste text directly or enter a web URL to fetch an article.</li>
-              <li>Click a title in <strong>Reading History</strong> to resume exactly where you left off.</li>
-            </ul>
-          </section>
-
-          {/* ── Adjust speed ── */}
-          <section className={styles.section}>
-            <h3 className={styles.sectionTitle}>2. Adjust Reading Speed</h3>
-            <ul className={styles.featureList}>
-              <li>Drag the <strong>speed slider</strong> or click <kbd>−</kbd> / <kbd>+</kbd> to change WPM (60 – 1500).</li>
-              <li>Start at <strong>200 – 300 WPM</strong> and increase gradually each session.</li>
-              <li>Use keyboard: <kbd>↑</kbd> to go faster, <kbd>↓</kbd> to go slower.</li>
-            </ul>
-          </section>
-
-          {/* ── Play ── */}
-          <section className={styles.section}>
-            <h3 className={styles.sectionTitle}>3. Start Reading</h3>
-            <ul className={styles.featureList}>
-              <li>Press <strong>▶ Play</strong> or tap <kbd>Space</kbd> to begin.</li>
-              <li>Press <kbd>Space</kbd> again, click <strong>⏸</strong>, or tap the reading area to pause. Your position is saved automatically.</li>
-              <li>Click <strong>↩</strong> to restart from the beginning at any time.</li>
-            </ul>
-          </section>
-
-          {/* ── Navigate ── */}
-          <section className={styles.section}>
-            <h3 className={styles.sectionTitle}>4. Navigate Pages or Words</h3>
-            <ul className={styles.featureList}>
-              <li>Use <kbd>←</kbd> / <kbd>→</kbd> to step word by word, or click <strong>‹ ›</strong> in the controls.</li>
-              <li>Click the <strong>progress bar</strong> to jump to any position in the text.</li>
-              <li>Click the <strong>word counter</strong> (e.g. <em>42 / 3000</em>), type a number, and press <kbd>Enter</kbd> to jump directly.</li>
-              <li>For PDFs and EPUBs, use the <strong>page/chapter navigator</strong> to jump to any section.</li>
-            </ul>
-          </section>
-
-          {/* ── Customize ── */}
-          <section className={styles.section}>
-            <h3 className={styles.sectionTitle}>5. Customize the Display</h3>
-            <ul className={styles.featureList}>
-              <li>Open the <strong>☰ menu</strong> to adjust window size (1 – 5 words), orientation, and highlight colour.</li>
-              <li>Use <strong>Window size</strong> to read 1, 2, 3, 4, or 5 words at once — higher counts give more context per flash, lower counts maximise focus. Default is 2 words.</li>
-              <li>Use <strong>Chunk mode</strong> to choose how words are grouped: <em>Fixed</em> groups by the exact window size, while <em>Intelligent</em> forms natural phrase-length chunks for smoother reading.</li>
-              <li>Use <strong>Font size</strong> (60 – 200 %) to scale the main reading word up or down independently of the peripheral words.</li>
-              <li>Enable <strong>ORP</strong> to highlight the focal letter in each word and guide your eye.</li>
-              <li>Enable <strong>Peripheral fade</strong> to dim the surrounding words so the focal word stands out more sharply.</li>
-              <li>Enable <strong>Long-word compensation</strong> to add a small extra pause when a word is unusually long, giving your eyes more time to process it.</li>
-              <li>Enable <strong>Punctuation pause</strong> to add natural pauses after sentence-ending marks.</li>
-              <li>Click the <strong>☀</strong> (Day) or <strong>🌙</strong> (Night) button in the top-right corner to toggle between Day and Night mode. The app logo beside the title also switches automatically — no page reload needed.</li>
-              <li>Click the <strong>?</strong> button in the top-right corner to re-open this guide at any time.</li>
-              <li>Click <strong>⊞</strong> on the viewport to enter focus mode for distraction-free reading.</li>
-            </ul>
-          </section>
-
-          {/* ── History ── */}
-          <section className={styles.section}>
-            <h3 className={styles.sectionTitle}>6. Resume from Reading History</h3>
-            <ul className={styles.featureList}>
-              <li>Every document you read is saved automatically with your last position, word count, and date.</li>
-              <li>Open <strong>Reading History</strong> in the menu, then click <strong>↩ Resume</strong> next to a title.</li>
-              <li>Re-upload the file when prompted — ReadSwift will restore your exact position.</li>
-            </ul>
-          </section>
-
-          {/* ── Shortcuts ── */}
-          <section className={styles.section}>
-            <h3 className={styles.sectionTitle}>⌨ Keyboard Shortcuts</h3>
-            <table className={styles.shortcutTable}>
-              <tbody>
-                <tr><td><kbd>Space</kbd></td><td>Play / Pause</td></tr>
-                <tr><td><kbd>←</kbd></td><td>Previous word</td></tr>
-                <tr><td><kbd>→</kbd></td><td>Next word</td></tr>
-                <tr><td><kbd>↑</kbd></td><td>Increase speed (×1.2)</td></tr>
-                <tr><td><kbd>↓</kbd></td><td>Decrease speed (÷1.2)</td></tr>
-                <tr><td><kbd>Esc</kbd></td><td>Close panels / exit focus</td></tr>
-              </tbody>
-            </table>
-            <p className={styles.note}>Shortcuts are disabled when a text input or button is focused.</p>
-          </section>
-
+        <div className={styles.scroll}>
+          {SECTIONS.map((section) => (
+            <div key={section.heading} className={styles.section}>
+              <p className={styles.sectionHeading}>{section.heading}</p>
+              {section.items.map((item) => (
+                <div key={item.title} className={styles.row}>
+                  <span
+                    className={styles.iconWrap}
+                    style={{ background: item.color + '28', color: item.color }}
+                    aria-hidden="true"
+                  >
+                    {item.icon}
+                  </span>
+                  <div className={styles.rowText}>
+                    <span className={styles.rowTitle}>{item.title}</span>
+                    <span className={styles.rowDesc}>{item.desc}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+          <p className={styles.version}>ReadSwift — Speed Reading Tool</p>
         </div>
       </div>
     </div>

@@ -39,6 +39,9 @@ import SignInPrompt from './auth/SignInPrompt';
 import UserAvatar from './components/UserAvatar';
 import SyncStatusIndicator from './components/SyncStatusIndicator';
 import { Toaster } from 'react-hot-toast';
+import { PRESET_MODES } from './config/readingModePresets';
+import type { Theme } from './context/readerContextDef';
+import type { PresetModeId } from './types/readingModes';
 import './styles/app.css';
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
@@ -65,6 +68,8 @@ export default function App() {
     mainWordFontSize,
     chunkMode,
     focalLine,
+    currentPage,
+    totalPages,
     setWords,
     setCurrentWordIndex,
     setFileMetadata,
@@ -77,6 +82,10 @@ export default function App() {
     setRecords,
     resetSessionStats,
     setWpm,
+    goToPage,
+    setTheme,
+    applyMode,
+    setActiveMode,
   } = useReaderContext();
 
   const { wordWindow, play, pause, reset, faster, slower, prevWord, nextWord } = useRSVPEngine();
@@ -322,10 +331,16 @@ export default function App() {
 
   const toggleFocus = useCallback(() => setIsFocused((f) => !f), []);
   const togglePaste = useCallback(() => setShowPaste((p) => !p), []);
-  const completeOnboarding = useCallback(() => {
-    localStorage.setItem('fastread_onboarding_complete', 'true');
-    setShowOnboarding(false);
-  }, []);
+  const completeOnboarding = useCallback(
+    (prefs: { theme: Theme; modeId: PresetModeId }) => {
+      setTheme(prefs.theme);
+      applyMode(PRESET_MODES[prefs.modeId].settings);
+      setActiveMode(prefs.modeId);
+      localStorage.setItem('fastread_onboarding_complete', 'true');
+      setShowOnboarding(false);
+    },
+    [setTheme, applyMode, setActiveMode],
+  );
 
   return (
     <AuthProvider>
@@ -383,6 +398,11 @@ export default function App() {
             onShowPaste={togglePaste}
             focalLine={focalLine}
             words={words}
+            currentWordIndex={currentWordIndex}
+            totalWordCount={words.length}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            goToPage={goToPage}
           />
           {/* Maximize / minimize button */}
           <button
@@ -394,13 +414,22 @@ export default function App() {
             {isFocused ? '⊡' : '⊞'}
           </button>
         </div>
-        {!isFocused && <ContextPreview />}
-      </main>
+        </main>
+
+      {!isFocused && (
+        <div className="contextStrip">
+          <ContextPreview />
+        </div>
+      )}
 
       {/* ── Paste / URL panel (above bottom bar, collapsible) ───── */}
       {showPaste && !isFocused && (
         <div className="pasteArea">
-          <InputPanel onTextReady={handleTextReady} />
+          <InputPanel
+            onTextReady={handleTextReady}
+            onClose={() => setShowPaste(false)}
+            wpm={wpm}
+          />
         </div>
       )}
 
