@@ -1,0 +1,316 @@
+/* SaveModeWizard.module.css */
+
+/* ── Overlay ──────────────────────────────────────────────────────── */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 700;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+}
+
+@media (min-width: 640px) {
+  .overlay {
+    align-items: center;
+  }
+}
+
+/* ── Sheet / modal ──────────────────────────────────────────────── */
+
+.sheet {
+  background: var(--bg-panel, #111);
+  border: 1px solid var(--border, #1e1e1e);
+  border-radius: 14px 14px 0 0;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .sheet {
+    border-radius: 14px;
+    max-width: 380px;
+  }
+}
+
+/* ── Header ─────────────────────────────────────────────────────── */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.1rem 0.75rem;
+  border-bottom: 1px solid var(--border, #1e1e1e);
+}
+
+.title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text, #f0f0f0);
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted, #888);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.closeBtn:hover {
+  color: var(--text, #f0f0f0);
+  background: var(--bg-input, #1a1a1a);
+}
+
+/* ── Progress bar ───────────────────────────────────────────────── */
+
+.progress {
+  height: 3px;
+  background: var(--border, #1e1e1e);
+  width: 100%;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--color-accent, #22d3ee);
+  transition: width 0.25s ease;
+}
+
+/* ── Body ───────────────────────────────────────────────────────── */
+
+.body {
+  flex: 1;
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 180px;
+}
+
+.stepLabel {
+  font-size: 0.7rem;
+  color: var(--text-faint, #555);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.stepContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.question {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text, #f0f0f0);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Name input ─────────────────────────────────────────────────── */
+
+.nameInput {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.55rem 0.75rem;
+  background: var(--bg-input, #1a1a1a);
+  border: 1px solid var(--border-input, #2a2a2a);
+  border-radius: 8px;
+  color: var(--text, #f0f0f0);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.nameInput:focus {
+  border-color: var(--color-accent, #22d3ee);
+}
+
+.hint {
+  font-size: 0.72rem;
+  color: var(--text-faint, #555);
+  margin: 0;
+}
+
+/* ── Option buttons ─────────────────────────────────────────────── */
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.optionBtn {
+  padding: 0.4rem 1rem;
+  background: var(--bg-input, #1a1a1a);
+  border: 1.5px solid var(--border, #1e1e1e);
+  border-radius: 8px;
+  color: var(--text-muted, #888);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.optionBtn:hover {
+  background: var(--bg-panel, #222);
+  border-color: var(--border-input, #2a2a2a);
+  color: var(--text, #f0f0f0);
+}
+
+.optionBtnActive {
+  border-color: var(--color-accent, #22d3ee);
+  background: color-mix(in srgb, var(--color-accent, #22d3ee) 12%, var(--bg-input, #1a1a1a));
+  color: var(--color-accent, #22d3ee);
+}
+
+/* ── Confirm summary ────────────────────────────────────────────── */
+
+.summary {
+  background: var(--bg-input, #1a1a1a);
+  border: 1px solid var(--border-input, #2a2a2a);
+  border-radius: 8px;
+  padding: 0.65rem 0.9rem;
+}
+
+.summaryName {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-accent, #22d3ee);
+  margin: 0 0 0.5rem;
+}
+
+.summaryList {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.summaryList li {
+  font-size: 0.78rem;
+  color: var(--text-muted, #888);
+}
+
+/* ── Replace slot selector ──────────────────────────────────────── */
+
+.replaceBox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.replaceLabel {
+  font-size: 0.78rem;
+  color: var(--text-muted, #888);
+  margin: 0;
+}
+
+.replaceBtn {
+  width: 100%;
+  padding: 0.4rem 0.75rem;
+  background: var(--bg-input, #1a1a1a);
+  border: 1.5px solid var(--border, #1e1e1e);
+  border-radius: 6px;
+  color: var(--text-muted, #888);
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.replaceBtn:hover {
+  background: var(--bg-panel, #222);
+  border-color: var(--border-input, #2a2a2a);
+  color: var(--text, #f0f0f0);
+}
+
+.replaceBtnActive {
+  border-color: #e57373;
+  color: #e57373;
+  background: color-mix(in srgb, #e57373 10%, var(--bg-input, #1a1a1a));
+}
+
+/* ── Footer buttons ─────────────────────────────────────────────── */
+
+.footer {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1.1rem 1rem;
+  border-top: 1px solid var(--border, #1e1e1e);
+  justify-content: flex-end;
+}
+
+.backBtn {
+  background: none;
+  border: 1px solid var(--border-input, #2a2a2a);
+  border-radius: 8px;
+  padding: 0.45rem 0.9rem;
+  color: var(--text-muted, #888);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.backBtn:hover {
+  color: var(--text, #f0f0f0);
+  border-color: var(--border-input, #444);
+  background: var(--bg-input, #1a1a1a);
+}
+
+.nextBtn {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  background: var(--color-accent, #22d3ee);
+  border: none;
+  border-radius: 8px;
+  color: #000;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.nextBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.nextBtn:not(:disabled):hover {
+  opacity: 0.85;
+}
+
+.saveBtn {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  background: var(--color-accent, #22d3ee);
+  border: none;
+  border-radius: 8px;
+  color: #000;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.saveBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.saveBtn:not(:disabled):hover {
+  opacity: 0.85;
+}

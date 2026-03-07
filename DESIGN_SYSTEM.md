@@ -410,3 +410,140 @@ pointer-events: none;
 | Popups, modals, or toasts during active reading | Interrupts reading flow |
 | Decorative animations (spin, bounce, pulse) | Visual noise |
 | Large `box-shadow` on viewport | GPU overdraw on mobile |
+
+---
+
+## UX Consistency Rules (Agent-Enforced)
+
+### Research-Based RSVP UX Principles
+
+Based on established RSVP research and dark UI best practices:
+
+1. **One word default.** RSVP research consistently shows 1 word at a time is the core paradigm — the brain processes a single focal word fastest. `windowSize` defaults to `1` globally.
+
+2. **Reading viewport is sacred.** During playback, zero layout shifts, zero animations on word slots. The viewport is a reading instrument, not a UI component.
+
+3. **Minimal chrome during reading.** Controls exist to serve reading. Settings live in the drawer. Nothing appears over the reading area uninvited.
+
+### Color Token Rules (All New Code Must Follow)
+
+Every new UI element must use ONLY these existing tokens. No new colors may be introduced. No hardcoded hex values except `#666` and `#999` for the focal tick marks (these are intentionally muted and not interactive).
+
+| Usage | Token |
+|---|---|
+| App background | `var(--bg)` |
+| Panel / drawer background | `var(--bg-panel)` |
+| Input / select background | `var(--bg-input)` |
+| Primary text | `var(--text)` |
+| Secondary / label text | `var(--text-muted)` |
+| Disabled / ghost text | `var(--text-faint)` |
+| Border | `var(--border)` |
+| Input border | `var(--border-input)` |
+| Interactive accent | `var(--color-accent)` |
+| Accent hover | `var(--color-accent-dim)` |
+| Hover overlay | `var(--state-hover)` |
+| Active/pressed overlay | `var(--state-active)` |
+| Focus ring | `var(--state-focus)` |
+| Disabled opacity | `var(--state-disabled)` |
+
+**Never use:**
+- `#000000` or `#ffffff` (use token equivalents)
+- Any blue other than `--color-primary` or `--color-accent`
+- Any hardcoded color inside a CSS Module except `#666`/`#999` for tick marks
+
+### Button & Interactive Element Rules
+
+All buttons and toggles must follow this pattern consistently:
+
+```css
+/* Default */
+background: var(--bg-input);
+border: 1px solid var(--border);
+color: var(--text-muted);
+
+/* Hover */
+background: var(--state-hover);
+color: var(--text);
+
+/* Active/selected */
+border-color: var(--color-accent);
+color: var(--color-accent);
+background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+
+/* Disabled */
+opacity: var(--state-disabled);
+cursor: not-allowed;
+
+/* Transition */
+transition: background 0.15s, border-color 0.15s, color 0.15s;
+```
+
+Minimum touch target: `44 × 44px` on all interactive elements (WCAG 2.5.5).
+
+### Typography Rules
+
+- Reading viewport: Georgia serif only — no changes
+- All UI (menus, labels, buttons): `font-family: 'Segoe UI', system-ui, -apple-system, sans-serif`
+- Never use font-weight below `400` in dark mode — thin fonts are unreadable on dark backgrounds
+- Toggle labels: `font-size: var(--font-size-sm)`, `color: var(--text)`
+- Toggle descriptions: `font-size: var(--font-size-xs)`, `color: var(--text-muted)`
+- Section headings in drawer: `font-size: var(--font-size-sm)`, `font-weight: 700`, `color: var(--text-muted)`, `text-transform: uppercase`, `letter-spacing: 0.08em`
+
+### Slider Rules
+
+The WPM slider in Controls must use:
+```css
+accent-color: var(--color-accent);
+```
+
+No custom slider track styling that differs from the existing implementation.
+
+### Spacing Rules
+
+All margin, padding, and gap values must use the 4px spacing scale:
+
+```
+var(--space-1) = 4px
+var(--space-2) = 8px
+var(--space-3) = 12px
+var(--space-4) = 16px
+var(--space-6) = 24px
+var(--space-8) = 32px
+```
+
+No magic pixel values for spacing.
+
+### Contrast Requirements
+
+- All text on `--bg` or `--bg-panel` must meet WCAG AA: minimum 4.5:1 contrast ratio
+- Interactive elements at minimum 3:1 contrast ratio
+- The existing token system already meets these ratios — do not introduce colors that break them
+
+## ORP Color Rules
+
+ORP highlight colors are scientifically curated per theme. Only these 4 options are offered
+per theme. The choices are based on:
+- Luminance contrast ≥ 5:1 against theme background (WCAG AA+)
+- Pop-out speed from pre-attentive feature detection research
+- Fatigue research: red (#ff0000) is explicitly excluded — highest fatigue, worst cognitive performance
+- Color-blind safety: cyan option included in all themes as a safe default
+
+Never add red (#ff0000) back as a default or preset option.
+
+## Icon Color Rules
+
+All SVG icons in component files must use `fill: currentColor`.
+Never hardcode `fill="#ffffff"`, `fill="#000000"`, or any hex on SVG elements.
+The parent element's `color` CSS property controls the icon color via `currentColor`.
+This ensures all icons automatically update when theme changes.
+
+## Interactive Element Rules (Updated)
+
+Every interactive element must be in one of exactly 3 visual states:
+1. Default: `background: var(--bg-input)`, `border: var(--border)`, `color: var(--text-muted)`
+2. Hover: `background: var(--state-hover)`, `color: var(--text)`
+3. Active/selected: `border-color: var(--color-accent)`, `color: var(--color-accent)`, `background: var(--color-accent-dim)`
+
+Primary action button (PLAY): background `var(--color-accent)`, color `var(--bg)`.
+
+No element may use a hardcoded color value for interactive states.

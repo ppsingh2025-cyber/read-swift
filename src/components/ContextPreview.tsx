@@ -33,10 +33,13 @@ export default function ContextPreview() {
   const activeRef = useRef<HTMLSpanElement>(null);
 
   // Track whether the user explicitly collapsed the panel.
-  // When text is loaded (hasWords becomes true) the panel is open unless the
-  // user has manually closed it. Default: not collapsed (will open with text).
+  // Default: collapsed — user must tap to expand. Persists in localStorage.
   const [userCollapsed, setUserCollapsed] = useState<boolean>(() => {
-    return localStorage.getItem(LS_KEY_COLLAPSED) === 'true';
+    const stored = localStorage.getItem(LS_KEY_COLLAPSED);
+    // Not set (first run) → collapsed by default
+    // 'false' → explicitly expanded
+    // 'true' or anything else → collapsed
+    return stored === null ? true : stored !== 'false';
   });
 
   const hasWords = words.length > 0;

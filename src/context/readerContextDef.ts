@@ -7,6 +7,8 @@
  */
 
 import { createContext } from 'react';
+import type { ModeId, CustomMode, ModeSettings, PresetModeId } from '../types/readingModes';
+export type { ModeId, CustomMode, ModeSettings, PresetModeId };
 
 export interface FileMetadata {
   name: string;
@@ -23,13 +25,13 @@ export interface ReadingRecord {
 }
 
 /** Number of words displayed simultaneously in the rolling window */
-export type WindowSize = 1 | 2 | 3 | 4 | 5;
+export type WindowSize = 1 | 2 | 3;
 
 /** Display orientation of the word window */
 export type Orientation = 'horizontal' | 'vertical';
 
 /** App colour theme */
-export type Theme = 'day' | 'night';
+export type Theme = 'midnight' | 'warm' | 'day';
 
 /** Chunking mode: fixed window vs. intelligent phrase-based grouping */
 export type ChunkMode = 'fixed' | 'intelligent';
@@ -85,6 +87,7 @@ interface ReaderState {
   theme: Theme;
   /** Whether to use Optimal Recognition Point (ORP) highlighting */
   orpEnabled: boolean;
+  orpColored: boolean;
   /** Whether to add extra pause after punctuation */
   punctuationPause: boolean;
   /** Whether to dim peripheral (non-center) words to sharpen focal contrast */
@@ -99,6 +102,14 @@ interface ReaderState {
   sessionStats: SessionStats;
   /** Whether to show the focus marker dot beneath the ORP character */
   focusMarkerEnabled: boolean;
+  /** Whether to show the vertical focal guide line + ORP letter highlight */
+  focalLine: boolean;
+  /** Currently active reading mode (preset or custom) */
+  activeMode: ModeId;
+  /** User-saved custom reading modes (max 3) */
+  savedCustomModes: CustomMode[];
+  /** ID of the currently active custom mode, or null if unsaved custom */
+  activeCustomModeId: string | null;
 }
 
 interface ReaderActions {
@@ -123,6 +134,7 @@ interface ReaderActions {
   setOrientation: (orientation: Orientation) => void;
   setTheme: (theme: Theme) => void;
   setOrpEnabled: (enabled: boolean) => void;
+  setOrpColored: (colored: boolean) => void;
   setPunctuationPause: (enabled: boolean) => void;
   setPeripheralFade: (enabled: boolean) => void;
   setLongWordCompensation: (enabled: boolean) => void;
@@ -133,6 +145,16 @@ interface ReaderActions {
   /** Reset session analytics (called when a new file is loaded) */
   resetSessionStats: () => void;
   setFocusMarkerEnabled: (enabled: boolean) => void;
+  setFocalLine: (v: boolean) => void;
+  setActiveMode: (mode: ModeId) => void;
+  setSavedCustomModes: (modes: CustomMode[]) => void;
+  setActiveCustomModeId: (id: string | null) => void;
+  /** Apply a bundle of mode settings atomically without triggering auto-switch */
+  applyMode: (settings: ModeSettings) => void;
+  /** Apply a preset mode (applies settings + sets activeMode) */
+  selectPresetMode: (modeId: PresetModeId) => void;
+  /** Apply a saved custom mode */
+  selectCustomMode: (mode: CustomMode) => void;
 }
 
 export type ReaderContextValue = ReaderState & ReaderActions;

@@ -17,7 +17,7 @@
  *  3. Maximum phrase length = windowSize * 2 (so the display never exceeds safe width).
  *  4. Minimum phrase length = 1 (single words are valid chunks).
  *
- * ORP guarantee: the center/highlight slot of the word window is always the
+ * ORP guarantee: slot 0 (leftmost) of the word window is always the
  * first word of the chunk so the eye has a consistent anchor point.
  *
  * Performance: the chunk index is rebuilt only when words or windowSize change,
@@ -140,15 +140,13 @@ export function useChunkEngine(
     const chunk = chunks[chunkIdx];
     // Position of currentWordIndex within the chunk (O(1) since chunks are contiguous)
     const posInChunk = currentWordIndex - chunk[0];
-    // ORP slot is always the center of the window (same formula as fixedHighlight)
-    const orpSlot = Math.ceil(windowSize / 2) - 1;
-
-    // Build the window centered on the current word within the chunk.
-    // Words from the same chunk before the current word appear to the left of ORP;
-    // words after appear to the right. Empty strings pad slots outside the chunk.
+    // Build the window left-anchored on the current word within the chunk.
+    // Current word's position within the chunk is posInChunk.
+    // Slot 0 = current word, slots 1+ = words after current in chunk.
+    // Words before the current position in the chunk are not shown (left-anchor).
     const result: string[] = Array(windowSize).fill('');
     for (let i = 0; i < chunk.length; i++) {
-      const slot = orpSlot + (i - posInChunk);
+      const slot = i - posInChunk; // left-anchor: current word at slot 0
       if (slot >= 0 && slot < windowSize) {
         result[slot] = words[chunk[i]] ?? '';
       }
@@ -156,9 +154,9 @@ export function useChunkEngine(
     return result;
   }, [chunkMode, phraseData, currentWordIndex, words, fixedWindow, windowSize]);
 
-  // In intelligent mode, the ORP is at the center slot (same as fixed mode)
+  // In intelligent mode, the ORP is always slot 0 (left-anchor, same as fixed mode)
   const chunkHighlightIndex = chunkMode === 'intelligent'
-    ? Math.ceil(windowSize / 2) - 1
+    ? 0
     : fixedHighlight;
 
   return { chunkWindow, chunkHighlightIndex };

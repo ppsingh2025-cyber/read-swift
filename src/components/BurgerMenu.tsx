@@ -24,64 +24,40 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useReaderContext } from '../context/useReaderContext';
 import ReadingHistory from './ReadingHistory';
 import SessionStats from './SessionStats';
-import type { WindowSize, Orientation, ChunkMode } from '../context/readerContextDef';
+import ReadingModes from './ReadingModes';
+import type { Orientation } from '../context/readerContextDef';
 import { APP_VERSION } from '../version';
 import { IndexedDBService } from '../sync/IndexedDBService';
+import { ORP_COLORS, getThemeOrpAccent } from '../config/orpColors';
 import { supabase, isSupabaseConfigured } from '../config/supabase';
 import { useAuth } from '../auth/useAuth';
 import { clearAllRecords } from '../utils/recordsUtils';
 import toast from 'react-hot-toast';
 import styles from '../styles/BurgerMenu.module.css';
-import {
-  READING_PROFILES,
-  DEFAULT_PROFILE_ID,
-  LS_KEY_PROFILE,
-  type ReadingProfile,
-} from '../config/profiles';
 
 const FEEDBACK_FORM_URL = 'https://forms.gle/dCBSTs4SjvhmA3Zh6';
 
-/** Apply the "Balanced" profile on first launch if no profile was previously saved */
-function initDefaultProfile(): string {
-  if (!localStorage.getItem(LS_KEY_PROFILE)) {
-    localStorage.setItem(LS_KEY_PROFILE, DEFAULT_PROFILE_ID);
-  }
-  return localStorage.getItem(LS_KEY_PROFILE) ?? DEFAULT_PROFILE_ID;
-}
-
-// Named preset highlight colours — 10 options
-const PRESET_COLORS = [
-  { hex: '#e74c3c', name: 'Red' },
-  { hex: '#e67e22', name: 'Orange' },
-  { hex: '#f1c40f', name: 'Yellow' },
-  { hex: '#2ecc71', name: 'Green' },
-  { hex: '#1abc9c', name: 'Teal' },
-  { hex: '#3498db', name: 'Blue' },
-  { hex: '#5856d6', name: 'Indigo' },
-  { hex: '#9b59b6', name: 'Purple' },
-  { hex: '#e91e8c', name: 'Pink' },
-  { hex: '#ffffff', name: 'White' },
-] as const;
-
-function getColorName(hex: string): string {
-  const found = PRESET_COLORS.find(
-    (c) => c.hex.toLowerCase() === hex.toLowerCase(),
-  );
-  return found ? found.name : 'Custom';
-}
-
 // Default preference values (mirrored from ReaderContext)
 const DEFAULT_WPM = 250;
-const DEFAULT_THEME = 'night' as const;
-const DEFAULT_WINDOW_SIZE = 3 as WindowSize;
-const DEFAULT_HIGHLIGHT_COLOR = '#ff0000';
+const DEFAULT_THEME = 'midnight' as const;
+const DEFAULT_HIGHLIGHT_COLOR = getThemeOrpAccent(DEFAULT_THEME); // midnight accent
 const DEFAULT_ORIENTATION = 'horizontal' as Orientation;
-const DEFAULT_ORP = false;
-const DEFAULT_PUNCT_PAUSE = true;
-const DEFAULT_PERIPHERAL_FADE = true;
-const DEFAULT_LONG_WORD_COMP = true;
 const DEFAULT_MAIN_FONT_SIZE = 100;
-const DEFAULT_CHUNK_MODE = 'fixed' as ChunkMode;
+
+const THEME_LABELS: Record<'midnight' | 'warm' | 'day', string> = {
+  midnight: 'Midnight',
+  warm: 'Warm',
+  day: 'Day',
+};
+
+// localStorage keys cleared when user resets to defaults
+const RESETTABLE_KEYS = [
+  'fastread_window_size', 'fastread_wpm', 'fastread_orientation',
+  'fastread_focal_line', 'fastread_orp', 'fastread_peripheral_fade',
+  'fastread_punct_pause', 'fastread_long_word_comp', 'fastread_chunk_mode',
+  'fastread_main_font_size', 'fastread_highlight_color', 'fastread_active_mode',
+  'fastread_active_custom_mode_id', 'fastread_theme',
+] as const;
 
 interface BurgerMenuProps {
   onFileSelect: (file: File) => void;
@@ -91,28 +67,28 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
   const [open, setOpen] = useState(false);
 
   const {
-    windowSize, setWindowSize,
+    setWindowSize,
     orientation, setOrientation,
     highlightColor, setHighlightColor,
-    peripheralFade, setPeripheralFade,
-    orpEnabled, setOrpEnabled,
-    punctuationPause, setPunctuationPause,
-    longWordCompensation, setLongWordCompensation,
     mainWordFontSize, setMainWordFontSize,
-    chunkMode, setChunkMode,
-    setTheme,
+    theme, setTheme,
     setWpm,
     records,
     setRecords,
     isPlaying,
+    setFocalLine,
+    setOrpEnabled,
+    orpColored, setOrpColored,
+    setPeripheralFade,
+    setPunctuationPause,
+    setLongWordCompensation,
+    setChunkMode,
+    setActiveMode,
+    setActiveCustomModeId,
   } = useReaderContext();
-
   const { user } = useAuth();
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [colorExpanded, setColorExpanded] = useState(false);
-
-  // Active profile ID (persisted to localStorage)
-  const [activeProfileId, setActiveProfileId] = useState<string>(() => initDefaultProfile());
+  const [confirmReset, setConfirmReset] = useState(false);
 
   // During active reading, advanced settings are collapsed unless user expands them.
   // Resets every time the menu is opened while playing (so re-opening the menu during
@@ -155,56 +131,37 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
     [close, onFileSelect],
   );
 
-  // Apply a reading profile — updates all relevant settings at once
-  const applyProfile = useCallback(
-    (profile: ReadingProfile) => {
-      setWindowSize(profile.windowSize);
-      setOrientation(profile.orientation);
-      setHighlightColor(profile.highlightColor);
-      setChunkMode(profile.chunkMode);
-      setPeripheralFade(profile.peripheralFade);
-      setPunctuationPause(profile.punctuationPause);
-      setLongWordCompensation(profile.longWordCompensation);
-      setMainWordFontSize(profile.mainWordFontSize);
-      setWpm(profile.wpm);
-      setActiveProfileId(profile.id);
-      localStorage.setItem(LS_KEY_PROFILE, profile.id);
-      toast.success(`${profile.name} profile applied`);
-    },
-    [
-      setWindowSize, setOrientation, setHighlightColor, setChunkMode,
-      setPeripheralFade, setPunctuationPause, setLongWordCompensation,
-      setMainWordFontSize, setWpm,
-    ],
-  );
-
-  // Reset all user preferences to their defaults
+  // Reset all user preferences to new-user defaults
   const handleResetDefaults = useCallback(() => {
+    RESETTABLE_KEYS.forEach(key => { try { localStorage.removeItem(key); } catch { /* ignore */ } });
     setTheme(DEFAULT_THEME);
-    setWindowSize(DEFAULT_WINDOW_SIZE);
     setHighlightColor(DEFAULT_HIGHLIGHT_COLOR);
     setOrientation(DEFAULT_ORIENTATION);
-    setOrpEnabled(DEFAULT_ORP);
-    setPunctuationPause(DEFAULT_PUNCT_PAUSE);
-    setPeripheralFade(DEFAULT_PERIPHERAL_FADE);
-    setLongWordCompensation(DEFAULT_LONG_WORD_COMP);
     setMainWordFontSize(DEFAULT_MAIN_FONT_SIZE);
-    setChunkMode(DEFAULT_CHUNK_MODE);
     setWpm(DEFAULT_WPM);
-    setActiveProfileId(DEFAULT_PROFILE_ID);
-    localStorage.setItem(LS_KEY_PROFILE, DEFAULT_PROFILE_ID);
+    setWindowSize(1);
+    setFocalLine(true);
+    setOrpEnabled(true);
+    setPeripheralFade(false);
+    setPunctuationPause(true);
+    setLongWordCompensation(true);
+    setChunkMode('fixed');
+    setActiveMode('focus');
+    setActiveCustomModeId(null);
     // Clear IndexedDB preferences
     IndexedDBService.savePreferences({
       theme: DEFAULT_THEME,
       fontSize: DEFAULT_MAIN_FONT_SIZE,
-      wordWindow: DEFAULT_WINDOW_SIZE,
+      wordWindow: 1,
       highlightColor: DEFAULT_HIGHLIGHT_COLOR,
       updatedAt: new Date(),
     }).catch(() => { /* ignore */ });
+    setConfirmReset(false);
     toast.success('Settings reset to defaults');
-  }, [setTheme, setWindowSize, setHighlightColor, setOrientation, setOrpEnabled,
-      setPunctuationPause, setPeripheralFade, setLongWordCompensation,
-      setMainWordFontSize, setChunkMode, setWpm]);
+  }, [setTheme, setHighlightColor, setOrientation, setMainWordFontSize, setWpm,
+    setWindowSize, setFocalLine, setOrpEnabled, setPeripheralFade,
+    setPunctuationPause, setLongWordCompensation, setChunkMode,
+    setActiveMode, setActiveCustomModeId]);
 
   // Clear all reading history
   const handleClearHistory = useCallback(async () => {
@@ -268,23 +225,10 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
 
             <div className={styles.drawerBody}>
 
-              {/* ── Reading Profiles ───────────────────────────────── */}
+              {/* ── Reading Modes ──────────────────────────────────── */}
               <section className={styles.section}>
-                <h3 className={styles.sectionTitle}>Reading Profile</h3>
-                <div className={styles.profileGrid}>
-                  {READING_PROFILES.map((profile) => (
-                    <button
-                      key={profile.id}
-                      className={`${styles.profileBtn}${activeProfileId === profile.id ? ` ${styles.profileBtnActive}` : ''}`}
-                      onClick={() => applyProfile(profile)}
-                      title={profile.description}
-                      aria-pressed={activeProfileId === profile.id}
-                    >
-                      <span className={styles.profileName}>{profile.name}</span>
-                      <span className={styles.profileWpm}>{profile.wpm} WPM</span>
-                    </button>
-                  ))}
-                </div>
+                <h3 className={styles.sectionTitle}>Reading Mode</h3>
+                <ReadingModes />
               </section>
 
               {/* ── Minimal-UI notice during active reading ─────────── */}
@@ -322,22 +266,6 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
                 </div>
 
                 <label className={styles.row}>
-                  <span className={styles.label}>Window size</span>
-                  <select
-                    className={styles.select}
-                    value={windowSize}
-                    onChange={(e) => setWindowSize(parseInt(e.target.value, 10) as WindowSize)}
-                    aria-label="Number of words shown at once"
-                  >
-                    <option value={1}>1 word</option>
-                    <option value={2}>2 words</option>
-                    <option value={3}>3 words</option>
-                    <option value={4}>4 words</option>
-                    <option value={5}>5 words</option>
-                  </select>
-                </label>
-
-                <label className={styles.row}>
                   <span className={styles.label}>Orientation</span>
                   <select
                     className={styles.select}
@@ -350,47 +278,38 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
                   </select>
                 </label>
 
-                {/* Compact colour picker: circle preview + expandable swatches */}
-                <div className={styles.row}>
-                  <span className={styles.label}>Highlight colour</span>
-                  <button
-                    className={styles.colorCircleBtn}
-                    style={{ background: highlightColor }}
-                    onClick={() => setColorExpanded((v) => !v)}
-                    aria-label={`Highlight colour: ${getColorName(highlightColor)}. Click to change.`}
-                    aria-expanded={colorExpanded}
-                    title={`${getColorName(highlightColor)} — click to change`}
+                {/* Highlight key letter toggle */}
+                <label className={styles.row}>
+                  <span className={styles.label}>Highlight key letter</span>
+                  <input
+                    type="checkbox"
+                    checked={orpColored}
+                    onChange={(e) => setOrpColored(e.target.checked)}
+                    aria-label="Color the key letter in each word"
                   />
-                </div>
-                {colorExpanded && (
-                  <div className={styles.colorPalette}>
-                    <div className={styles.colorSwatches}>
-                      {PRESET_COLORS.map((c) => (
-                        <button
-                          key={c.hex}
-                          className={`${styles.colorSwatch}${highlightColor.toLowerCase() === c.hex.toLowerCase() ? ` ${styles.colorSwatchActive}` : ''}`}
-                          style={{ background: c.hex }}
-                          onClick={() => { setHighlightColor(c.hex); setColorExpanded(false); }}
-                          title={c.name}
-                          aria-label={`Highlight colour: ${c.name}`}
-                          aria-pressed={highlightColor.toLowerCase() === c.hex.toLowerCase()}
+                </label>
+
+                {/* ORP key letter color: 4 science-backed options per theme */}
+                <div className={styles.orpColorSection}>
+                  <span className={styles.sectionLabel}>KEY LETTER COLOR</span>
+                  <div className={styles.orpColorRow}>
+                    {ORP_COLORS[theme].map(option => (
+                      <button
+                        key={option.id}
+                        className={`${styles.orpColorBtn} ${highlightColor === option.value ? styles.orpColorBtnActive : ''}`}
+                        onClick={() => setHighlightColor(option.value)}
+                        aria-label={`${option.label}: ${option.reason}`}
+                        title={option.reason}
+                      >
+                        <span
+                          className={styles.orpColorSwatch}
+                          style={{ background: option.value }}
                         />
-                      ))}
-                    </div>
-                    <div className={styles.customColorRow}>
-                      <input
-                        type="color"
-                        className={styles.customColorInput}
-                        value={highlightColor}
-                        onChange={(e) => setHighlightColor(e.target.value)}
-                        aria-label="Custom highlight colour"
-                        title="Custom colour"
-                      />
-                      <span className={styles.customColorLabel}>Custom colour</span>
-                      <span className={styles.customColorHex}>{highlightColor}</span>
-                    </div>
+                        <span className={styles.orpColorLabel}>{option.label}</span>
+                      </button>
+                    ))}
                   </div>
-                )}
+                </div>
 
                 <label className={styles.row}>
                   <span className={styles.label}>
@@ -411,84 +330,28 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
                     <option value={180}>Huge (180%)</option>
                   </select>
                 </label>
+
+                {/* ── Theme switcher ──────────────────────────── */}
+                <div className={styles.themeSection}>
+                  <span className={styles.sectionLabel}>THEME</span>
+                  <div className={styles.themeRow}>
+                    {(['midnight', 'warm', 'day'] as const).map(t => (
+                      <button
+                        key={t}
+                        className={`${styles.themeBtn} ${theme === t ? styles.themeBtnActive : ''}`}
+                        onClick={() => setTheme(t)}
+                        aria-pressed={theme === t}
+                        title={THEME_LABELS[t]}
+                      >
+                        <span className={styles.themeSwatch} data-swatch={t} />
+                        <span className={styles.themeLabel}>{THEME_LABELS[t]}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
               </section>
 
-              {/* ── Reading features ───────────────────────────── */}
-              <section className={styles.section}>
-                <h3 className={styles.sectionTitle}>Reading Features</h3>
-
-                <label className={styles.row}>
-                  <span className={styles.label}>
-                    Peripheral fade
-                    <span className={styles.hint}> (dim side words)</span>
-                  </span>
-                  <input
-                    type="checkbox"
-                    className={styles.checkbox}
-                    checked={peripheralFade}
-                    onChange={(e) => setPeripheralFade(e.target.checked)}
-                    aria-label="Dim peripheral words for sharper focus"
-                  />
-                </label>
-
-                <label className={styles.row}>
-                  <span className={styles.label}>
-                    ORP highlight
-                    <span className={styles.hint}> (focal letter)</span>
-                  </span>
-                  <input
-                    type="checkbox"
-                    className={styles.checkbox}
-                    checked={orpEnabled}
-                    onChange={(e) => setOrpEnabled(e.target.checked)}
-                    aria-label="Enable Optimal Recognition Point highlighting"
-                  />
-                </label>
-
-                <label className={styles.row}>
-                  <span className={styles.label}>
-                    Punctuation pause
-                    <span className={styles.hint}> (. ? ! , ;)</span>
-                  </span>
-                  <input
-                    type="checkbox"
-                    className={styles.checkbox}
-                    checked={punctuationPause}
-                    onChange={(e) => setPunctuationPause(e.target.checked)}
-                    aria-label="Pause longer after punctuation"
-                  />
-                </label>
-
-                <label className={styles.row}>
-                  <span className={styles.label}>
-                    Long-word delay
-                    <span className={styles.hint}> ({'>'}8 chars)</span>
-                  </span>
-                  <input
-                    type="checkbox"
-                    className={styles.checkbox}
-                    checked={longWordCompensation}
-                    onChange={(e) => setLongWordCompensation(e.target.checked)}
-                    aria-label="Extra display time for long words"
-                  />
-                </label>
-
-                <label className={styles.row}>
-                  <span className={styles.label}>
-                    Chunk mode
-                    <span className={styles.hint}> (phrase grouping)</span>
-                  </span>
-                  <select
-                    className={styles.select}
-                    value={chunkMode}
-                    onChange={(e) => setChunkMode(e.target.value as ChunkMode)}
-                    aria-label="Word chunking mode"
-                  >
-                    <option value="fixed">Fixed window</option>
-                    <option value="intelligent">Intelligent phrases</option>
-                  </select>
-                </label>
-              </section>
               </>) /* end (!isPlaying || showAdvancedDuringReading) */}
 
               {/* ── Reading History ─────────────────────────────── */}
@@ -542,6 +405,36 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
               <section className={styles.section}>
                 <h3 className={styles.sectionTitle}>Session Analytics</h3>
                 <SessionStats />
+              </section>
+
+              {/* ── Reset to Defaults ───────────────────────────────── */}
+              <section className={styles.section}>
+                {confirmReset ? (
+                  <div className={styles.confirmReset}>
+                    <span className={styles.confirmResetText}>Reset all settings to defaults?</span>
+                    <div className={styles.confirmResetActions}>
+                      <button
+                        className={styles.confirmResetYes}
+                        onClick={handleResetDefaults}
+                      >
+                        Yes, reset
+                      </button>
+                      <button
+                        className={styles.confirmResetNo}
+                        onClick={() => setConfirmReset(false)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    className={styles.resetBtn}
+                    onClick={() => setConfirmReset(true)}
+                  >
+                    Reset to Defaults
+                  </button>
+                )}
               </section>
 
               {/* ── About ───────────────────────────────────────── */}

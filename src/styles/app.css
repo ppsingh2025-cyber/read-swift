@@ -63,7 +63,8 @@
   --orp-scale-3xl: 2.00;
 }
 
-/* ─── Night theme (default) ──────────────────────────────────── */
+/* ── Midnight theme (default) — charcoal base, blue accent ───────── */
+[data-theme="midnight"],
 :root {
   color-scheme: dark;
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -72,86 +73,118 @@
   /* Brand */
   --color-primary:       #1E3A8A;
   --color-primary-hover: #1e4da8;
-  --color-accent:        #22d3ee;
-  --color-accent-dim:    #0e7490;
+  --color-accent:        #5b8dee;
+  --color-accent-dim:    rgba(91,141,238,0.15);
 
   /* Surfaces */
-  --bg:           #060606;
-  --bg-panel:     #0f1117; /* deep blue-tinted panel aligns with --color-primary brand */
-  --bg-input:     #1a1a1a;
-  --border:       #1e1e1e;
-  --border-input: #2a2a2a;
+  --bg:           #0f0f12;
+  --bg-panel:     #1a1a22;
+  --bg-input:     #252530;
+  --border:       #2e2e3e;
+  --border-input: #3a3a50;
 
   /* Text */
-  --text:         #f0f0f0;
-  --text-muted:   #888;
-  --text-faint:   #444;
-  --text-secondary: #aaa;
+  --text:          #e8e8f0;
+  --text-muted:    #8888a0;
+  --text-faint:    #55556a;
+  --text-secondary: #8888a0;
 
   /* Legacy alias (kept for backwards compat) */
-  --accent:       #4a7fa0;
+  --accent:       #5b8dee;
 
   /* Keyboard hint */
-  --kbd-bg:       #1a1a1a;
-  --kbd-border:   #333;
-  --kbd-text:     #888;
+  --kbd-bg:       #252530;
+  --kbd-border:   #3a3a50;
+  --kbd-text:     #8888a0;
 
   /* Viewport */
-  --vp-bg:          #0a0a0a;
-  --vp-border:      #151515;
+  --vp-bg:          #0d0d10;
+  --vp-border:      #1e1e2a;
   --vp-text:        #d4d4d4;
-  --vp-placeholder: #666;
+  --vp-placeholder: #55556a;
   --slot-width:     10ch;
 
   /* Interaction states */
   --state-hover:    rgba(255,255,255,0.06);
-  --state-active:   rgba(255,255,255,0.12);
-  --state-focus:    #22d3ee;
-  --state-disabled: 0.25;
+  --state-active:   rgba(255,255,255,0.10);
+  --state-focus:    rgba(91,141,238,0.35);
+  --state-disabled: 0.38;
 }
 
-/* ─── Day theme ──────────────────────────────────────────────── */
-[data-theme='day'] {
+/* ── Warm theme — dark warm brown base, amber accent ─────────────── */
+[data-theme="warm"] {
+  color-scheme: dark;
+
+  --color-primary:       #7a4a10;
+  --color-primary-hover: #8a5a20;
+  --color-accent:        #e8a830;
+  --color-accent-dim:    rgba(232,168,48,0.15);
+
+  --bg:            #120f0a;
+  --bg-panel:      #1e1810;
+  --bg-input:      #2a2218;
+  --border:        #3a2e20;
+  --border-input:  #4a3c28;
+
+  --text:          #f0ead8;
+  --text-muted:    #9a8a6a;
+  --text-faint:    #5a5040;
+  --text-secondary: #9a8a6a;
+
+  --accent:        #e8a830;
+
+  --kbd-bg:        #2a2218;
+  --kbd-border:    #4a3c28;
+  --kbd-text:      #9a8a6a;
+
+  --vp-bg:         #100d08;
+  --vp-border:     #2a2018;
+  --vp-text:       #d8d0b8;
+  --vp-placeholder: #5a5040;
+  --slot-width:    10ch;
+
+  --state-hover:   rgba(255,255,255,0.06);
+  --state-active:  rgba(255,255,255,0.10);
+  --state-focus:   rgba(232,168,48,0.35);
+  --state-disabled: 0.38;
+}
+
+/* ── Day theme — warm parchment, dark text, teal accent ──────────── */
+[data-theme="day"] {
   color-scheme: light;
 
-  /* Brand */
   --color-primary:       #1E3A8A;
   --color-primary-hover: #1e4da8;
-  --color-accent:        #0891b2;
-  --color-accent-dim:    #cffafe;
+  --color-accent:        #2a7a6e;
+  --color-accent-dim:    rgba(42,122,110,0.12);
 
-  /* Surfaces */
-  --bg:           #F9FAFB;
-  --bg-panel:     #eeeeea;
-  --bg-input:     #e6e6e1;
-  --border:       #d8d8d0;
-  --border-input: #c8c8c0;
+  --bg:            #f5f0e8;
+  --bg-panel:      #ffffff;
+  --bg-input:      #ede8e0;
+  --border:        #d0c8bc;
+  --border-input:  #c0b8ae;
 
-  /* Text */
-  --text:         #111827;
-  --text-muted:   #555;
-  --text-faint:   #999;
-  --text-secondary: #6b7280;
+  --text:          #1a1a2e;
+  --text-muted:    #6a6880;
+  --text-faint:    #a0a0b8;
+  --text-secondary: #6a6880;
 
-  /* Legacy alias */
-  --accent:       #3a6e90;
+  --accent:        #2a7a6e;
 
-  /* Keyboard hint */
-  --kbd-bg:       #e6e6e1;
-  --kbd-border:   #c8c8c0;
-  --kbd-text:     #666;
+  --kbd-bg:        #ede8e0;
+  --kbd-border:    #c0b8ae;
+  --kbd-text:      #6a6880;
 
-  /* Viewport */
-  --vp-bg:          #eaeae5;
-  --vp-border:      #d0d0c8;
-  --vp-text:        #222;
-  --vp-placeholder: #999;
+  --vp-bg:         #ede8e0;
+  --vp-border:     #d0c8bc;
+  --vp-text:       #1a1a2e;
+  --vp-placeholder: #a0a0b8;
+  --slot-width:    10ch;
 
-  /* Interaction states */
-  --state-hover:    rgba(0,0,0,0.05);
-  --state-active:   rgba(0,0,0,0.10);
-  --state-focus:    #0891b2;
-  --state-disabled: 0.30;
+  --state-hover:   rgba(0,0,0,0.05);
+  --state-active:  rgba(0,0,0,0.08);
+  --state-focus:   rgba(42,122,110,0.30);
+  --state-disabled: 0.38;
 }
 
 body {

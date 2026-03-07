@@ -15,7 +15,7 @@ export interface FileMetadata {
 export interface UserPreferences {
   id?: string;
   userId?: string;
-  theme: 'day' | 'night';
+  theme: 'midnight' | 'warm' | 'day';
   fontSize: number;
   wordWindow: 1 | 2 | 3 | 4 | 5;
   highlightColor: string;

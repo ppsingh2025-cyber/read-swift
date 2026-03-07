@@ -22,7 +22,6 @@ import { useAdaptiveSpeed } from './hooks/useAdaptiveSpeed';
 import ReaderViewport from './components/ReaderViewport';
 import Controls from './components/Controls';
 import InputPanel from './components/InputPanel';
-import PageNavigator from './components/PageNavigator';
 import ContextPreview from './components/ContextPreview';
 import BurgerMenu from './components/BurgerMenu';
 import ThemeToggle from './components/ThemeToggle';
@@ -60,11 +59,12 @@ export default function App() {
     highlightColor,
     orientation,
     orpEnabled,
+    orpColored,
     peripheralFade,
     theme,
     mainWordFontSize,
     chunkMode,
-    focusMarkerEnabled,
+    focalLine,
     setWords,
     setCurrentWordIndex,
     setFileMetadata,
@@ -81,8 +81,8 @@ export default function App() {
 
   const { wordWindow, play, pause, reset, faster, slower, prevWord, nextWord } = useRSVPEngine();
 
-  /** Highlight index: center for odd sizes, left-middle for even sizes */
-  const highlightIndex = Math.ceil(windowSize / 2) - 1;
+  /** Highlight index: left-anchor — current word is always slot 0 */
+  const highlightIndex = 0; // Left-anchor: current word is always slot 0
 
   // Apply phrase-based chunking when in intelligent mode
   const { chunkWindow, chunkHighlightIndex } = useChunkEngine(
@@ -372,6 +372,7 @@ export default function App() {
             highlightColor={highlightColor}
             orientation={orientation}
             orpEnabled={orpEnabled}
+            orpColored={orpColored}
             peripheralFade={peripheralFade}
             isLoading={isLoading}
             loadingProgress={loadingProgress}
@@ -380,7 +381,8 @@ export default function App() {
             mainWordFontSize={mainWordFontSize}
             onFileSelect={handleFileSelect}
             onShowPaste={togglePaste}
-            focusMarkerEnabled={focusMarkerEnabled}
+            focalLine={focalLine}
+            words={words}
           />
           {/* Maximize / minimize button */}
           <button
@@ -394,13 +396,6 @@ export default function App() {
         </div>
         {!isFocused && <ContextPreview />}
       </main>
-
-      {/* ── 3. Navigation layer ─────────────────────────────────── */}
-      {!isFocused && (
-        <section className="navLayer" aria-label="Navigation">
-          <PageNavigator />
-        </section>
-      )}
 
       {/* ── Paste / URL panel (above bottom bar, collapsible) ───── */}
       {showPaste && !isFocused && (

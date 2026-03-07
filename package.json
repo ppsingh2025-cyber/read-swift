@@ -1,7 +1,7 @@
 {
   "name": "readswift",
   "description": "RSVP speed reader supporting 8 file formats (PDF, EPUB, DOCX, TXT, MD, HTML, RTF, SRT). Read at 60-1500 WPM with intelligent phrase chunking, ORP highlighting, and cross-device sync. PWA + Android + iOS.",
-  "version": "1.0.0",
+  "version": "1.0.6",
   "author": "Techscript Limited",
   "homepage": "https://techscript.ca",
   "private": true,
