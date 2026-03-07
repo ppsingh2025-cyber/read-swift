@@ -65,6 +65,8 @@ export default function App() {
     mainWordFontSize,
     chunkMode,
     focalLine,
+    currentPage,
+    totalPages,
     setWords,
     setCurrentWordIndex,
     setFileMetadata,
@@ -77,6 +79,7 @@ export default function App() {
     setRecords,
     resetSessionStats,
     setWpm,
+    goToPage,
   } = useReaderContext();
 
   const { wordWindow, play, pause, reset, faster, slower, prevWord, nextWord } = useRSVPEngine();
@@ -383,6 +386,11 @@ export default function App() {
             onShowPaste={togglePaste}
             focalLine={focalLine}
             words={words}
+            currentWordIndex={currentWordIndex}
+            totalWordCount={words.length}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            goToPage={goToPage}
           />
           {/* Maximize / minimize button */}
           <button
@@ -394,8 +402,13 @@ export default function App() {
             {isFocused ? '⊡' : '⊞'}
           </button>
         </div>
-        {!isFocused && <ContextPreview />}
-      </main>
+        </main>
+
+      {!isFocused && (
+        <div className="contextStrip">
+          <ContextPreview />
+        </div>
+      )}
 
       {/* ── Paste / URL panel (above bottom bar, collapsible) ───── */}
       {showPaste && !isFocused && (

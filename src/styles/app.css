@@ -274,10 +274,9 @@ body {
   flex-shrink: 0;
 }
 
-/* Stack context preview below viewport on narrow screens */
+/* Padding adjustment for narrow screens */
 @media (max-width: 640px) {
   .readingMain {
-    flex-direction: column;
     padding: 0.5rem 0.75rem 0;
   }
 }
@@ -329,6 +328,14 @@ body {
   .pasteArea {
     padding: 0 0.75rem;
   }
+}
+
+.contextStrip {
+  padding: 0 1rem;
+  flex-shrink: 0;
+}
+@media (max-width: 640px) {
+  .contextStrip { padding: 0 0.75rem; }
 }
 
 /* ─── Controls bar wrapper ──────────────────────────────────── */
@@ -535,9 +542,10 @@ body {
     min-height: 0;
   }
 
-  /* Hide navigation, paste panel, and app footer in landscape */
+  /* Hide navigation, paste panel, context strip, and app footer in landscape */
   .navLayer,
   .pasteArea,
+  .contextStrip,
   .appFooterLandscapeHide {
     display: none;
   }

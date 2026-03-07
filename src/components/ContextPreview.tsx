@@ -13,7 +13,7 @@
  * current word index changes.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useReaderContext } from '../context/useReaderContext';
 import styles from '../styles/ContextPreview.module.css';
 
@@ -45,6 +45,13 @@ export default function ContextPreview() {
   const hasWords = words.length > 0;
   // Expanded when text is present AND the user has not explicitly collapsed it
   const isExpanded = hasWords && !userCollapsed;
+
+  const collapsedSnippet = useMemo(() => {
+    if (!hasWords) return '';
+    const s = Math.max(0, currentWordIndex - 4);
+    const e = Math.min(words.length, currentWordIndex + 14);
+    return words.slice(s, e).join(' ');
+  }, [words, currentWordIndex, hasWords]);
 
   const handleToggle = useCallback(() => {
     setUserCollapsed((prev) => {
@@ -81,14 +88,16 @@ export default function ContextPreview() {
         aria-expanded={isExpanded}
         aria-controls="context-preview-content"
       >
-        Context
+        {!isExpanded && hasWords ? (
+          <span className={styles.collapsedSnippet} aria-hidden="true">…{collapsedSnippet}…</span>
+        ) : (
+          <span className={styles.headingLabel}>Context</span>
+        )}
         <span
           className={styles.chevron}
-          style={{ transform: isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }}
+          style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
           aria-hidden="true"
-        >
-          ▼
-        </span>
+        >▼</span>
       </button>
       {isExpanded && (
         <div id="context-preview-content" className={styles.content}>

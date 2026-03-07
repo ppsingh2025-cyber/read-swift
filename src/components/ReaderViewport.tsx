@@ -20,7 +20,7 @@
  *   currentWordIndex is NEVER in the dependency array — ticks are static.
  */
 
-import { memo, useCallback, useEffect, useRef } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import type { Orientation } from '../context/readerContextDef';
 import styles from '../styles/ReaderViewport.module.css';
@@ -55,6 +55,16 @@ interface ReaderViewportProps {
   focalLine?: boolean;
   /** All loaded words — used to gate tick mark visibility */
   words?: string[];
+  /** Current 0-based word index — used for the word-count overlay */
+  currentWordIndex?: number;
+  /** Total word count — used for the word-count overlay */
+  totalWordCount?: number;
+  /** Current 1-indexed page — used for page-nav overlay */
+  currentPage?: number;
+  /** Total page count — used for page-nav overlay */
+  totalPages?: number;
+  /** Jump to page callback — used for page-nav overlay */
+  goToPage?: (page: number) => void;
 }
 
 /**
@@ -118,6 +128,11 @@ const ReaderViewport = memo(function ReaderViewport({
   onShowPaste,
   focalLine = false,
   words = [],
+  currentWordIndex,
+  totalWordCount,
+  currentPage,
+  totalPages,
+  goToPage,
 }: ReaderViewportProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   /** Outermost viewport div — receives --pre-orp-col and --focal-tick-x CSS variables */
@@ -130,6 +145,22 @@ const ReaderViewport = memo(function ReaderViewport({
     const file = e.target.files?.[0];
     if (file && onFileSelect) onFileSelect(file);
   };
+
+  /* ── Page-jump popover ──────────────────────────────────────── */
+  const [showPageJump, setShowPageJump] = useState(false);
+  const [pageJumpDraft, setPageJumpDraft] = useState('');
+  const pageJumpRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showPageJump) return;
+    const handler = (e: MouseEvent) => {
+      if (pageJumpRef.current && !pageJumpRef.current.contains(e.target as Node)) {
+        setShowPageJump(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showPageJump]);
 
   const userScale   = mainWordFontSize / 100;
   const isMultiWord = wordWindow.length > 1;
@@ -392,6 +423,74 @@ const ReaderViewport = memo(function ReaderViewport({
             })}
 
           </div>
+
+        </div>
+      )}
+      {/* ── Bottom overlays — page nav (left) + word count (right) ── */}
+      {hasWords && !isLoading && (
+        <div className={styles.overlayBar}>
+
+          {currentPage !== undefined && totalPages !== undefined && totalPages > 1 && goToPage && (
+            <div className={styles.pageNavOverlay} ref={pageJumpRef}>
+              <button
+                className={styles.pageNavBtn}
+                onClick={() => goToPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage <= 1}
+                aria-label="Previous page"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                     strokeLinecap="round" strokeLinejoin="round" width="10" height="10" aria-hidden="true">
+                  <polyline points="15 6 9 12 15 18"/>
+                </svg>
+              </button>
+              <button
+                className={styles.pagePillOverlay}
+                onClick={() => { setPageJumpDraft(String(currentPage)); setShowPageJump(p => !p); }}
+                aria-label={`Page ${currentPage} of ${totalPages}`}
+              >
+                p.{currentPage}/{totalPages}
+              </button>
+              <button
+                className={styles.pageNavBtn}
+                onClick={() => goToPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage >= totalPages}
+                aria-label="Next page"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                     strokeLinecap="round" strokeLinejoin="round" width="10" height="10" aria-hidden="true">
+                  <polyline points="9 6 15 12 9 18"/>
+                </svg>
+              </button>
+              {showPageJump && (
+                <div className={styles.pageJumpPopover}>
+                  <input
+                    type="number" min={1} max={totalPages}
+                    value={pageJumpDraft}
+                    className={styles.pageJumpInput}
+                    onChange={e => setPageJumpDraft(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        const v = parseInt(pageJumpDraft, 10);
+                        if (v >= 1 && v <= totalPages) { goToPage(v); setShowPageJump(false); }
+                      }
+                      if (e.key === 'Escape') setShowPageJump(false);
+                    }}
+                    autoFocus
+                    aria-label="Jump to page"
+                  />
+                  <span className={styles.pageJumpHint}>Enter to jump</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {currentWordIndex !== undefined && totalWordCount !== undefined && (
+            <span className={styles.wordCountOverlay}>
+              {(currentWordIndex + 1).toLocaleString()}
+              <span className={styles.wcSep}>/</span>
+              {totalWordCount.toLocaleString()}
+            </span>
+          )}
 
         </div>
       )}
