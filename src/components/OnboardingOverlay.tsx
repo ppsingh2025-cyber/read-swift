@@ -4,19 +4,18 @@
  * Full-screen first-launch overlay introducing new users to ReadSwift.
  * Shown once, gated by localStorage key `fastread_onboarding_complete`.
  *
- * 4 sequential steps:
- *   1. Value Proposition — what is RSVP and why it works
- *   2. Live Demo         — self-contained mini RSVP player (no ReaderContext)
- *   3. Input Methods     — how to load content
- *   4. Reading Profiles  — speed modes available
- *
- * Self-contained: zero dependencies on ReaderContext, useRSVPEngine, or any
- * app-level state. Removing this file and its import from App.tsx leaves the
- * app in exactly its current state.
+ * 5 sequential steps:
+ *   0. Value Proposition — what is RSVP and why it works
+ *   1. Live Demo         — self-contained mini RSVP player (no ReaderContext)
+ *   2. Input Methods     — how to load content
+ *   3. Reading Profiles  — speed modes available
+ *   4. Theme Picker      — choose the app colour scheme
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styles from '../styles/OnboardingOverlay.module.css';
+import { useReaderContext } from '../context/useReaderContext';
+import type { Theme } from '../context/readerContextDef';
 
 // ── Demo content ──────────────────────────────────────────────────────────────
 
@@ -46,8 +45,13 @@ interface OnboardingOverlayProps {
 }
 
 export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps) {
-  const [step, setStep] = useState(0); // 0–3
+  const [step, setStep] = useState(0); // 0–4
   const [visible, setVisible] = useState(false); // drives enter animation
+
+  const { theme, setTheme } = useReaderContext();
+
+  // Theme picker state — initialised from context theme (single source of truth)
+  const [selectedTheme, setSelectedTheme] = useState<Theme>(theme);
 
   // Demo state — managed by event handlers, not effects
   const [demoIndex, setDemoIndex] = useState(-1); // -1 = not yet started
@@ -99,7 +103,7 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
   // ── Navigation ────────────────────────────────────────────────────────────
 
   const advance = useCallback(() => {
-    if (step < 3) {
+    if (step < 4) {
       const nextStep = step + 1;
       setStep(nextStep);
       if (nextStep === 1) {
@@ -108,9 +112,11 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
         clearDemoInterval(); // stop demo when leaving step 1
       }
     } else {
+      localStorage.setItem('fastread_theme', selectedTheme);
+      setTheme(selectedTheme);
       onComplete();
     }
-  }, [step, onComplete, launchDemo, clearDemoInterval]);
+  }, [step, onComplete, launchDemo, clearDemoInterval, selectedTheme, setTheme]);
 
   const skip = useCallback(() => {
     onComplete();
@@ -135,6 +141,15 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
 
   const demoFinished = demoIndex === DEMO_WORDS.length - 1;
 
+  // Brand logo — switches with selected theme
+  const iconSrc = selectedTheme === 'day' ? '/icons/icon-day.svg' : '/icons/icon-night.svg';
+
+  // Theme picker — apply preview as user hovers/selects
+  const handleThemeSelect = (t: Theme) => {
+    setSelectedTheme(t);
+    document.documentElement.setAttribute('data-theme', t);
+  };
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -147,8 +162,8 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
       <div className={styles.panel}>
 
         {/* ── Step indicator ── */}
-        <div className={styles.dots} aria-label={`Step ${step + 1} of 4`}>
-          {[0, 1, 2, 3].map((i) => (
+        <div className={styles.dots} aria-label={`Step ${step + 1} of 5`}>
+          {[0, 1, 2, 3, 4].map((i) => (
             <span
               key={i}
               className={`${styles.dot} ${i === step ? styles.dotActive : ''}`}
@@ -163,6 +178,8 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
           {/* ── Step 0: Value Proposition ── */}
           {step === 0 && (
             <div className={styles.step}>
+              <img src={iconSrc} className={styles.brandLogo} width={48} height={48} alt="" aria-hidden="true" />
+              <p className={styles.brandName}>ReadSwift</p>
               <h1 className={styles.heading}>Read 2× faster. Same comprehension.</h1>
               <p className={styles.body}>
                 ReadSwift uses RSVP — Rapid Serial Visual Presentation — to eliminate eye movement,
@@ -254,6 +271,41 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
             </div>
           )}
 
+          {/* ── Step 4: Theme Picker ── */}
+          {step === 4 && (
+            <div className={styles.step}>
+              <h1 className={styles.heading}>Make it yours</h1>
+              <p className={styles.subtext}>
+                Choose the look that&rsquo;s easiest on your eyes. You can change this anytime.
+              </p>
+              <div className={styles.themeCards}>
+                {(
+                  [
+                    { id: 'midnight' as Theme, label: 'Midnight', tagline: 'Default dark theme',    bg: '#0f0f12', border: '#2e2e3e' },
+                    { id: 'warm'     as Theme, label: 'Warm',     tagline: 'Easy on the eyes',      bg: '#120f0a', border: '#3a2e20' },
+                    { id: 'day'      as Theme, label: 'Day',      tagline: 'High contrast light',   bg: '#f5f0e8', border: '#d0c8bc' },
+                  ] satisfies { id: Theme; label: string; tagline: string; bg: string; border: string }[]
+                ).map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    className={`${styles.themeCard} ${selectedTheme === t.id ? styles.themeCardSelected : ''}`}
+                    onClick={() => handleThemeSelect(t.id)}
+                    aria-pressed={selectedTheme === t.id}
+                  >
+                    <span
+                      className={styles.themeSwatch}
+                      style={{ background: t.bg, borderColor: t.border }}
+                      aria-hidden="true"
+                    />
+                    <span className={styles.themeCardLabel}>{t.label}</span>
+                    <span className={styles.themeCardTagline}>{t.tagline}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
         </div>
 
         {/* ── Action buttons ── */}
@@ -264,12 +316,12 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
             </button>
           )}
 
-          {step < 3 ? (
+          {step < 4 ? (
             <button className={styles.btnPrimary} onClick={advance}>
               Next →
             </button>
           ) : (
-            <button className={styles.btnPrimary} onClick={advance}>
+            <button className={`${styles.btnPrimary} ${styles.btnPrimaryReady}`} onClick={advance}>
               Start Reading →
             </button>
           )}

@@ -1,7 +1,7 @@
 /* OnboardingOverlay.module.css
  *
  * Styles for the first-launch onboarding overlay.
- * Matches ReadSwift's dark night theme and visual language.
+ * Uses CSS variables for full theme compatibility (midnight, warm, day).
  * Completely self-contained — zero coupling to other component styles.
  */
 
@@ -33,6 +33,11 @@
   flex-direction: column;
   align-items: center;
   gap: 2rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 14px);
+  padding: 2.5rem 2rem;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
 }
 
 /* ── Step indicator dots ───────────────────────────────────────── */
@@ -44,16 +49,17 @@
 }
 
 .dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--border, #1e1e1e);
-  transition: background 0.25s ease, transform 0.25s ease;
+  transition: width 0.3s ease, border-radius 0.3s ease, background 0.25s ease;
 }
 
 .dotActive {
-  background: #e74c3c;
-  transform: scale(1.4);
+  width: 24px;
+  border-radius: 5px;
+  background: var(--color-accent);
 }
 
 /* ── Step content wrapper ──────────────────────────────────────── */
@@ -84,6 +90,22 @@
   gap: 1.25rem;
 }
 
+/* ── Brand logo (Step 0 only) ──────────────────────────────────── */
+
+.brandLogo {
+  display: block;
+  margin-bottom: -0.25rem;
+}
+
+.brandName {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: -0.75rem;
+}
+
 /* ── Typography ────────────────────────────────────────────────── */
 
 .heading {
@@ -108,7 +130,7 @@
   max-width: 440px;
 }
 
-/* ── Live demo (Step 2) ────────────────────────────────────────── */
+/* ── Live demo (Step 1) ────────────────────────────────────────── */
 
 .demoContainer {
   width: 100%;
@@ -126,7 +148,7 @@
 .demoWord {
   font-size: clamp(2rem, 8vw, 3rem);
   font-weight: 700;
-  color: #e74c3c;
+  color: var(--color-accent);
   letter-spacing: -0.02em;
   line-height: 1;
   transition: none; /* instant swap, no transition between words */
@@ -143,7 +165,7 @@
   min-height: 1.2em;
 }
 
-/* ── Input methods list (Step 3) ────────────────────────────────── */
+/* ── Input methods list (Step 2) ────────────────────────────────── */
 
 .inputList {
   list-style: none;
@@ -186,7 +208,7 @@
   line-height: 1.55;
 }
 
-/* ── Reading profiles (Step 4) ──────────────────────────────────── */
+/* ── Reading profiles (Step 3) ──────────────────────────────────── */
 
 .profileList {
   width: 100%;
@@ -209,7 +231,7 @@
 }
 
 .profileCardRecommended {
-  box-shadow: 0 0 0 1px rgba(231, 76, 60, 0.25);
+  box-shadow: 0 0 0 1px var(--color-accent-dim);
 }
 
 .profileDot {
@@ -239,8 +261,8 @@
 .profileBadge {
   font-size: 0.7rem;
   font-weight: 600;
-  background: rgba(231, 76, 60, 0.18);
-  color: #e74c3c;
+  background: var(--color-accent-dim);
+  color: var(--color-accent);
   border-radius: 4px;
   padding: 0.1em 0.45em;
   letter-spacing: 0.02em;
@@ -249,7 +271,7 @@
 
 .profileWpm {
   font-size: 0.82rem;
-  color: #e74c3c;
+  color: var(--color-accent);
   font-weight: 600;
   margin-left: auto;
   white-space: nowrap;
@@ -267,6 +289,63 @@
   max-width: 400px;
 }
 
+/* ── Theme picker (Step 4) ──────────────────────────────────────── */
+
+.themeCards {
+  display: flex;
+  flex-direction: row;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 440px;
+  justify-content: center;
+}
+
+.themeCard {
+  flex: 1;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 10px);
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  min-width: 100px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  text-align: center;
+}
+
+.themeCard:hover {
+  border-color: var(--border-input);
+}
+
+.themeCardSelected {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent-dim);
+}
+
+.themeSwatch {
+  width: 60px;
+  height: 36px;
+  border-radius: 6px;
+  border: 1px solid transparent; /* color applied inline */
+  flex-shrink: 0;
+  display: block;
+}
+
+.themeCardLabel {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.themeCardTagline {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
 /* ── Action buttons ────────────────────────────────────────────── */
 
 .actions {
@@ -278,7 +357,7 @@
 }
 
 .btnPrimary {
-  background: #e74c3c;
+  background: var(--color-accent);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -291,11 +370,29 @@
 }
 
 .btnPrimary:hover {
-  background: #c0392b;
+  filter: brightness(1.1);
 }
 
 .btnPrimary:active {
   transform: scale(0.97);
+}
+
+.btnPrimaryReady {
+  animation: readyPulse 1.8s ease-in-out infinite;
+}
+
+.btnPrimaryReady:hover {
+  animation: none;
+}
+
+@keyframes readyPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
 }
 
 .btnSecondary {
@@ -312,31 +409,34 @@
 }
 
 .btnSecondary:hover {
-  border-color: #e74c3c;
-  background: rgba(231, 76, 60, 0.08);
+  border-color: var(--color-accent);
+  background: var(--color-accent-dim);
 }
 
 .btnSkip {
   background: none;
-  border: none;
-  color: var(--text-muted, #888);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary, #888);
   font-size: 0.85rem;
   cursor: pointer;
-  padding: 0.4rem 0.6rem;
-  border-radius: 6px;
-  transition: color 0.15s ease;
+  padding: 0.4rem 0.8rem;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
   line-height: 1;
 }
 
 .btnSkip:hover {
-  color: var(--text, #e0e0e0);
+  color: var(--text);
+  border-color: var(--border-input);
+  background: var(--state-hover);
 }
 
 /* ── Responsive ────────────────────────────────────────────────── */
 
 @media (max-width: 480px) {
   .panel {
-    gap: 1.5rem;
+    padding: 1.75rem 1.25rem;
+    gap: 1.25rem;
   }
 
   .demoContainer {
@@ -356,14 +456,36 @@
   .profileInfo {
     gap: 0.35rem;
   }
+
+  .themeCards {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .themeCard {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.75rem;
+    padding: 0.7rem 0.85rem;
+    text-align: left;
+  }
+
+  .themeCardTagline {
+    text-align: left;
+  }
 }
 
-@media (max-width: 320px) {
+@media (max-width: 360px) {
+  .panel {
+    padding: 1.25rem 1rem;
+  }
+
   .heading {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
   }
 
   .demoWord {
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
 }
