@@ -117,10 +117,10 @@
 }
 
 .controlBtnLabel {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   line-height: 1;
   color: inherit;
   pointer-events: none;
@@ -175,10 +175,10 @@
 }
 
 .playBtnLabel {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   line-height: 1;
   color: inherit;
   pointer-events: none;
@@ -228,10 +228,10 @@
 }
 
 .resetBtnLabel {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   line-height: 1;
   color: inherit;
   pointer-events: none;
@@ -240,7 +240,20 @@
 
 /* ─── Mobile tweaks ──────────────────────────────────────────────── */
 
-@media (max-width: 360px) {
+@media (min-width: 321px) and (max-width: 400px) {
+  .controlBtn,
+  .resetBtn {
+    width: 46px;
+    height: 52px;
+  }
+
+  .playBtn {
+    width: 50px;
+    height: 52px;
+  }
+}
+
+@media (max-width: 320px) {
   .controlBtn,
   .resetBtn {
     width: 44px;
