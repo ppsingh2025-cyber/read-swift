@@ -463,8 +463,16 @@
 .wordCountOverlay {
   font-size: 0.62rem; font-variant-numeric: tabular-nums;
   color: var(--text-faint); letter-spacing: 0.02em;
-  pointer-events: none; white-space: nowrap;
+  pointer-events: all; white-space: nowrap;
   background: rgba(0,0,0,0.28); border-radius: 3px; padding: 2px 5px;
+}
+.wcLabel {
+  font-size: 0.6rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+  margin-right: 3px;
 }
 .wcSep { margin: 0 0.2em; opacity: 0.5; }
 

@@ -83,6 +83,7 @@ export default function App() {
     resetSessionStats,
     setWpm,
     goToPage,
+    goToWord,
     setTheme,
     applyMode,
     setActiveMode,
@@ -403,6 +404,7 @@ export default function App() {
             currentPage={currentPage}
             totalPages={totalPages}
             goToPage={goToPage}
+            goToWord={goToWord}
           />
           {/* Maximize / minimize button */}
           <button

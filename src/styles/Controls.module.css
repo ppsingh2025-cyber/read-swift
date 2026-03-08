@@ -37,7 +37,7 @@
   gap: var(--space-2, 8px);
   background: var(--bg-panel);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md, 10px);
+  border-radius: var(--radius-lg, 14px);
   padding: var(--space-2, 8px) var(--space-3, 12px) var(--space-3, 12px);
 }
 
@@ -223,7 +223,7 @@
 .resetBtn svg {
   width: 18px;
   height: 18px;
-  fill: currentColor;
+  fill: none;
   flex-shrink: 0;
 }
 

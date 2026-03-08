@@ -1,29 +1,38 @@
 /**
- * ContextPreview — "Page Preview"
+ * ContextPreview — "Page Context"
  *
- * Page-based static rendering. Zero scroll jitter.
+ * Shows the words on the current book page (using real pageBreaks from the parser).
+ * Falls back to 80-word artificial pages when the document has no page structure.
  *
- * Words are divided into fixed pages of PAGE_SIZE.
- * The rendered word list only changes when currentWordIndex
- * crosses a page boundary. The accent highlight moves within
- * the static list without any scrollIntoView or scroll at all.
- *
- * When collapsed: content area is not rendered (null).
+ * Design rules:
+ *  - Expanded by default
+ *  - Collapsed state shows header only (no snippet text)
+ *  - Content area scrolls; last line is never clipped
+ *  - Words never jitter mid-page — only re-renders when page changes
  */
 
 import { useCallback, useMemo, useState } from 'react';
 import { useReaderContext } from '../context/useReaderContext';
 import styles from '../styles/ContextPreview.module.css';
 
-const PAGE_SIZE = 80;
+const FALLBACK_PAGE_SIZE = 80;
 const LS_KEY = 'contextPreview_collapsed';
 
 export default function ContextPreview() {
-  const { words, currentWordIndex, goToWord, isLoading } = useReaderContext();
+  const {
+    words,
+    currentWordIndex,
+    goToWord,
+    isLoading,
+    pageBreaks,
+    currentPage,
+    totalPages,
+  } = useReaderContext();
 
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     const s = localStorage.getItem(LS_KEY);
-    return s === null ? true : s !== 'false';
+    // Default: expanded (false). Only collapsed if user explicitly closed it.
+    return s === 'true';
   });
 
   const hasWords = words.length > 0;
@@ -37,51 +46,55 @@ export default function ContextPreview() {
     });
   }, []);
 
-  // Page boundaries — only recomputed when currentWordIndex crosses a boundary
-  const pageNum = Math.floor(currentWordIndex / PAGE_SIZE);
+  // Determine page word range using real pageBreaks when available
+  const { pageStart, pageEnd } = useMemo(() => {
+    const hasRealPages = pageBreaks.length > 1;
+    if (hasRealPages) {
+      // pageBreaks is 1-indexed in the context (currentPage is 1-based)
+      // pageBreaks[i] = word index where page i+1 starts
+      const pageIdx = currentPage - 1; // 0-based
+      const start = pageBreaks[pageIdx] ?? 0;
+      const end = pageBreaks[pageIdx + 1] ?? words.length;
+      return { pageStart: start, pageEnd: end };
+    } else {
+      // Fallback: artificial 80-word pages
+      const pageNum = Math.floor(currentWordIndex / FALLBACK_PAGE_SIZE);
+      const start = pageNum * FALLBACK_PAGE_SIZE;
+      const end = Math.min(words.length, start + FALLBACK_PAGE_SIZE);
+      return { pageStart: start, pageEnd: end };
+    }
+  }, [pageBreaks, currentPage, currentWordIndex, words.length]);
 
-  // pageWords only changes when the page changes — stable reference mid-page
-  const { pageStart, pageWords } = useMemo(() => {
-    const start = pageNum * PAGE_SIZE;
-    const end   = Math.min(words.length, start + PAGE_SIZE);
-    return { pageStart: start, pageWords: words.slice(start, end) };
-  }, [words, pageNum]);
+  // pageWords is stable while the reader is on the same page
+  const pageWords = useMemo(
+    () => words.slice(pageStart, pageEnd),
+    [words, pageStart, pageEnd],
+  );
 
-  // Collapsed snippet: a few words around current position
-  const snippet = useMemo(() => {
-    if (!hasWords) return '';
-    const s = Math.max(0, currentWordIndex - 3);
-    const e = Math.min(words.length, currentWordIndex + 12);
-    return words.slice(s, e).join(' ');
-  }, [words, currentWordIndex, hasWords]);
-
-  // Page indicator: "p.3 / 12"
-  const totalPages = Math.ceil(words.length / PAGE_SIZE);
+  // Displayed page numbers
+  const displayPage = currentPage > 0 ? currentPage : Math.floor(currentWordIndex / FALLBACK_PAGE_SIZE) + 1;
+  const displayTotal = totalPages > 0 ? totalPages : Math.ceil(words.length / FALLBACK_PAGE_SIZE);
 
   if (!hasWords || isLoading) return null;
 
   return (
-    <div className={styles.preview} aria-label="Page preview">
+    <div className={styles.preview} aria-label="Page context">
 
       {/* ── Header toggle ── */}
       <button
         className={styles.heading}
         onClick={handleToggle}
         aria-expanded={isExpanded}
-        aria-controls="page-preview-content"
+        aria-controls="page-context-content"
       >
-        {!isExpanded ? (
-          <span className={styles.snippet} aria-hidden="true">…{snippet}…</span>
-        ) : (
-          <span className={styles.headingLabel}>
-            Page Preview
-            {totalPages > 1 && (
-              <span className={styles.pageIndicator}>
-                p.{pageNum + 1}/{totalPages}
-              </span>
-            )}
-          </span>
-        )}
+        <span className={styles.headingLabel}>
+          Page Context
+          {displayTotal > 1 && (
+            <span className={styles.pageIndicator}>
+              {displayPage} / {displayTotal}
+            </span>
+          )}
+        </span>
         <span
           className={styles.chevron}
           style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
@@ -91,7 +104,7 @@ export default function ContextPreview() {
 
       {/* ── Content — only rendered when expanded ── */}
       {isExpanded && (
-        <div id="page-preview-content" className={styles.content}>
+        <div id="page-context-content" className={styles.content}>
           {pageWords.map((word, i) => {
             const globalIndex = pageStart + i;
             const isActive    = globalIndex === currentWordIndex;

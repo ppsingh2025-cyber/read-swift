@@ -20,6 +20,10 @@ import { getThemeOrpAccent, isOrpColorInTheme } from '../config/orpColors';
 
 const LS_KEY_INDEX = 'fastread_word_index';
 const LS_KEY_WPM = 'fastread_wpm';
+
+function modeWpmKey(modeId: string): string {
+  return `fastread_wpm_${modeId}`;
+}
 const LS_KEY_WINDOW_SIZE = 'fastread_window_size';
 const LS_KEY_HIGHLIGHT_COLOR = 'fastread_highlight_color';
 const LS_KEY_ORIENTATION = 'fastread_orientation';
@@ -189,7 +193,11 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
   // Persist WPM
   useEffect(() => {
     localStorage.setItem(LS_KEY_WPM, String(wpm));
-  }, [wpm]);
+    // Also save per active mode
+    if (activeMode) {
+      localStorage.setItem(modeWpmKey(activeMode), String(wpm));
+    }
+  }, [wpm, activeMode]);
 
   // Persist active mode
   useEffect(() => {
@@ -459,6 +467,15 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
     applyMode(PRESET_MODES[modeId].settings);
     setActiveModeState(modeId);
     setActiveCustomModeIdState(null);
+    // Restore saved WPM for this mode if it exists
+    const savedModeWpm = localStorage.getItem(modeWpmKey(modeId));
+    if (savedModeWpm) {
+      const parsed = parseInt(savedModeWpm, 10);
+      if (!isNaN(parsed) && parsed >= 60 && parsed <= 1500) {
+        setWpmState(parsed);
+        localStorage.setItem(LS_KEY_WPM, String(parsed));
+      }
+    }
   }, [applyMode]);
 
   const selectCustomMode = useCallback((mode: CustomMode) => {

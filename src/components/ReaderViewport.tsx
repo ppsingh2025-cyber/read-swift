@@ -65,6 +65,8 @@ interface ReaderViewportProps {
   totalPages?: number;
   /** Jump to page callback — used for page-nav overlay */
   goToPage?: (page: number) => void;
+  /** Jump-to-word callback — used for word-count overlay click */
+  goToWord?: (index: number) => void;
 }
 
 /**
@@ -133,6 +135,7 @@ const ReaderViewport = memo(function ReaderViewport({
   currentPage,
   totalPages,
   goToPage,
+  goToWord,
 }: ReaderViewportProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   /** Outermost viewport div — receives --pre-orp-col and --focal-tick-x CSS variables */
@@ -448,7 +451,7 @@ const ReaderViewport = memo(function ReaderViewport({
                 onClick={() => { setPageJumpDraft(String(currentPage)); setShowPageJump(p => !p); }}
                 aria-label={`Page ${currentPage} of ${totalPages}`}
               >
-                p.{currentPage}/{totalPages}
+                Page {currentPage}<span style={{opacity:0.5, margin:'0 3px'}}>/</span>{totalPages}
               </button>
               <button
                 className={styles.pageNavBtn}
@@ -485,10 +488,24 @@ const ReaderViewport = memo(function ReaderViewport({
           )}
 
           {currentWordIndex !== undefined && totalWordCount !== undefined && (
-            <span className={styles.wordCountOverlay}>
-              {(currentWordIndex + 1).toLocaleString()}
+            <span
+              className={styles.wordCountOverlay}
+              style={{ cursor: 'pointer' }}
+              onClick={() => {
+                const raw = prompt(`Jump to word (1–${totalWordCount}):`, String(currentWordIndex + 1));
+                if (raw === null) return;
+                const n = parseInt(raw, 10);
+                if (!isNaN(n) && n >= 1 && n <= totalWordCount) {
+                  goToWord?.(n - 1);
+                }
+              }}
+              title="Word position"
+              aria-label={`Word ${(currentWordIndex ?? 0) + 1} of ${totalWordCount}`}
+            >
+              <span className={styles.wcLabel}>Word</span>
+              {' '}{((currentWordIndex ?? 0) + 1).toLocaleString()}
               <span className={styles.wcSep}>/</span>
-              {totalWordCount.toLocaleString()}
+              {(totalWordCount ?? 0).toLocaleString()}
             </span>
           )}
 

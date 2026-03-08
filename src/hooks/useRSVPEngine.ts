@@ -194,11 +194,11 @@ export function useRSVPEngine() {
   }, [resetReader]);
 
   const faster = useCallback(() => {
-    setWpm(Math.min(1500, Math.round(wpm * 1.2)));
+    setWpm(Math.min(1500, wpm + 10));
   }, [setWpm, wpm]);
 
   const slower = useCallback(() => {
-    setWpm(Math.max(60, Math.round(wpm / 1.2)));
+    setWpm(Math.max(60, wpm - 10));
   }, [setWpm, wpm]);
 
   const prevWord = useCallback(() => {
