@@ -90,6 +90,7 @@ export default function App() {
     setTheme,
     applyMode,
     setActiveMode,
+    activeMode,
   } = useReaderContext();
 
   const { wordWindow, play, pause, reset, faster, slower, prevWord, nextWord } = useRSVPEngine();
@@ -368,20 +369,29 @@ export default function App() {
     }
   }, []);
 
+  const resetOnboarding = useCallback(() => {
+    localStorage.removeItem('fastread_onboarding_complete');
+    setShowOnboarding(true);
+  }, []);
+
   return (
     <AuthProvider>
     {showWhatsNew && (
       <WhatsNewModal onDismiss={handleWhatsNewDismiss} />
     )}
     {!showWhatsNew && showOnboarding && (
-      <OnboardingOverlay onComplete={completeOnboarding} />
+      <OnboardingOverlay
+        onComplete={completeOnboarding}
+        initialTheme={theme}
+        initialModeId={activeMode !== 'custom' ? activeMode : 'focus'}
+      />
     )}
     <div className={`appShell${isFocused ? ' appShellFocused' : ''}`}>
 
       {/* ── 1. Top bar ──────────────────────────────────────────── */}
       <header className="topBar">
         <div className="topBarLeft">
-          <BurgerMenu onFileSelect={handleFileSelect} />
+          <BurgerMenu onFileSelect={handleFileSelect} onReplayIntro={resetOnboarding} />
         </div>
         <div className="topBarBrand">
           <img

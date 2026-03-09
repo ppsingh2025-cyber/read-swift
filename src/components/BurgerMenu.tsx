@@ -55,9 +55,10 @@ const RESETTABLE_KEYS = [
 
 interface BurgerMenuProps {
   onFileSelect: (file: File) => void;
+  onReplayIntro?: () => void;
 }
 
-export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
+export default function BurgerMenu({ onFileSelect, onReplayIntro }: BurgerMenuProps) {
   const [open, setOpen] = useState(false);
 
   const {
@@ -309,6 +310,15 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
                 >
                   💬 Send Feedback
                 </a>
+                {onReplayIntro && (
+                  <button
+                    type="button"
+                    className={styles.linkBtn}
+                    onClick={() => { close(); onReplayIntro(); }}
+                  >
+                    ↩ Replay intro
+                  </button>
+                )}
               </section>
 
             </div>

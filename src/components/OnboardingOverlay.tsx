@@ -1,6 +1,13 @@
 /**
- * OnboardingOverlay v2 — demo replicates real ReaderViewport visuals.
+ * OnboardingOverlay v3 — demo replicates real ReaderViewport visuals.
  * 250 WPM, ORP split, focal ticks, theme tokens throughout.
+ *
+ * Step flow (0-indexed):
+ *   0 — Value prop
+ *   1 — Live RSVP demo
+ *   2 — How to succeed (tips)
+ *   3 — Load anything
+ *   4 — Quick setup (theme + mode picker)
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styles from '../styles/OnboardingOverlay.module.css';
@@ -14,9 +21,9 @@ const DEMO_WORDS = (
   'at every saccade. Rapid Serial Visual Presentation eliminates that bottleneck entirely. ' +
   'Each word appears at a single fixed point on the screen. Your eyes stay completely still. ' +
   'Your brain receives each word directly, without the delay of physical eye movement. ' +
-  'Studies at MIT and Stanford confirm that comprehension stays high well above four hundred ' +
-  'words per minute with just one week of daily practice. You are now reading at two hundred ' +
-  'and fifty words per minute. Notice how effortless it feels.'
+  'Consistent practice meaningfully increases reading speed by eliminating the overhead of ' +
+  'eye movement. You are now reading at two hundred and fifty words per minute. ' +
+  'Notice how effortless it feels.'
 ).split(/\s+/).filter(Boolean);
 
 const DEMO_WPM = 250;
@@ -38,18 +45,23 @@ const MODES = [
   { id: 'read'  as PresetModeId, label: 'Flow',   emoji: '🌊', wpm: '150–200 WPM', desc: 'Up to 5 words with natural rhythm and context.',    setupDesc: '5 words, context',   accent: '#34d399' },
 ];
 
+const DEFAULT_ONBOARDING_THEME: Theme = 'obsidian';
+const DEFAULT_ONBOARDING_MODE: PresetModeId = 'focus';
+
 interface OnboardingOverlayProps {
   onComplete: (prefs: { theme: Theme; modeId: PresetModeId }) => void;
+  initialTheme?: Theme;
+  initialModeId?: PresetModeId;
 }
 
-export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps) {
+export default function OnboardingOverlay({ onComplete, initialTheme, initialModeId }: OnboardingOverlayProps) {
   const { setTheme, selectPresetMode } = useReaderContext();
   const [step, setStep]       = useState(0);
   const [visible, setVisible] = useState(false);
   const [demoIndex, setDemoIndex] = useState(-1);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [pickedTheme, setPickedTheme] = useState<Theme>('obsidian');
-  const [pickedMode,  setPickedMode]  = useState<PresetModeId>('focus');
+  const [pickedTheme, setPickedTheme] = useState<Theme>(initialTheme ?? DEFAULT_ONBOARDING_THEME);
+  const [pickedMode,  setPickedMode]  = useState<PresetModeId>(initialModeId ?? DEFAULT_ONBOARDING_MODE);
 
   useEffect(() => {
     const raf = requestAnimationFrame(() => setVisible(true));
@@ -75,7 +87,7 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
   useEffect(() => () => clearDemo(), [clearDemo]);
 
   const advance = useCallback(() => {
-    if (step < 3) {
+    if (step < 4) {
       const next = step + 1;
       setStep(next);
       if (next === 1) launchDemo();
@@ -85,8 +97,16 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
     }
   }, [step, onComplete, launchDemo, clearDemo, pickedTheme, pickedMode]);
 
+  const goBack = useCallback(() => {
+    if (step <= 0) return;
+    const prev = step - 1;
+    setStep(prev);
+    if (prev === 1) launchDemo();    // arriving at demo step from either direction
+    else clearDemo();                 // leaving demo step (step===1) or any other nav
+  }, [step, launchDemo, clearDemo]);
+
   const skip = useCallback(
-    () => onComplete({ theme: 'obsidian', modeId: 'focus' }),
+    () => onComplete({ theme: DEFAULT_ONBOARDING_THEME, modeId: DEFAULT_ONBOARDING_MODE }),
     [onComplete],
   );
 
@@ -108,8 +128,8 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
          role="dialog" aria-modal="true" aria-label="Welcome to PaceRead">
       <div className={styles.panel}>
 
-        <div className={styles.dots} aria-label={`Step ${step + 1} of 4`}>
-          {[0,1,2,3].map(i => (
+        <div className={styles.dots} aria-label={`Step ${step + 1} of 5`}>
+          {[0,1,2,3,4].map(i => (
             <span key={i} className={`${styles.dot} ${i === step ? styles.dotActive : ''}`} aria-hidden="true" />
           ))}
         </div>
@@ -132,8 +152,8 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
                 </div>
                 <span className={styles.statArrow} aria-hidden="true">→</span>
                 <div className={styles.stat}>
-                  <span className={styles.statNum} style={{ color: 'var(--color-accent)' }}>500+</span>
-                  <span className={styles.statLabel}>WPM within one week</span>
+                   <span className={styles.statNum} style={{ color: 'var(--color-accent)' }}>400+</span>
+                  <span className={styles.statLabel}>WPM with regular practice</span>
                 </div>
               </div>
             </div>
@@ -173,8 +193,30 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
             </div>
           )}
 
-          {/* Step 2 — Load content */}
+          {/* Step 2 — How to succeed */}
           {step === 2 && (
+            <div className={styles.step}>
+              <h1 className={styles.heading}>Your first session</h1>
+              <div className={styles.inputCards}>
+                {[
+                  { icon: '👁',  title: 'Lock your gaze',          desc: 'Keep your eyes completely still on the tick marks. Words come to you — do not chase them. This is the single habit that unlocks every speed gain.' },
+                  { icon: '🐢', title: 'Start slow',               desc: 'Begin at 200–250 WPM. The goal of your first session is not speed — it is building stillness. Add 25 WPM only when a speed feels genuinely comfortable.' },
+                  { icon: '📈', title: 'It clicks after 2–3 sessions', desc: 'RSVP feels unfamiliar at first, like a new physical skill. If the first session feels hard, that is expected and temporary — not a sign something is wrong.' },
+                ].map(tip => (
+                  <div key={tip.title} className={styles.inputCard}>
+                    <span className={styles.inputCardIcon} aria-hidden="true">{tip.icon}</span>
+                    <div>
+                      <strong>{tip.title}</strong>
+                      <span className={styles.inputFormats}>{tip.desc}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Step 3 — Load content */}
+          {step === 3 && (
             <div className={styles.step}>
               <h1 className={styles.heading}>Load anything</h1>
               <div className={styles.inputCards}>
@@ -196,8 +238,8 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
             </div>
           )}
 
-          {/* Step 3 — Setup: theme + mode */}
-          {step === 3 && (
+          {/* Step 4 — Setup: theme + mode */}
+          {step === 4 && (
             <div className={styles.step}>
               <h1 className={styles.heading}>Quick setup</h1>
               <p className={styles.body}>Pick a theme and reading mode. You can change both anytime.</p>
@@ -257,27 +299,18 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
                   ))}
                 </div>
               </div>
-
-              {/* First-session tips */}
-              <div className={styles.tipStrip}>
-                <div className={styles.tipRow}>
-                  <span className={styles.tipIcon} aria-hidden="true">👁</span>
-                  <span className={styles.tipText}>Keep your eyes locked on the focal point (the tick marks). Do not follow the words — they come to you.</span>
-                </div>
-                <div className={styles.tipRow}>
-                  <span className={styles.tipIcon} aria-hidden="true">🐢</span>
-                  <span className={styles.tipText}>Start at 200–250 WPM. The first session will feel slower than normal reading — that is expected and temporary. Increase by 25 per session.</span>
-                </div>
-              </div>
             </div>
           )}
 
         </div>
 
         <div className={styles.actions}>
+          {step > 0 && (
+            <button type="button" className={styles.btnBack} onClick={goBack}>← Back</button>
+          )}
           {step === 1 && <button type="button" className={styles.btnSecondary} onClick={launchDemo}>Replay</button>}
           <button type="button" className={styles.btnPrimary} onClick={advance}>
-            {step < 3 ? 'Next →' : 'Start Reading →'}
+            {step < 4 ? 'Next →' : 'Start Reading →'}
           </button>
           <button type="button" className={styles.btnSkip} onClick={skip}>Skip</button>
         </div>
