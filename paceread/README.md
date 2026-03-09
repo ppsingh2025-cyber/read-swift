@@ -1,7 +1,7 @@
-# ReadSwift — Branding & Discoverability System
+# PaceRead — Branding & Discoverability System
 
 **Company:** Techscript Limited  
-**Product:** ReadSwift  
+**Product:** PaceRead  
 **Version:** 1.0  
 **Status:** Production
 
@@ -9,14 +9,14 @@
 
 ## What This Directory Contains
 
-This directory holds all brand, SEO, AI discoverability, Play Store, and visibility deliverables for **ReadSwift** — the speed-reading product by Techscript Limited.
+This directory holds all brand, SEO, AI discoverability, Play Store, and visibility deliverables for **PaceRead** — the speed-reading product by Techscript Limited.
 
 ---
 
 ## Directory Index
 
 ```
-readswift/
+paceread/
 │
 ├── README.md                              ← This file
 │
@@ -94,7 +94,7 @@ speed reading,PDF reader,EPUB reader,RSVP,read faster,speed reader,study,product
 ### App title
 
 ```
-ReadSwift: Speed Reader
+PaceRead: Speed Reader
 ```
 
 ### Short description (62 chars)
@@ -107,16 +107,16 @@ PDF, EPUB, DOCX, TXT, MD, HTML, RTF, SRT. Speed reading 60-1500 WPM. No account.
 
 ## Relationship to `release-package/`
 
-This `readswift/` directory contains **product identity, SEO, and discoverability** deliverables.
+This `paceread/` directory contains **product identity, SEO, and discoverability** deliverables.
 
 The sibling `release-package/` directory contains **production asset specifications, design tokens, privacy policy, and deployment runbook**.
 
 Both directories are required for a complete Play Store submission. The typical workflow:
 
-1. Use `readswift/play-store/listing.md` for the Play Console store listing text
+1. Use `paceread/play-store/listing.md` for the Play Console store listing text
 2. Use `release-package/` for all icon, screenshot, and APK production steps
 3. Use `release-package/legal/privacy-policy.html` as the deployed privacy policy
-4. Use `readswift/seo/` for the landing page and SEO
+4. Use `paceread/seo/` for the landing page and SEO
 
 ---
 

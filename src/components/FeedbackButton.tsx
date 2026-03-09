@@ -16,7 +16,7 @@ export default function FeedbackButton() {
       target="_blank"
       rel="noopener noreferrer"
       className={styles.feedbackBtn}
-      aria-label="Submit feedback about ReadSwift"
+      aria-label="Submit feedback about PaceRead"
       title="Share your feedback — it helps us improve!"
     >
       💬 Feedback

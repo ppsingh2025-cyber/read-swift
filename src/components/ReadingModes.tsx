@@ -44,6 +44,7 @@ export default function ReadingModes() {
   );
   const [saveName, setSaveName]         = useState('');
   const [saveError, setSaveError]       = useState('');
+  const [isDirty, setIsDirty]           = useState(false);
 
   const toggleFinetune = useCallback(() => {
     setFinetuneOpen(prev => {
@@ -60,9 +61,27 @@ export default function ReadingModes() {
 
   const handleFinetuneChange = useCallback((apply: () => void) => {
     apply();
-    setActiveMode('custom');
-    setActiveCustomModeId(null);
-  }, [setActiveMode, setActiveCustomModeId]);
+    if (activeMode === 'custom' && activeCustomModeId) {
+      setIsDirty(true);
+    } else {
+      setActiveMode('custom');
+      setActiveCustomModeId(null);
+    }
+  }, [setActiveMode, setActiveCustomModeId, activeMode, activeCustomModeId]);
+
+  const updateActiveCustomMode = useCallback(() => {
+    if (!activeCustomModeId) return;
+    const updated = savedCustomModes.map((m: CustomMode) =>
+      m.id === activeCustomModeId
+        ? { ...m, wpm, settings: { windowSize, orpEnabled, orpColored, focalLine,
+            peripheralFade, punctuationPause, longWordCompensation, chunkMode } }
+        : m
+    );
+    setSavedCustomModes(updated);
+    setIsDirty(false);
+  }, [activeCustomModeId, wpm, windowSize, orpEnabled, orpColored, focalLine,
+      peripheralFade, punctuationPause, longWordCompensation, chunkMode,
+      savedCustomModes, setSavedCustomModes]);
 
   const handleInlineSave = useCallback(() => {
     const trimmed = saveName.trim();
@@ -70,7 +89,9 @@ export default function ReadingModes() {
     if (trimmed.length > 24) { setSaveError('Max 24 characters'); return; }
     setSaveError('');
     const newMode: CustomMode = {
-      id: crypto.randomUUID(),
+      id: crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`,
       name: trimmed,
       wpm,
       settings: { windowSize, orpEnabled, orpColored, focalLine,
@@ -81,6 +102,7 @@ export default function ReadingModes() {
     setActiveMode('custom');
     setActiveCustomModeId(newMode.id);
     setSaveName('');
+    setIsDirty(false);
   }, [saveName, wpm, windowSize, orpEnabled, orpColored, focalLine,
       peripheralFade, punctuationPause, longWordCompensation, chunkMode,
       savedCustomModes, setSavedCustomModes, setActiveMode, setActiveCustomModeId]);
@@ -110,7 +132,7 @@ export default function ReadingModes() {
             role="radio"
             aria-checked={activeMode === id}
             className={`${styles.presetTile} ${activeMode === id ? styles.presetTileActive : ''}`}
-            onClick={() => selectPresetMode(id)}
+            onClick={() => { selectPresetMode(id); setIsDirty(false); }}
           >
             <span className={styles.tileIcon} aria-hidden="true">{PRESET_MODES[id].icon}</span>
             <span className={styles.tileLabel}>{PRESET_MODES[id].label}</span>
@@ -131,7 +153,7 @@ export default function ReadingModes() {
               <button
                 type="button"
                 className={`${styles.customTile} ${isActive ? styles.customTileActive : ''}`}
-                onClick={() => selectCustomMode(mode)}
+                onClick={() => { selectCustomMode(mode); setIsDirty(false); }}
                 aria-pressed={isActive}
                 title={specLine(mode.settings, mode.wpm)}
               >
@@ -159,6 +181,12 @@ export default function ReadingModes() {
         </button>
       </div>
 
+      {/* Active custom mode spec strip */}
+      {activeMode === 'custom' && activeCustomModeId && (() => {
+        const m = savedCustomModes.find(x => x.id === activeCustomModeId);
+        return m ? <p className={styles.specStrip}>{specLine(m.settings, m.wpm)}</p> : null;
+      })()}
+
       {/* 3 — Fine-tune accordion */}
       <div className={styles.accordion}>
         <button
@@ -183,6 +211,27 @@ export default function ReadingModes() {
 
         {finetuneOpen && (
           <div className={styles.accordionBody}>
+
+            {/* Inline save — at top of Fine-tune */}
+            <div className={styles.inlineSave}>
+              <input type="text" className={styles.saveNameInput}
+                     placeholder="Name &amp; save this setup…" maxLength={24} value={saveName}
+                     onChange={e => { setSaveName(e.target.value); setSaveError(''); }}
+                     onKeyDown={e => { if (e.key === 'Enter') handleInlineSave(); }}
+                     aria-label="Name and save current mode" />
+              <button type="button" className={styles.saveBtn}
+                      onClick={handleInlineSave} disabled={!saveName.trim()}
+                      aria-label="Save current settings as custom mode">Save</button>
+            </div>
+            {saveError && <p className={styles.saveError}>{saveError}</p>}
+
+            {/* Update button when editing a custom mode */}
+            {isDirty && activeMode === 'custom' && activeCustomModeId && (
+              <button type="button" className={styles.updateModeBtn}
+                      onClick={updateActiveCustomMode}>
+                ✓ Update "{savedCustomModes.find(m => m.id === activeCustomModeId)?.name}"
+              </button>
+            )}
 
             {/* WPM */}
             <div className={styles.fineRow}>
@@ -228,19 +277,6 @@ export default function ReadingModes() {
                      onChange={e => handleFinetuneChange(() =>
                        setChunkMode(e.target.checked ? 'intelligent' : 'fixed'))} />
             </label>
-
-            {/* Inline save */}
-            <div className={styles.inlineSave}>
-              <input type="text" className={styles.saveNameInput}
-                     placeholder="Name this setup…" maxLength={24} value={saveName}
-                     onChange={e => { setSaveName(e.target.value); setSaveError(''); }}
-                     onKeyDown={e => { if (e.key === 'Enter') handleInlineSave(); }}
-                     aria-label="Custom mode name" />
-              <button type="button" className={styles.saveBtn}
-                      onClick={handleInlineSave} disabled={!saveName.trim()}
-                      aria-label="Save current settings as custom mode">Save</button>
-            </div>
-            {saveError && <p className={styles.saveError}>{saveError}</p>}
 
           </div>
         )}

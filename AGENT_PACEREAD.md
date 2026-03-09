@@ -1,4 +1,4 @@
-# AGENT_READSWIFT.md — Architecture Brain
+# AGENT_PACEREAD.md — Architecture Brain
 
 > **Purpose:** Authoritative reference for AI coding agents working in this repository. Read this before writing any code. Cross-reference `/READING_ENGINE.md` for engine details and `/DESIGN_SYSTEM.md` for UI rules.
 
@@ -8,10 +8,10 @@
 
 | Field | Value |
 |-------|-------|
-| App name | **ReadSwift** |
-| Bundle ID | `ca.techscript.readswift` |
+| App name | **PaceRead** |
+| Bundle ID | `ca.techscript.paceread` |
 | Author | TechScript Limited |
-| Live URL | https://readswift.techscript.ca |
+| Live URL | https://paceread.techscript.ca |
 | Description | Browser-only RSVP speed-reader — PDF, EPUB, DOCX, TXT, MD, HTML, RTF, SRT |
 
 ---
@@ -44,7 +44,7 @@
 ├── capacitor.config.ts          # Mobile bundle ID, webDir, server settings
 ├── .env.example                 # VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY
 ├── public/
-│   ├── CNAME                    # readswift.techscript.ca (GitHub Pages)
+│   ├── CNAME                    # paceread.techscript.ca (GitHub Pages)
 │   └── icons/                   # icon-day.svg, icon-night.svg, icon-192.png, icon-512.png
 ├── docs/
 │   ├── AUTH_ARCHITECTURE.md
@@ -185,6 +185,7 @@ sessionStats: SessionStats        // { wordsRead, startTime, activeTimeMs, effec
 | `fastread_main_font_size` | `100` |
 | `fastread_chunk_mode` | `fixed` |
 | `fastread_session_stats` | JSON of empty `SessionStats` |
+| `fastread_session_history` | JSON array of up to 20 `StoredSession[]` — persisted by `saveCurrentSession` |
 | `fastread_records` | JSON array of `ReadingRecord[]` |
 | `fastread_adaptive_wpm` | set by `useAdaptiveSpeed` |
 | `fastread_reading_profile` | `balanced` |
@@ -299,7 +300,7 @@ Profiles apply a full bundle of settings atomically. Users can still override in
 
 | Workflow | Trigger | Output |
 |----------|---------|--------|
-| `deploy-web.yml` | Push → `main` | Build + deploy to GitHub Pages (`readswift.techscript.ca`) |
+| `deploy-web.yml` | Push → `main` | Build + deploy to GitHub Pages (`paceread.techscript.ca`) |
 | `build-android.yml` | Push → `main` | Debug APK artifact `fast-read-debug-apk` |
 | `build-android.yml` | Push tag `v*` | Signed release AAB (4 repo secrets required) |
 | `build-ios.yml` | Push → `main` | iOS archive (macOS runner) |

@@ -2,4 +2,4 @@
  * Central application version constant.
  * Bump this string with every release; displayed in the burger menu.
  */
-export const APP_VERSION = 'v1.0.8';
+export const APP_VERSION = 'v1.1.0';

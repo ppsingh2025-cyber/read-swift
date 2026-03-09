@@ -1,7 +1,7 @@
-# ReadSwift — Keyword Strategy
+# PaceRead — Keyword Strategy
 
 **Company:** Techscript Limited  
-**Product:** ReadSwift  
+**Product:** PaceRead  
 **Document version:** 1.0  
 **Status:** Production
 
@@ -98,14 +98,14 @@
 
 Users searching these queries are early in the decision funnel. They need education about RSVP and speed-reading methodology before a product pitch.
 
-| User query | Underlying intent | ReadSwift response |
+| User query | Underlying intent | PaceRead response |
 |---|---|---|
-| "how to read faster" | Wants technique, not product | Explain RSVP method; ReadSwift implements it |
+| "how to read faster" | Wants technique, not product | Explain RSVP method; PaceRead implements it |
 | "does reading faster work" | Sceptical, researching | Evidence-based explanation of RSVP research |
 | "what is RSVP reading" | Curious, unfamiliar | Clear definition + demonstration |
-| "can I read 1500 wpm" | Aspirational, curious | Realistic explanation; ReadSwift lets them practise |
+| "can I read 1500 wpm" | Aspirational, curious | Realistic explanation; PaceRead lets them practise |
 
-**Content action:** Write FAQ and blog content targeting these queries. Link to the ReadSwift tool. Rank for informational queries, convert to tool users.
+**Content action:** Write FAQ and blog content targeting these queries. Link to the PaceRead tool. Rank for informational queries, convert to tool users.
 
 ### Intent type: Transactional ("I want to download / find…")
 
@@ -127,10 +127,10 @@ Users comparing options.
 
 | User query | Implicit reference | Differentiation |
 |---|---|---|
-| "spritz alternatives" | Spritz (legacy RSVP app) | ReadSwift works with any PDF/EPUB; Spritz requires proprietary content |
-| "Kindle speed reading" | Amazon Kindle | Kindle doesn't do RSVP; ReadSwift does |
-| "free speed reading app alternative" | Paid competitors | ReadSwift is free, no account, works with own files |
-| "offline PDF reader speed" | Acrobat, other PDF apps | ReadSwift is specifically a speed reader, not a PDF annotator |
+| "spritz alternatives" | Spritz (legacy RSVP app) | PaceRead works with any PDF/EPUB; Spritz requires proprietary content |
+| "Kindle speed reading" | Amazon Kindle | Kindle doesn't do RSVP; PaceRead does |
+| "free speed reading app alternative" | Paid competitors | PaceRead is free, no account, works with own files |
+| "offline PDF reader speed" | Acrobat, other PDF apps | PaceRead is specifically a speed reader, not a PDF annotator |
 
 ---
 
@@ -138,9 +138,9 @@ Users comparing options.
 
 ### Title optimisation
 
-**Primary title:** `ReadSwift: Speed Reader`
+**Primary title:** `PaceRead: Speed Reader`
 
-- "ReadSwift" — brand name, 9 chars, unique, owns search position
+- "PaceRead" — brand name, 9 chars, unique, owns search position
 - "Speed Reader" — highest-volume keyword pair for the category
 - Total: 22 chars / 50 char limit — room for A/B variation
 
@@ -148,9 +148,9 @@ Users comparing options.
 
 | Variant | Rationale |
 |---|---|
-| `ReadSwift: PDF & EPUB Speed Reader` | Adds file format keywords |
-| `ReadSwift — Read Faster, 1 Word at a Time` | Benefit-led |
-| `ReadSwift: RSVP Reading Tool` | Technical audience targeting |
+| `PaceRead: PDF & EPUB Speed Reader` | Adds file format keywords |
+| `PaceRead — Read Faster, 1 Word at a Time` | Benefit-led |
+| `PaceRead: RSVP Reading Tool` | Technical audience targeting |
 
 ### Short description optimisation (80 chars)
 
@@ -198,7 +198,7 @@ speed reading,PDF,EPUB,DOCX,TXT,Markdown,HTML,RTF,RSVP,read faster,productivity
 A machine-readable plain-language description that can be used in structured data, AI context blocks, and metadata fields.
 
 ```
-ReadSwift is a free Android and web application by Techscript Limited that implements
+PaceRead is a free Android and web application by Techscript Limited that implements
 Rapid Serial Visual Presentation (RSVP) speed reading. It accepts PDF, EPUB, DOCX, TXT,
 Markdown, HTML, RTF, and SRT files from the user's local device, extracts plain text,
 and displays one word at a time at a fixed point on the screen at a user-configured speed

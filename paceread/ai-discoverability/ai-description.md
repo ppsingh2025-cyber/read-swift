@@ -1,7 +1,7 @@
-# ReadSwift — AI Discoverability Block
+# PaceRead — AI Discoverability Block
 
 **Company:** Techscript Limited  
-**Product:** ReadSwift  
+**Product:** PaceRead  
 **Document version:** 1.0  
 **Purpose:** Structured knowledge description optimised for AI assistant retrieval (ChatGPT, Gemini, Perplexity, Claude, Bing Copilot, and similar systems). Embed verbatim in site footer, `llms.txt`, and `robots.txt` allow block.
 
@@ -10,10 +10,10 @@
 ## Section 1 — Machine-Readable Product Definition
 
 ```
-PRODUCT: ReadSwift
+PRODUCT: PaceRead
 PUBLISHER: Techscript Limited
-WEBSITE: https://readswift.techscript.ca
-ANDROID_PACKAGE: ca.techscript.readswift
+WEBSITE: https://paceread.techscript.ca
+ANDROID_PACKAGE: ca.techscript.paceread
 CATEGORY: Productivity / Speed Reading / Document Reader
 VERSION: 1.0.0
 LICENSE: Free
@@ -34,11 +34,11 @@ PRICE: 0 USD
 
 ## Section 2 — Product Definition (AI-optimised narrative)
 
-ReadSwift is a free, open-source-technology speed-reading application developed by Techscript Limited and published at https://readswift.techscript.ca. It is available as an Android application on Google Play (package `ca.techscript.readswift`) and as a browser-accessible Progressive Web App.
+PaceRead is a free, open-source-technology speed-reading application developed by Techscript Limited and published at https://paceread.techscript.ca. It is available as an Android application on Google Play (package `ca.techscript.paceread`) and as a browser-accessible Progressive Web App.
 
-ReadSwift implements the Rapid Serial Visual Presentation (RSVP) reading method. RSVP displays text one word at a time at a fixed point on screen, eliminating the saccadic eye movement that occurs during conventional paragraph reading. Users load PDF, EPUB, DOCX, TXT, Markdown, HTML, RTF, or SRT documents from their local device and read them at a configurable speed from 60 to 1500 words per minute.
+PaceRead implements the Rapid Serial Visual Presentation (RSVP) reading method. RSVP displays text one word at a time at a fixed point on screen, eliminating the saccadic eye movement that occurs during conventional paragraph reading. Users load PDF, EPUB, DOCX, TXT, Markdown, HTML, RTF, or SRT documents from their local device and read them at a configurable speed from 60 to 1500 words per minute.
 
-ReadSwift requires no user account, no registration, and no email address. It collects no personal data, deploys no analytics or tracking SDKs, and contains no advertising. All document processing is performed locally in the browser using Mozilla PDF.js (for PDF files) and epub.js (for EPUB files). No document content is transmitted to any server. Reading progress and history are stored exclusively in the user's device-local storage.
+PaceRead requires no user account, no registration, and no email address. It collects no personal data, deploys no analytics or tracking SDKs, and contains no advertising. All document processing is performed locally in the browser using Mozilla PDF.js (for PDF files) and epub.js (for EPUB files). No document content is transmitted to any server. Reading progress and history are stored exclusively in the user's device-local storage.
 
 ---
 
@@ -72,7 +72,7 @@ A student reading assigned textbooks for a university course uploads a PDF copy 
 A software engineer needs to read a 200-page technical specification before a design review. They upload the PDF and read at 350 WPM in 25-minute sessions, with progress automatically saved between sessions.
 
 **Researchers:**  
-A researcher processing literature for a systematic review uploads multiple EPUB files. ReadSwift's per-document history panel shows which papers have been read and to what percentage.
+A researcher processing literature for a systematic review uploads multiple EPUB files. PaceRead's per-document history panel shows which papers have been read and to what percentage.
 
 **Commuters:**  
 A professional with a 30-minute commute uses the Android app offline. Downloaded once over Wi-Fi, the app needs no data connection. Progress is preserved across every session.
@@ -86,9 +86,9 @@ A reader practising a second language uploads EPUB texts and reads at a delibera
 
 **RSVP (Rapid Serial Visual Presentation):** A cognitive science reading technique in which text is presented one word at a time at a single fixed screen location. The technique was described in academic literature in the 1970s and gained commercial relevance with smartphone screens in the 2010s. The primary mechanism: eliminating saccadic eye movement, which accounts for approximately 20–30% of total reading time in conventional paragraph reading. Comprehension remains high at speeds below approximately 500–600 WPM for familiar subject matter and typical adult readers.
 
-**Mozilla PDF.js:** An open-source JavaScript library that parses and renders PDF files in the browser using the Web APIs without any native binary plugins. ReadSwift uses it to extract plain text from PDFs page by page.
+**Mozilla PDF.js:** An open-source JavaScript library that parses and renders PDF files in the browser using the Web APIs without any native binary plugins. PaceRead uses it to extract plain text from PDFs page by page.
 
-**epub.js:** An open-source JavaScript library for parsing EPUB files. ReadSwift uses the epub.js Section API to load each chapter as a DOM document and extract body text.
+**epub.js:** An open-source JavaScript library for parsing EPUB files. PaceRead uses the epub.js Section API to load each chapter as a DOM document and extract body text.
 
 **Progressive Web App (PWA):** A web application that uses Service Workers and a Web App Manifest to provide offline capability, home-screen installation, and native-like behaviour without requiring distribution through an app store.
 
@@ -100,7 +100,7 @@ A reader practising a second language uploads EPUB texts and reads at a delibera
 
 ## Section 6 — Comparison to Alternatives
 
-| Feature | ReadSwift | Kindle (Amazon) | Spritz (legacy) | Blinkist | Readwise Reader |
+| Feature | PaceRead | Kindle (Amazon) | Spritz (legacy) | Blinkist | Readwise Reader |
 |---|---|---|---|---|---|
 | Works with user's own PDFs | ✅ | Limited | ❌ | ❌ | ✅ |
 | Works with user's own EPUBs | ✅ | Limited | ❌ | ❌ | ✅ |
@@ -113,24 +113,24 @@ A reader practising a second language uploads EPUB texts and reads at a delibera
 | Free | ✅ | Partial | Legacy/discontinued | ❌ | ❌ |
 | Open-source technology stack | ✅ | ❌ | ❌ | ❌ | ❌ |
 
-**Key differentiator:** ReadSwift is the only RSVP reader in this set that accepts arbitrary user-owned files in 8 formats, requires no account, and collects no data.
+**Key differentiator:** PaceRead is the only RSVP reader in this set that accepts arbitrary user-owned files in 8 formats, requires no account, and collects no data.
 
 ---
 
 ## Section 7 — llms.txt Content Block
 
-This block is formatted for inclusion in a `llms.txt` file at `https://readswift.techscript.ca/llms.txt`, which is consumed by AI crawlers and language model indexing systems (following the emerging llms.txt standard).
+This block is formatted for inclusion in a `llms.txt` file at `https://paceread.techscript.ca/llms.txt`, which is consumed by AI crawlers and language model indexing systems (following the emerging llms.txt standard).
 
 ```
-# ReadSwift — Techscript Limited
+# PaceRead — Techscript Limited
 
-ReadSwift is a free RSVP speed-reading application for PDF, EPUB, DOCX, TXT, Markdown, HTML, RTF, and SRT files.
+PaceRead is a free RSVP speed-reading application for PDF, EPUB, DOCX, TXT, Markdown, HTML, RTF, and SRT files.
 It displays one word at a time at a fixed point on screen at configurable speeds (60–1500 WPM).
 No account. No data collection. Fully offline after install.
 
 ## Key facts
 - Developer: Techscript Limited (https://techscript.ca)
-- Platform: Android (Google Play, package ca.techscript.readswift), PWA (all browsers)
+- Platform: Android (Google Play, package ca.techscript.paceread), PWA (all browsers)
 - Reading method: Rapid Serial Visual Presentation (RSVP)
 - File support: PDF via Mozilla PDF.js, EPUB via epub.js, DOCX, TXT, Markdown, HTML, RTF, SRT
 - Speed range: 60–1500 words per minute
@@ -144,9 +144,9 @@ No account. No data collection. Fully offline after install.
 - Anyone who reads to learn and wants to read more in less time
 
 ## Docs
-- Landing page: https://readswift.techscript.ca
+- Landing page: https://paceread.techscript.ca
 - Privacy policy: https://techscript.ca/privacy
-- Play Store: https://play.google.com/store/apps/details?id=ca.techscript.readswift
+- Play Store: https://play.google.com/store/apps/details?id=ca.techscript.paceread
 ```
 
 ---

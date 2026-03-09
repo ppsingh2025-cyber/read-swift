@@ -1,11 +1,11 @@
-/* app.css – global styles for ReadSwift
+/* app.css – global styles for PaceRead
  *
  * Layout layers (top to bottom in flex column):
  *   1. topBar         — burger · brand · donate
- *   2. readingMain    — viewport + context preview (flex: 1)
- *   3. navLayer       — page nav + word nav
- *   4. pasteArea      — collapsible paste/URL panel
- *   5. Controls       — sticky bottom bar
+ *   2. readingMain    — viewport (flex: 1)
+ *   3. pasteArea      — collapsible paste/URL panel
+ *   4. Controls       — playback bar
+ *   5. contextStrip   — context preview (below controls)
  *
  * Focus / fullscreen mode:
  *   appShellFocused → position:fixed inset:0, navLayer/pasteArea hidden,
@@ -577,6 +577,30 @@ body {
 [data-theme='day'] .helpBtn:hover {
   background: var(--bg-panel, #eeeeea);
 }
+
+.helpBtnPulse {
+  animation: helpPulse 0.6s ease-in-out 3;
+}
+
+@keyframes helpPulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--color-accent-22); }
+  50% { box-shadow: 0 0 0 8px var(--color-accent-22); transform: scale(1.15); }
+}
+
+/* ─── Top bar reading position chip ─────────────────────────── */
+.topBarReadPos {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+.topBarReadCursor { color: var(--color-accent); font-size: 0.65em; }
 
 /* ─── Landscape mode on mobile ──────────────────────────────────── */
 /* 2-column grid: reading viewport (75%) | controls sidebar (25%).

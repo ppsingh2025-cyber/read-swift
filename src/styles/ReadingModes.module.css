@@ -24,15 +24,15 @@
 
 /* Custom grid */
 .customGrid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
-  max-height: 200px; overflow-y: auto;
+  display: flex; flex-wrap: wrap; gap: 6px;
+  max-height: 180px; overflow-y: auto;
   scrollbar-width: thin; scrollbar-color: var(--border) transparent;
 }
 .customGrid::-webkit-scrollbar { width: 3px; }
 .customGrid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 .customTileWrapper { position: relative; display: flex; }
 .customTile {
-  flex: 1; min-width: 0; display: flex; flex-direction: column;
+  flex: 1; min-width: 72px; max-width: 96px; display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 3px;
   height: 52px; padding: 0 20px 0 8px;
   border-radius: var(--radius-sm); border: 1px solid var(--border);
@@ -131,3 +131,12 @@
 .saveBtn:disabled { opacity: 0.35; cursor: not-allowed; }
 .saveBtn:not(:disabled):hover { opacity: 0.85; }
 .saveError { font-size: 0.72rem; color: #e57373; padding: 0 12px 8px; margin: 0; }
+.updateModeBtn {
+  width: 100%; padding: 7px 12px;
+  background: var(--color-accent); border: none;
+  border-radius: var(--radius-sm); color: var(--bg);
+  font-size: 0.82rem; font-weight: 700; cursor: pointer;
+  text-align: center; transition: opacity 0.15s; touch-action: manipulation;
+  margin-bottom: 6px;
+}
+.updateModeBtn:hover { opacity: 0.85; }

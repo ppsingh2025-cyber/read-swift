@@ -1,7 +1,7 @@
-# ReadSwift — Website Landing Page Content
+# PaceRead — Website Landing Page Content
 
 **Company:** Techscript Limited  
-**URL target:** `https://readswift.techscript.ca` (primary; also applicable to `readswift.app` if that domain is acquired)  
+**URL target:** `https://paceread.techscript.ca` (primary; also applicable to `readswift.app` if that domain is acquired)  
 **Document version:** 1.0  
 **Status:** Production-ready copy
 
@@ -19,13 +19,13 @@ One Word at a Time.
 ### Subheadline
 
 ```
-ReadSwift uses the RSVP method to eliminate eye movement — the hidden bottleneck that slows most readers. Load any PDF, EPUB, DOCX, TXT, Markdown, HTML, RTF, or SRT file and start reading at up to 1500 words per minute.
+PaceRead uses the RSVP method to eliminate eye movement — the hidden bottleneck that slows most readers. Load any PDF, EPUB, DOCX, TXT, Markdown, HTML, RTF, or SRT file and start reading at up to 1500 words per minute.
 ```
 
 ### Hero CTA
 
 ```
-Primary button:   Open ReadSwift — it's free
+Primary button:   Open PaceRead — it's free
 Secondary link:   How it works ↓
 ```
 
@@ -65,7 +65,7 @@ called saccadic scanning, consumes time you aren't aware of spending.
 A typical adult reads at 200–250 words per minute. Most of that time is physical 
 eye travel, not text comprehension. Your brain is waiting.
 
-ReadSwift removes the motion entirely.
+PaceRead removes the motion entirely.
 ```
 
 ---
@@ -81,7 +81,7 @@ One Word. One Point. No Scanning.
 ### Body copy
 
 ```
-ReadSwift displays your document one word at a time at a single fixed point on the 
+PaceRead displays your document one word at a time at a single fixed point on the 
 screen. Your eyes don't move. The words come to you.
 
 This technique — Rapid Serial Visual Presentation (RSVP) — is backed by decades of 
@@ -98,7 +98,7 @@ Load a file from your device. Set your speed. Press play. That's it.
 ### Section heading
 
 ```
-How ReadSwift Works
+How PaceRead Works
 ```
 
 ### Steps
@@ -107,7 +107,7 @@ How ReadSwift Works
 
 ```
 Load a PDF, EPUB, DOCX, TXT, Markdown, HTML, RTF, or SRT file from your device. 
-ReadSwift extracts the text entirely on your device — nothing is uploaded.
+PaceRead extracts the text entirely on your device — nothing is uploaded.
 ```
 
 **Step 2 — Set your speed**
@@ -128,7 +128,7 @@ Your eyes stay still. Your brain reads at the pace you set.
 **Step 4 — Resume any time**
 
 ```
-ReadSwift saves your position in every document automatically. 
+PaceRead saves your position in every document automatically. 
 Close the app. Come back tomorrow. 
 Your place is exactly where you left it.
 ```
@@ -175,10 +175,10 @@ Free                       — No subscription, no ads
 Frequently Asked Questions
 ```
 
-**Q: What file formats does ReadSwift support?**
+**Q: What file formats does PaceRead support?**
 
 ```
-A: ReadSwift supports 8 file formats:
+A: PaceRead supports 8 file formats:
    • PDF (.pdf)
    • EPUB (.epub)
    • DOCX (.docx) — Microsoft Word
@@ -191,28 +191,28 @@ A: ReadSwift supports 8 file formats:
    Files must be loaded from your local device (up to 100 MB).
 ```
 
-**Q: Does ReadSwift work offline?**
+**Q: Does PaceRead work offline?**
 
 ```
 A: Yes. After the app is installed, no internet connection is required. 
    All text processing runs locally in your browser using PDF.js and epub.js.
 ```
 
-**Q: Is ReadSwift free?**
+**Q: Is PaceRead free?**
 
 ```
-A: Yes. ReadSwift is free with no subscription and no in-app purchases. 
+A: Yes. PaceRead is free with no subscription and no in-app purchases. 
    There are no ads.
 ```
 
 **Q: Do I need an account?**
 
 ```
-A: No. ReadSwift requires no registration, no email address, and no login. 
+A: No. PaceRead requires no registration, no email address, and no login. 
    Open it and use it immediately.
 ```
 
-**Q: Does ReadSwift store or transmit my documents?**
+**Q: Does PaceRead store or transmit my documents?**
 
 ```
 A: No. Your files are never uploaded to any server. 
@@ -229,10 +229,10 @@ A: RSVP stands for Rapid Serial Visual Presentation. Instead of displaying a ful
    faster reading with less physical effort.
 ```
 
-**Q: How fast can I actually read with ReadSwift?**
+**Q: How fast can I actually read with PaceRead?**
 
 ```
-A: ReadSwift supports speeds from 60 to 1500 words per minute.
+A: PaceRead supports speeds from 60 to 1500 words per minute.
    • Beginners: Start at 200-300 WPM
    • Intermediate: 400-600 WPM achievable within 1 week
    • Advanced: 700-1000+ WPM for familiar content
@@ -247,19 +247,19 @@ A: ReadSwift supports speeds from 60 to 1500 words per minute.
 A: Android 7.0 (API 24) or higher.
 ```
 
-**Q: Does ReadSwift work on desktop?**
+**Q: Does PaceRead work on desktop?**
 
 ```
-A: Yes. ReadSwift is a Progressive Web App. It runs in any modern browser 
+A: Yes. PaceRead is a Progressive Web App. It runs in any modern browser 
    on desktop or mobile. The Android app on Google Play is the same application 
    wrapped in a native shell.
 ```
 
-**Q: Who made ReadSwift?**
+**Q: Who made PaceRead?**
 
 ```
-A: ReadSwift is developed by Techscript Limited. 
-   Website: https://readswift.techscript.ca
+A: PaceRead is developed by Techscript Limited. 
+   Website: https://paceread.techscript.ca
 ```
 
 ---
@@ -268,7 +268,7 @@ A: ReadSwift is developed by Techscript Limited.
 
 ```
 Stop scanning. Start reading.
-Open ReadSwift — free, no account required.
+Open PaceRead — free, no account required.
 [Open the app →]
 ```
 

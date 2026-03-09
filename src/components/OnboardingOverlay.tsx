@@ -105,7 +105,7 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
 
   return (
     <div className={`${styles.overlay} ${visible ? styles.overlayVisible : ''}`}
-         role="dialog" aria-modal="true" aria-label="Welcome to ReadSwift">
+         role="dialog" aria-modal="true" aria-label="Welcome to PaceRead">
       <div className={styles.panel}>
 
         <div className={styles.dots} aria-label={`Step ${step + 1} of 5`}>
@@ -122,7 +122,7 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
               <div className={styles.heroIcon} aria-hidden="true">⚡</div>
               <h1 className={styles.heading}>Read 2× faster.<br />Same comprehension.</h1>
               <p className={styles.body}>
-                ReadSwift uses RSVP — Rapid Serial Visual Presentation — to eliminate
+                PaceRead uses RSVP — Rapid Serial Visual Presentation — to eliminate
                 the eye movement that slows every reader down.
               </p>
               <div className={styles.statRow}>

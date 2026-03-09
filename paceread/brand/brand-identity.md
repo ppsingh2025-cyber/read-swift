@@ -1,7 +1,7 @@
-# ReadSwift — Brand Identity
+# PaceRead — Brand Identity
 
 **Company:** Techscript Limited  
-**Product:** ReadSwift  
+**Product:** PaceRead  
 **Document version:** 1.0  
 **Status:** Production
 
@@ -9,7 +9,7 @@
 
 ## 1. Brand Identity Statement
 
-**ReadSwift is a precision reading instrument that eliminates the physical overhead of eye movement so that knowledge workers can process text at the speed their mind allows.**
+**PaceRead is a precision reading instrument that eliminates the physical overhead of eye movement so that knowledge workers can process text at the speed their mind allows.**
 
 It is not a content platform. It is not a library. It is not a social reading app. It is a cognitive performance tool for people who read to learn, not to be entertained.
 
@@ -21,11 +21,11 @@ It is not a content platform. It is not a library. It is not a social reading ap
 
 **Speed-reading utility** — a tool, not a destination.
 
-ReadSwift belongs in the same mental category as a text editor or a calculator: a focused instrument with one job, executed precisely.
+PaceRead belongs in the same mental category as a text editor or a calculator: a focused instrument with one job, executed precisely.
 
 ### Market position
 
-| Dimension | ReadSwift | Traditional e-reader | Speed-reading subscription app |
+| Dimension | PaceRead | Traditional e-reader | Speed-reading subscription app |
 |---|---|---|---|
 | Works with user's own files | ✅ | ❌ | ❌ |
 | No account required | ✅ | ❌ | ❌ |
@@ -37,11 +37,11 @@ ReadSwift belongs in the same mental category as a text editor or a calculator: 
 | RSVP method | ✅ | ❌ | ✅ |
 | Free | ✅ | ❌ | ❌ |
 
-**Competitive wedge:** The combination of RSVP technique + bring-your-own-file + zero data collection + free is not available from any competitor. ReadSwift owns this intersection.
+**Competitive wedge:** The combination of RSVP technique + bring-your-own-file + zero data collection + free is not available from any competitor. PaceRead owns this intersection.
 
 ### Positioning statement (internal)
 
-> For students, engineers, and knowledge workers who need to read large volumes of text quickly, ReadSwift is the only speed-reading tool that works with the PDFs, EPUBs, DOCX, TXT, Markdown, HTML, RTF, and SRT files they already own, requires no account, and sends nothing to the cloud.
+> For students, engineers, and knowledge workers who need to read large volumes of text quickly, PaceRead is the only speed-reading tool that works with the PDFs, EPUBs, DOCX, TXT, Markdown, HTML, RTF, and SRT files they already own, requires no account, and sends nothing to the cloud.
 
 ---
 
@@ -57,11 +57,11 @@ ReadSwift belongs in the same mental category as a text editor or a calculator: 
 2. **Your files, your device** — Drag in any PDF, EPUB, DOCX, TXT, Markdown, HTML, RTF, or SRT file. Processing runs entirely in-browser. No upload, no wait.
 3. **Configurable speed** — 60 to 1500 words per minute. Adjustable in real time. Your pace, your control.
 4. **Zero friction** — No account creation, no email verification, no onboarding sequence. Open the app, load a file, press play.
-5. **Progress memory** — ReadSwift saves your position in every document automatically. Close the app, come back tomorrow, resume exactly where you stopped.
+5. **Progress memory** — PaceRead saves your position in every document automatically. Close the app, come back tomorrow, resume exactly where you stopped.
 
 ### One-line elevator pitch
 
-**ReadSwift: one word at a time, at the speed your brain works.**
+**PaceRead: one word at a time, at the speed your brain works.**
 
 ---
 
@@ -82,7 +82,7 @@ ReadSwift belongs in the same mental category as a text editor or a calculator: 
 | Minimum Android version | Android 7.0 (API 24) |
 | Permissions required | Internet (for TWA shell load only) |
 
-**Technical identity in one sentence:** ReadSwift is a zero-backend, zero-account, zero-tracking document speed reader that runs entirely in the user's browser.
+**Technical identity in one sentence:** PaceRead is a zero-backend, zero-account, zero-tracking document speed reader that runs entirely in the user's browser.
 
 ---
 
@@ -92,7 +92,7 @@ ReadSwift belongs in the same mental category as a text editor or a calculator: 
 
 Precise. Functional. Credible. Dry. Never self-congratulatory.
 
-ReadSwift speaks like senior engineering documentation — accurate, minimal, no adjectives that can't be measured. It respects the reader's intelligence and does not over-explain.
+PaceRead speaks like senior engineering documentation — accurate, minimal, no adjectives that can't be measured. It respects the reader's intelligence and does not over-explain.
 
 ### Voice rules
 
@@ -108,7 +108,7 @@ ReadSwift speaks like senior engineering documentation — accurate, minimal, no
 
 ### Sample copy (correct tone)
 
-> ReadSwift displays one word at a time at the exact centre of the screen. Your eyes stop moving. You read faster.
+> PaceRead displays one word at a time at the exact centre of the screen. Your eyes stop moving. You read faster.
 
 > Load any PDF, EPUB, DOCX, TXT, Markdown, HTML, RTF, or SRT file. No upload. No account. All processing runs on your device.
 
@@ -124,7 +124,7 @@ ReadSwift speaks like senior engineering documentation — accurate, minimal, no
 
 ## 6. Brand Personality
 
-| Axis | ReadSwift is | ReadSwift is not |
+| Axis | PaceRead is | PaceRead is not |
 |---|---|---|
 | Personality | Precise, minimal, analytical | Enthusiastic, warm, playful |
 | Visual language | Dark, high-contrast, typography-led | Colourful, illustrated, icon-heavy |
@@ -153,13 +153,13 @@ Derived from the production application UI:
 
 ## 8. Product Name Rationale
 
-**ReadSwift** = Read + Swift
+**PaceRead** = Read + Swift
 
 - "Read" — the literal action. Unambiguous.
 - "Swift" — speed and precision. Connotes both velocity and reliability (Swift programming language reference builds technical credibility with the target audience).
 - Compound noun — memorable, two syllables, no special characters.
 - Domain-friendly: `readswift.com`, `readswift.app` likely available.
-- App Store / Play Store search: "ReadSwift" is not a common word — brand recognition transfers to search instantly.
+- App Store / Play Store search: "PaceRead" is not a common word — brand recognition transfers to search instantly.
 
 ---
 

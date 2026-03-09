@@ -1,7 +1,7 @@
-# ReadSwift — Google Play Store Listing
+# PaceRead — Google Play Store Listing
 
 **Company:** Techscript Limited  
-**Package name:** `ca.techscript.readswift`  
+**Package name:** `ca.techscript.paceread`  
 **Document version:** 1.0  
 **Status:** Submission-ready
 
@@ -10,7 +10,7 @@
 ## 1. App Title
 
 ```
-ReadSwift: Speed Reader
+PaceRead: Speed Reader
 ```
 
 **Character count:** 23 / 50 limit ✅  
@@ -31,9 +31,9 @@ PDF, EPUB, DOCX, TXT, MD, HTML, RTF, SRT. Speed reading 60-1500 WPM. No account.
 ## 3. Full Description
 
 ```
-ReadSwift is a speed-reading tool for anyone who needs to get through large volumes of text quickly. It uses the RSVP (Rapid Serial Visual Presentation) method — displaying one word at a time at a fixed point on the screen — to eliminate the eye movement that makes conventional reading slow.
+PaceRead is a speed-reading tool for anyone who needs to get through large volumes of text quickly. It uses the RSVP (Rapid Serial Visual Presentation) method — displaying one word at a time at a fixed point on the screen — to eliminate the eye movement that makes conventional reading slow.
 
-Load any PDF, EPUB, DOCX, TXT, Markdown, HTML, RTF, or SRT file directly from your device. No upload. No account. ReadSwift processes your files locally using proven open-source libraries. Your documents never leave your device.
+Load any PDF, EPUB, DOCX, TXT, Markdown, HTML, RTF, or SRT file directly from your device. No upload. No account. PaceRead processes your files locally using proven open-source libraries. Your documents never leave your device.
 
 ──────────────────────────
 
@@ -41,7 +41,7 @@ WHY RSVP WORKS
 
 Conventional reading requires your eyes to scan back and forth across each line. This physical motion — saccadic eye movement — consumes time and cognitive energy that could otherwise be spent understanding the text. RSVP removes it entirely. Every word arrives at the same fixed point. Your eyes stay still. Your reading speed increases.
 
-Most users read 200–250 words per minute with conventional scanning. ReadSwift users regularly reach 400–600 WPM within the first week of regular practice, with comprehension remaining stable up to approximately 500 WPM for familiar subjects.
+Most users read 200–250 words per minute with conventional scanning. PaceRead users regularly reach 400–600 WPM within the first week of regular practice, with comprehension remaining stable up to approximately 500 WPM for familiar subjects.
 
 ──────────────────────────
 
@@ -70,7 +70,7 @@ FEATURES
 
 PRIVACY
 
-ReadSwift collects no data. It has no analytics, no tracking, no advertising SDK, and no server. Your documents are processed entirely on your device. Reading history is stored in local device storage and is never transmitted.
+PaceRead collects no data. It has no analytics, no tracking, no advertising SDK, and no server. Your documents are processed entirely on your device. Reading history is stored in local device storage and is never transmitted.
 
 Full privacy policy: https://techscript.ca/privacy
 
@@ -78,7 +78,7 @@ Full privacy policy: https://techscript.ca/privacy
 
 TECHNICAL
 
-ReadSwift runs as a Progressive Web App inside a native Android shell (Trusted Web Activity). PDF processing uses Mozilla's open-source PDF.js library. EPUB processing uses epub.js. All computation runs in-browser.
+PaceRead runs as a Progressive Web App inside a native Android shell (Trusted Web Activity). PDF processing uses Mozilla's open-source PDF.js library. EPUB processing uses epub.js. All computation runs in-browser.
 
 Minimum Android version: 7.0 (API 24)
 Required permissions: Internet (for initial shell load only)
@@ -88,7 +88,7 @@ Local storage used: under 200 KB for reading history
 
 DEVELOPED BY
 
-ReadSwift is developed and published by Techscript Limited.
+PaceRead is developed and published by Techscript Limited.
 Website: https://techscript.ca
 ```
 
@@ -165,7 +165,7 @@ speed reading,PDF,EPUB,DOCX,TXT,Markdown,HTML,RTF,RSVP,read faster,productivity
 ```
 Initial release.
 
-ReadSwift brings RSVP speed reading to Android. Load any PDF, EPUB, DOCX, TXT, Markdown, HTML, RTF, or SRT file from your device, set your reading speed, and read faster — one word at a time. No account, no data collection.
+PaceRead brings RSVP speed reading to Android. Load any PDF, EPUB, DOCX, TXT, Markdown, HTML, RTF, or SRT file from your device, set your reading speed, and read faster — one word at a time. No account, no data collection.
 ```
 
 ---

@@ -1,7 +1,7 @@
-# ReadSwift — Global Visibility Execution Plan
+# PaceRead — Global Visibility Execution Plan
 
 **Company:** Techscript Limited  
-**Product:** ReadSwift  
+**Product:** PaceRead  
 **Document version:** 1.0  
 **Execution model:** Single developer  
 **Timeline:** 90 days from public launch
@@ -86,7 +86,7 @@ This file is consumed by AI indexing systems that follow the emerging llms.txt s
 
 Create a 1200×630 px PNG at `https://techscript.ca/og-image.png`:
 - Background: `#060606`
-- Text: "ReadSwift" in Segoe UI 72px `#f0f0f0` + "Read faster. One word at a time." in 36px `#888888`
+- Text: "PaceRead" in Segoe UI 72px `#f0f0f0` + "Read faster. One word at a time." in 36px `#888888`
 - This image appears when links are shared on LinkedIn, WhatsApp, Slack, and social platforms
 
 ### Step 1.7 — Submit to Google Search Console
@@ -169,7 +169,7 @@ Submit the product to these directories within the first two weeks:
 Write a single page at `https://techscript.ca/what-is-rsvp-reading`:
 
 - H1: "What is RSVP Reading? How to Read Faster With One Word at a Time"
-- ~800 words explaining RSVP technique with a CTA to ReadSwift
+- ~800 words explaining RSVP technique with a CTA to PaceRead
 - Target keywords: "what is RSVP reading", "how to read faster", "rapid serial visual presentation"
 - This page will rank for informational queries and drive organic traffic to the tool
 
@@ -190,11 +190,11 @@ Common Crawl is the dataset that powers many AI training corpora. Coverage incre
 
 ### Step 4.3 — Wikipedia disambiguation (long-term)
 
-If the product gains sufficient real-world use, a Wikipedia entry under "RSVP reading applications" or similar will significantly increase AI retrieval accuracy. This is a 6–12 month play, not a day-one action. Do not create a Wikipedia page for ReadSwift immediately — it will be deleted as promotional.
+If the product gains sufficient real-world use, a Wikipedia entry under "RSVP reading applications" or similar will significantly increase AI retrieval accuracy. This is a 6–12 month play, not a day-one action. Do not create a Wikipedia page for PaceRead immediately — it will be deleted as promotional.
 
 ### Step 4.4 — Wikidata entry
 
-Create a Wikidata item for ReadSwift. Wikidata is used by many AI knowledge graphs. Minimum threshold: the product is live on the Play Store and the site has been indexed.
+Create a Wikidata item for PaceRead. Wikidata is used by many AI knowledge graphs. Minimum threshold: the product is live on the Play Store and the site has been indexed.
 
 Structure:
 - Instance of: software application, mobile application, web application
@@ -220,7 +220,7 @@ Track weekly ranking for:
 - "RSVP reader"
 - "PDF speed reader"
 - "read faster app"
-- "ReadSwift"
+- "PaceRead"
 
 ### Step 5.2 — First rating push
 
@@ -254,7 +254,7 @@ Three additional pages targeting RSVP and speed-reading queries:
 | `/rsvp-reading-technique` | "RSVP reading technique" | rapid serial visual presentation |
 | `/read-pdf-faster` | "read PDF faster android" | PDF speed reader |
 
-Each page: 600–900 words. Factual, technique-focused. CTA to ReadSwift at the bottom.
+Each page: 600–900 words. Factual, technique-focused. CTA to PaceRead at the bottom.
 
 ### Step 6.2 — Developer blog post (optional, high impact)
 

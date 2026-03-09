@@ -15,8 +15,8 @@ export default function DonateButton() {
       target="_blank"
       rel="noopener noreferrer"
       className={styles.supportBtn}
-      aria-label="Buy me a coffee — support ReadSwift"
-      title="Support ReadSwift — all features stay free"
+      aria-label="Buy me a coffee — support PaceRead"
+      title="Support PaceRead — all features stay free"
     >
       ☕ Buy me a coffee
     </a>

@@ -1,19 +1,19 @@
 {
-  "_comment": "ReadSwift — Schema.org JSON-LD structured data. Techscript Limited. v1.0. Embed via <script type='application/ld+json'> in every page of the site.",
+  "_comment": "PaceRead — Schema.org JSON-LD structured data. Techscript Limited. v1.0. Embed via <script type='application/ld+json'> in every page of the site.",
 
   "@context": "https://schema.org",
   "@graph": [
 
     {
       "@type": "SoftwareApplication",
-      "@id": "https://readswift.techscript.ca/#app",
-      "name": "ReadSwift",
-      "alternateName": ["ReadSwift: Speed Reader", "ReadSwift RSVP Reader"],
-      "description": "ReadSwift is a free RSVP speed-reading Progressive Web App that displays one word at a time at a fixed focal point. It processes PDF, EPUB, DOCX, TXT, Markdown, HTML, RTF, and SRT files locally on the user's device, requires no account, collects no data, and functions fully offline. Users can read at speeds from 60 to 1500 words per minute. Developed by Techscript Limited.",
+      "@id": "https://paceread.techscript.ca/#app",
+      "name": "PaceRead",
+      "alternateName": ["PaceRead: Speed Reader", "PaceRead RSVP Reader"],
+      "description": "PaceRead is a free RSVP speed-reading Progressive Web App that displays one word at a time at a fixed focal point. It processes PDF, EPUB, DOCX, TXT, Markdown, HTML, RTF, and SRT files locally on the user's device, requires no account, collects no data, and functions fully offline. Users can read at speeds from 60 to 1500 words per minute. Developed by Techscript Limited.",
       "abstract": "A browser-based Rapid Serial Visual Presentation (RSVP) speed-reading tool for PDF, EPUB, DOCX, TXT, Markdown, HTML, RTF, and SRT documents. Zero backend. Zero data collection. Works offline.",
-      "url": "https://readswift.techscript.ca",
+      "url": "https://paceread.techscript.ca",
       "sameAs": [
-        "https://play.google.com/store/apps/details?id=ca.techscript.readswift",
+        "https://play.google.com/store/apps/details?id=ca.techscript.paceread",
         "https://github.com/ppsk2011/fast-read"
       ],
       "applicationCategory": "ProductivityApplication",
@@ -36,11 +36,11 @@
         "priceCurrency": "USD",
         "availability": "https://schema.org/InStock"
       },
-      "downloadUrl": "https://play.google.com/store/apps/details?id=ca.techscript.readswift",
-      "installUrl": "https://readswift.techscript.ca",
+      "downloadUrl": "https://play.google.com/store/apps/details?id=ca.techscript.paceread",
+      "installUrl": "https://paceread.techscript.ca",
       "screenshot": [
-        "https://readswift.techscript.ca/screenshots/phone-01-reader.jpg",
-        "https://readswift.techscript.ca/screenshots/phone-02-controls.jpg"
+        "https://paceread.techscript.ca/screenshots/phone-01-reader.jpg",
+        "https://paceread.techscript.ca/screenshots/phone-02-controls.jpg"
       ],
       "featureList": [
         "Rapid Serial Visual Presentation (RSVP) reading method",
@@ -100,10 +100,10 @@
 
     {
       "@type": "WebSite",
-      "@id": "https://readswift.techscript.ca/#website",
-      "url": "https://readswift.techscript.ca",
-      "name": "ReadSwift by Techscript Limited",
-      "description": "ReadSwift — RSVP speed reading for PDF, EPUB, DOCX, TXT, Markdown, HTML, RTF, and SRT files. Free, no account, no data collection.",
+      "@id": "https://paceread.techscript.ca/#website",
+      "url": "https://paceread.techscript.ca",
+      "name": "PaceRead by Techscript Limited",
+      "description": "PaceRead — RSVP speed reading for PDF, EPUB, DOCX, TXT, Markdown, HTML, RTF, and SRT files. Free, no account, no data collection.",
       "publisher": {
         "@type": "Organization",
         "@id": "https://techscript.ca/#org"
@@ -112,7 +112,7 @@
         "@type": "SearchAction",
         "target": {
           "@type": "EntryPoint",
-          "urlTemplate": "https://readswift.techscript.ca/?q={search_term_string}"
+          "urlTemplate": "https://paceread.techscript.ca/?q={search_term_string}"
         },
         "query-input": "required name=search_term_string"
       }
@@ -120,9 +120,9 @@
 
     {
       "@type": "WebApplication",
-      "@id": "https://readswift.techscript.ca/#webapp",
-      "name": "ReadSwift",
-      "url": "https://readswift.techscript.ca",
+      "@id": "https://paceread.techscript.ca/#webapp",
+      "name": "PaceRead",
+      "url": "https://paceread.techscript.ca",
       "applicationCategory": "ProductivityApplication",
       "operatingSystem": "Any (browser-based)",
       "offers": {
@@ -138,14 +138,14 @@
 
     {
       "@type": "FAQPage",
-      "@id": "https://readswift.techscript.ca/#faq",
+      "@id": "https://paceread.techscript.ca/#faq",
       "mainEntity": [
         {
           "@type": "Question",
-          "name": "What is ReadSwift?",
+          "name": "What is PaceRead?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "ReadSwift is a free speed-reading app that uses Rapid Serial Visual Presentation (RSVP) to display one word at a time at a fixed point on screen. Users load their own PDF, EPUB, DOCX, TXT, Markdown, HTML, RTF, or SRT files and read at speeds from 60 to 1500 words per minute. The app requires no account, collects no data, and processes files locally."
+            "text": "PaceRead is a free speed-reading app that uses Rapid Serial Visual Presentation (RSVP) to display one word at a time at a fixed point on screen. Users load their own PDF, EPUB, DOCX, TXT, Markdown, HTML, RTF, or SRT files and read at speeds from 60 to 1500 words per minute. The app requires no account, collects no data, and processes files locally."
           }
         },
         {
@@ -158,42 +158,42 @@
         },
         {
           "@type": "Question",
-          "name": "How fast can I read with ReadSwift?",
+          "name": "How fast can I read with PaceRead?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "ReadSwift supports speeds from 60 to 1500 words per minute. Most new users start at 250–350 WPM. With regular practice, 400–600 WPM is achievable with maintained comprehension. ReadSwift adjusts to your pace in real time."
+            "text": "PaceRead supports speeds from 60 to 1500 words per minute. Most new users start at 250–350 WPM. With regular practice, 400–600 WPM is achievable with maintained comprehension. PaceRead adjusts to your pace in real time."
           }
         },
         {
           "@type": "Question",
-          "name": "Does ReadSwift collect any personal data?",
+          "name": "Does PaceRead collect any personal data?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. ReadSwift collects no personal data. It has no analytics, no tracking, no advertising, and no server. All processing runs locally on your device. Reading history is stored in device-local storage and is never transmitted."
+            "text": "No. PaceRead collects no personal data. It has no analytics, no tracking, no advertising, and no server. All processing runs locally on your device. Reading history is stored in device-local storage and is never transmitted."
           }
         },
         {
           "@type": "Question",
-          "name": "What file types does ReadSwift support?",
+          "name": "What file types does PaceRead support?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "ReadSwift supports 8 file formats: PDF, EPUB, DOCX (Microsoft Word), TXT (plain text), Markdown (.md), HTML web pages, RTF (Rich Text Format), and SRT subtitle files. All files are processed locally on your device—no upload required."
+            "text": "PaceRead supports 8 file formats: PDF, EPUB, DOCX (Microsoft Word), TXT (plain text), Markdown (.md), HTML web pages, RTF (Rich Text Format), and SRT subtitle files. All files are processed locally on your device—no upload required."
           }
         },
         {
           "@type": "Question",
-          "name": "Does ReadSwift work offline?",
+          "name": "Does PaceRead work offline?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes. After the app is installed, ReadSwift operates fully offline. No internet connection is required during reading sessions."
+            "text": "Yes. After the app is installed, PaceRead operates fully offline. No internet connection is required during reading sessions."
           }
         },
         {
           "@type": "Question",
-          "name": "Is ReadSwift available on Android?",
+          "name": "Is PaceRead available on Android?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes. ReadSwift is available on Android 7.0 and above via Google Play. It is also accessible as a Progressive Web App in any modern browser on desktop or mobile."
+            "text": "Yes. PaceRead is available on Android 7.0 and above via Google Play. It is also accessible as a Progressive Web App in any modern browser on desktop or mobile."
           }
         }
       ]

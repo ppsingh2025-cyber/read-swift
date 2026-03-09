@@ -122,6 +122,7 @@ export default function App() {
   const [showPaste, setShowPaste] = useState(false);
   const [sessionCompleted, setSessionCompleted] = useState(false);
   const [, setContextExpanded] = useState(false);
+  const [pulseHelp, setPulseHelp] = useState(false);
 
   // What's New: shown when stored version ≠ current version
   const [showWhatsNew, setShowWhatsNew] = useState<boolean>(
@@ -352,6 +353,8 @@ export default function App() {
       setActiveMode(prefs.modeId);
       localStorage.setItem('fastread_onboarding_complete', 'true');
       setShowOnboarding(false);
+      setPulseHelp(true);
+      setTimeout(() => setPulseHelp(false), 2500);
     },
     [setTheme, applyMode, setActiveMode],
   );
@@ -387,16 +390,24 @@ export default function App() {
             alt=""
             aria-hidden="true"
           />
-          <span className="topBarTitle">ReadSwift</span>
+          <span className="topBarTitle">PaceRead</span>
         </div>
         <div className="topBarActions">
           <SyncStatusIndicator />
+          {words.length > 0 && (
+            <span className="topBarReadPos"
+                  aria-label={`Word ${currentWordIndex + 1} of ${words.length}`}
+                  title="Reading position">
+              <span className="topBarReadCursor" aria-hidden="true">▸</span>
+              {currentPage}/{totalPages || 1}
+            </span>
+          )}
           <UserAvatar />
           <button
-            className="helpBtn"
+            className={`helpBtn${pulseHelp ? ' helpBtnPulse' : ''}`}
             onClick={() => setShowHelp(true)}
-            title="How to Use ReadSwift"
-            aria-label="How to Use ReadSwift"
+            title="How to Use PaceRead"
+            aria-label="How to Use PaceRead"
           >
             ?
           </button>
@@ -443,12 +454,6 @@ export default function App() {
         </div>
         </main>
 
-      {!isFocused && (
-        <div className="contextStrip">
-          <ContextPreview onExpandChange={setContextExpanded} />
-        </div>
-      )}
-
       {/* ── Paste / URL panel (above bottom bar, collapsible) ───── */}
       {showPaste && !isFocused && (
         <div className="pasteArea">
@@ -460,7 +465,7 @@ export default function App() {
         </div>
       )}
 
-      {/* ── 4. Bottom control bar (always visible) ──────────────── */}
+      {/* ── 4. Bottom control bar ───────────────────────────────── */}
       <div className="controlsBar">
         <Controls
           onFileSelect={handleFileSelect}
@@ -476,6 +481,13 @@ export default function App() {
           focused={isFocused}
         />
       </div>
+
+      {/* ── Context Preview (below controls) ───────────────────── */}
+      {!isFocused && (
+        <div className="contextStrip">
+          <ContextPreview onExpandChange={setContextExpanded} />
+        </div>
+      )}
 
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
 

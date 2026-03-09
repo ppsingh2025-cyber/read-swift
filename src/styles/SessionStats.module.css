@@ -1,6 +1,6 @@
 /* SessionStats.module.css
  *
- * Multi-session analytics panel inside the BurgerMenu settings drawer.
+ * Unified session analytics + reading history panel inside the BurgerMenu drawer.
  */
 
 .wrapper {
@@ -16,6 +16,13 @@
   gap: 0.4rem;
 }
 
+.currentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-width: 0;
+}
+
 .currentLabel {
   font-size: 0.75rem;
   font-weight: 600;
@@ -23,6 +30,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .statRow3 {
@@ -71,6 +79,12 @@
   padding-top: 0.6rem;
 }
 
+.histHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .histToggle {
   background: none;
   border: none;
@@ -93,7 +107,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  max-height: 200px;
+  max-height: 280px;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
@@ -106,7 +120,7 @@
   padding: 0.4rem 0.6rem;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.25rem;
 }
 
 .histMeta {
@@ -139,6 +153,63 @@
   font-size: 0.72rem;
   color: var(--color-text-muted, var(--text-muted));
 }
+
+/* Resume row */
+.histResume {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.15rem;
+}
+
+.histProgressBar {
+  flex: 1;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.histProgressFill {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: 2px;
+}
+
+.histProgressPct {
+  font-size: 0.65rem;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.resumeBtn {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-accent);
+  color: var(--color-accent);
+  background: var(--color-accent-8);
+  cursor: pointer;
+  transition: background 0.12s;
+  touch-action: manipulation;
+}
+.resumeBtn:hover { background: var(--color-accent-15); }
+
+.deleteRecordBtn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: color 0.1s;
+}
+.deleteRecordBtn:hover { color: #e57373; }
 
 .clearBtn {
   align-self: flex-end;

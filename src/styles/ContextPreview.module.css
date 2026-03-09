@@ -10,27 +10,34 @@
   border: 1px solid var(--border);
 }
 
-/* ── Header toggle ── */
+/* ── Header row with nav buttons ── */
+.headingRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── Heading toggle button (inside headingRow) ── */
 .heading {
   display: flex;
   align-items: center;
+  flex: 1;
+  min-width: 0;
   justify-content: space-between;
-  width: 100%;
-  min-height: 34px;
-  padding: 0 0.85rem;
   background: transparent;
   border: none;
   cursor: pointer;
   text-align: left;
-  gap: 0.5rem;
+  gap: 0.4rem;
+  padding: 0.3rem 0.35rem;
+  border-radius: var(--radius-sm);
   transition: background 0.12s;
 }
 .heading:hover { background: var(--state-hover); }
 
 .headingLabel {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
   font-size: 0.68rem;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -45,17 +52,29 @@
   flex-shrink: 0;
 }
 
-.pageIndicator {
-  font-size: 0.65rem;
-  color: var(--text-faint);
-  background: var(--bg-input);
-  border: 1px solid var(--border);
+/* ── Page pill (clickable to enter edit mode) ── */
+.pagePill {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  padding: 1px 6px;
   border-radius: var(--radius-full);
-  padding: 0.05rem 0.45rem;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: border-color 0.1s, color 0.1s;
   font-variant-numeric: tabular-nums;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  text-transform: none;
+}
+.pagePill:hover { border-color: var(--color-accent); color: var(--color-accent); }
+
+/* ── Page number input (edit mode) ── */
+.pageInput {
+  width: 60px;
+  font-size: 0.72rem;
+  text-align: center;
+  background: var(--bg-input);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 1px 4px;
 }
 
 /* ── Body ── */
@@ -63,6 +82,14 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+/* ── Detached bar ── */
+.detachedBar {
+  display: flex;
+  justify-content: center;
+  padding: 0.25rem 0.5rem;
+  border-bottom: 1px solid var(--border);
 }
 
 /* ── Scrollable word area ── */
@@ -95,16 +122,15 @@
   font-weight: 600;
 }
 
-/* ── Page navigation ── */
-.nav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.35rem 0.5rem;
-  border-top: 1px solid var(--color-border, rgba(255,255,255,0.08));
+/* ── Reading cursor icon ── */
+.wordCursor {
+  color: var(--color-accent);
+  font-size: 0.6em;
+  vertical-align: middle;
+  margin-right: 2px;
 }
 
+/* ── Nav buttons (in headingRow) ── */
 .navBtn {
   display: flex;
   align-items: center;

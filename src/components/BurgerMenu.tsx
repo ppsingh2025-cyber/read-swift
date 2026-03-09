@@ -5,33 +5,26 @@
  *
  * Drawer contains (in order):
  *   • Reading Profile selector (quick presets)
- *   • Display: window size, orientation, highlight colour
- *   • Reading features: peripheral fade, ORP, punctuation pause, long-word delay
- *   • Reading History (collapsible, re-uses existing component)
- *   • Links: feedback form
- *   • About: app version, Techscript credit
+ *   • Display: theme, orientation, font size, key letter color
+ *   • Session Analytics (unified history + current session + resume)
+ *   • Reset to Defaults
+ *   • About
  *
  * State notes:
  *   - Opens/closes locally (no reading-state side effects).
  *   - All settings write directly to ReaderContext which persists to localStorage.
  *   - Drawer is closed whenever a file is selected from history.
- *   - Theme toggle is in the top bar (ThemeToggle component), not here.
- *   - During active reading (isPlaying), Display and Reading Features sections
- *     are collapsed by default; a "Show Settings" button expands them.
+ *   - During active reading (isPlaying), Display section is collapsed by default.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useReaderContext } from '../context/useReaderContext';
-import ReadingHistory from './ReadingHistory';
 import SessionStats from './SessionStats';
 import ReadingModes from './ReadingModes';
 import type { Orientation } from '../context/readerContextDef';
 import { APP_VERSION } from '../version';
 import { IndexedDBService } from '../sync/IndexedDBService';
 import { ORP_COLORS, getThemeOrpAccent } from '../config/orpColors';
-import { supabase, isSupabaseConfigured } from '../config/supabase';
-import { useAuth } from '../auth/useAuth';
-import { clearAllRecords } from '../utils/recordsUtils';
 import toast from 'react-hot-toast';
 import styles from '../styles/BurgerMenu.module.css';
 
@@ -67,8 +60,6 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
     mainWordFontSize, setMainWordFontSize,
     theme, setTheme,
     setWpm,
-    records,
-    setRecords,
     isPlaying,
     setFocalLine,
     setOrpEnabled,
@@ -79,8 +70,6 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
     setActiveMode,
     setActiveCustomModeId,
   } = useReaderContext();
-  const { user } = useAuth();
-  const [historyOpen, setHistoryOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
 
   // During active reading, advanced settings are collapsed unless user expands them.
@@ -156,26 +145,6 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
     setPunctuationPause, setLongWordCompensation, setChunkMode,
     setActiveMode, setActiveCustomModeId]);
 
-  // Clear all reading history
-  const handleClearHistory = useCallback(async () => {
-    // Clear localStorage records
-    setRecords(clearAllRecords());
-
-    // Clear IndexedDB sessions
-    try {
-      await IndexedDBService.clearAllSessions();
-    } catch { /* ignore IndexedDB errors */ }
-
-    // If signed in, delete from Supabase
-    if (isSupabaseConfigured && supabase && user?.id) {
-      try {
-        await supabase.from('reading_sessions').delete().eq('user_id', user.id);
-      } catch { /* ignore Supabase errors */ }
-    }
-
-    toast.success('Reading history cleared');
-  }, [setRecords, user]);
-
   return (
     <>
       {/* Hamburger button */}
@@ -207,7 +176,7 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
           >
             {/* ── Drawer header ───────────────────────────────── */}
             <div className={styles.drawerHeader}>
-              <span className={styles.drawerTitle}>ReadSwift</span>
+              <span className={styles.drawerTitle}>PaceRead</span>
               <button
                 type="button"
                 className={styles.closeBtn}
@@ -249,6 +218,27 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
                   <h3 className={styles.sectionTitle}>Display</h3>
                 </div>
 
+                {/* 1. Theme switcher */}
+                <div className={styles.themeSection}>
+                  <span className={styles.sectionLabel}>THEME</span>
+                  <div className={styles.themeRow}>
+                    {(['midnight', 'warm', 'day', 'obsidian'] as const).map(t => (
+                      <button
+                        type="button"
+                        key={t}
+                        className={`${styles.themeBtn} ${theme === t ? styles.themeBtnActive : ''}`}
+                        onClick={() => setTheme(t)}
+                        aria-pressed={theme === t}
+                        title={t.charAt(0).toUpperCase() + t.slice(1)}
+                      >
+                        <span className={styles.themeSwatch} data-swatch={t} />
+                        <span className={styles.themeLabel}>{t.charAt(0).toUpperCase() + t.slice(1)}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 2. Layout */}
                 <label className={styles.row}>
                   <span className={styles.labelWithIcon}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -268,29 +258,7 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
                   </select>
                 </label>
 
-                {/* ORP key letter color: 4 science-backed options per theme */}
-                <div className={styles.orpColorSection}>
-                  <span className={styles.sectionLabel}>KEY LETTER COLOR</span>
-                  <div className={styles.orpColorRow}>
-                    {ORP_COLORS[theme].map(option => (
-                      <button
-                        type="button"
-                        key={option.id}
-                        className={`${styles.orpColorBtn} ${highlightColor === option.value ? styles.orpColorBtnActive : ''}`}
-                        onClick={() => setHighlightColor(option.value)}
-                        aria-label={`${option.label}: ${option.reason}`}
-                        title={option.reason}
-                      >
-                        <span
-                          className={styles.orpColorSwatch}
-                          style={{ background: option.value }}
-                        />
-                        <span className={styles.orpColorLabel}>{option.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
+                {/* 3. Focus word size */}
                 <label className={styles.row}>
                   <span className={styles.labelWithIcon}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -314,63 +282,37 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
                   </select>
                 </label>
 
+                {/* 4. ORP key letter color: 4 science-backed options per theme */}
+                <div className={styles.orpColorSection}>
+                  <span className={styles.sectionLabel}>KEY LETTER COLOR</span>
+                  <div className={styles.orpColorRow}>
+                    {ORP_COLORS[theme].map(option => (
+                      <button
+                        type="button"
+                        key={option.id}
+                        className={`${styles.orpColorBtn} ${highlightColor === option.value ? styles.orpColorBtnActive : ''}`}
+                        onClick={() => setHighlightColor(option.value)}
+                        aria-label={`${option.label}: ${option.reason}`}
+                        title={option.reason}
+                      >
+                        <span
+                          className={styles.orpColorSwatch}
+                          style={{ background: option.value }}
+                        />
+                        <span className={styles.orpColorLabel}>{option.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
               </section>
 
               </>) /* end (!isPlaying || showAdvancedDuringReading) */}
 
-              {/* ── Reading History ─────────────────────────────── */}
-              <section className={styles.section}>
-                <div className={styles.sectionHeader}>
-                  <button
-                    type="button"
-                    className={styles.accordionToggle}
-                    onClick={() => setHistoryOpen((v) => !v)}
-                    aria-expanded={historyOpen}
-                    aria-controls="history-accordion-body"
-                  >
-                    <h3 className={styles.sectionTitle}>
-                      Reading History{records.length > 0 && <span className={styles.sectionCount}> ({records.length})</span>}
-                    </h3>
-                    <span
-                      className={styles.chevron}
-                      style={{ transform: historyOpen ? 'rotate(0deg)' : 'rotate(-90deg)' }}
-                      aria-hidden="true"
-                    >▼</span>
-                  </button>
-                  {records.length > 0 && (
-                  <button
-                    type="button"
-                    className={`${styles.sectionActionBtn} ${styles.sectionActionBtnDanger}`}
-                    onClick={handleClearHistory}
-                    title="Clear Reading History"
-                    aria-label="Clear Reading History"
-                  >
-                    {/* Trash icon */}
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                      <path d="M10 11v6"/>
-                      <path d="M14 11v6"/>
-                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                    </svg>
-                  </button>
-                  )}
-                </div>
-                {historyOpen && (
-                  <div id="history-accordion-body">
-                    {records.length === 0 ? (
-                      <p className={styles.emptyHint}>No reading history yet.</p>
-                    ) : (
-                      <ReadingHistory onFileSelect={handleHistoryFileSelect} />
-                    )}
-                  </div>
-                )}
-              </section>
-
-              {/* ── Session Analytics ───────────────────────────── */}
+              {/* ── Session Analytics (unified: current session + history + resume) ── */}
               <section className={styles.section}>
                 <h3 className={styles.sectionTitle}>Session Analytics</h3>
-                <SessionStats />
+                <SessionStats onFileSelect={handleHistoryFileSelect} />
               </section>
 
               {/* ── Reset to Defaults ───────────────────────────────── */}
@@ -410,7 +352,7 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
               <section className={styles.section}>
                 <h3 className={styles.sectionTitle}>About</h3>
                 <p className={styles.aboutText}>
-                  ReadSwift {APP_VERSION}
+                  PaceRead {APP_VERSION}
                 </p>
                 <p className={styles.aboutText}>
                   Powered by{' '}
