@@ -1,55 +1,77 @@
 /**
- * SessionStats
- *
- * Lightweight session analytics panel. Displays:
- *  - Words consumed this session
- *  - Effective WPM (words / active reading time)
- *  - Total active reading time
- *
- * Rendered inside the burger menu settings drawer.
- * Shows a placeholder when no reading has started yet.
- * No tracking beyond localStorage.
+ * SessionStats — multi-session analytics panel inside burger menu.
+ * Shows current session + rolling history of past sessions.
  */
 
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { useReaderContext } from '../context/useReaderContext';
 import styles from '../styles/SessionStats.module.css';
 
-function formatTime(ms: number): string {
+function fmtTime(ms: number) {
   if (ms <= 0) return '0s';
-  const totalSec = Math.floor(ms / 1000);
-  const h = Math.floor(totalSec / 3600);
-  const m = Math.floor((totalSec % 3600) / 60);
-  const s = totalSec % 60;
+  const s = Math.floor(ms / 1000);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
   if (h > 0) return `${h}h ${m}m`;
-  if (m > 0) return `${m}m ${s}s`;
-  return `${s}s`;
+  if (m > 0) return `${m}m ${sec}s`;
+  return `${sec}s`;
+}
+
+function fmtDate(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
 const SessionStats = memo(function SessionStats() {
-  const { sessionStats } = useReaderContext();
+  const { sessionStats, sessionHistory, clearSessionHistory, fileMetadata } = useReaderContext();
   const { wordsRead, activeTimeMs, effectiveWpm } = sessionStats;
-
-  if (wordsRead === 0) {
-    return (
-      <p className={styles.empty}>Start reading to see your session stats.</p>
-    );
-  }
+  const [histOpen, setHistOpen] = useState(false);
 
   return (
-    <div className={styles.grid} aria-label="Session statistics">
-      <div className={styles.statRow}>
-        <span className={styles.statLabel}>Words read</span>
-        <span className={styles.statValue}>{wordsRead.toLocaleString()}</span>
+    <div className={styles.wrapper}>
+      {/* Current session */}
+      <div className={styles.current}>
+        <span className={styles.currentLabel}>
+          {fileMetadata ? fileMetadata.name : 'No file loaded'}
+        </span>
+        {wordsRead === 0 ? (
+          <p className={styles.empty}>Start reading to track this session.</p>
+        ) : (
+          <div className={styles.statRow3}>
+            <div className={styles.stat}><span className={styles.statVal}>{wordsRead.toLocaleString()}</span><span className={styles.statKey}>words</span></div>
+            <div className={styles.stat}><span className={styles.statVal}>{fmtTime(activeTimeMs)}</span><span className={styles.statKey}>active</span></div>
+            <div className={styles.stat}><span className={styles.statVal}>{effectiveWpm > 0 ? effectiveWpm : '—'}</span><span className={styles.statKey}>WPM</span></div>
+          </div>
+        )}
       </div>
-      <div className={styles.statRow}>
-        <span className={styles.statLabel}>Active time</span>
-        <span className={styles.statValue}>{formatTime(activeTimeMs)}</span>
-      </div>
-      {effectiveWpm > 0 && (
-        <div className={styles.statRow}>
-          <span className={styles.statLabel}>Avg speed</span>
-          <span className={styles.statValue}>{effectiveWpm} WPM</span>
+
+      {/* Session history */}
+      {sessionHistory.length > 0 && (
+        <div className={styles.histSection}>
+          <button type="button" className={styles.histToggle}
+                  onClick={() => setHistOpen(v => !v)}>
+            Past sessions ({sessionHistory.length}) {histOpen ? '▲' : '▼'}
+          </button>
+          {histOpen && (
+            <ul className={styles.histList}>
+              {sessionHistory.map(s => (
+                <li key={s.id} className={styles.histItem}>
+                  <div className={styles.histMeta}>
+                    <span className={styles.histBook}>{s.bookName}</span>
+                    <span className={styles.histDate}>{fmtDate(s.startedAt)}</span>
+                  </div>
+                  <div className={styles.histStats}>
+                    <span>{s.wordsRead.toLocaleString()} words</span>
+                    <span>{fmtTime(s.durationMs)}</span>
+                    <span>{s.avgWpm} WPM</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+          <button type="button" className={styles.clearBtn}
+                  onClick={clearSessionHistory}>Clear history</button>
         </div>
       )}
     </div>

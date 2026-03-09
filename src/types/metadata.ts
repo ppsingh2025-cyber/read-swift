@@ -42,3 +42,12 @@ export interface SyncStatus {
   isOnline: boolean;
   hasUnsyncedChanges: boolean;
 }
+
+export interface StoredSession {
+  id: string;           // crypto.randomUUID()
+  bookName: string;     // fileMetadata?.name or 'Pasted text'
+  startedAt: string;    // ISO 8601
+  durationMs: number;
+  wordsRead: number;
+  avgWpm: number;
+}

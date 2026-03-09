@@ -202,7 +202,7 @@ export default function ReadingModes() {
             <div className={styles.fineRow}>
               <span className={styles.fineName}>Words shown</span>
               <div className={styles.segmented}>
-                {([1, 2, 3] as WindowSize[]).map(n => (
+                {([1, 2, 3, 4, 5] as WindowSize[]).map(n => (
                   <button key={n} type="button"
                           className={`${styles.segBtn} ${windowSize === n ? styles.segBtnActive : ''}`}
                           onClick={() => handleFinetuneChange(() => setWindowSize(n))}

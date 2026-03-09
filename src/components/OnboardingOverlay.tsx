@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import styles from '../styles/OnboardingOverlay.module.css';
 import type { Theme } from '../context/readerContextDef';
 import type { PresetModeId } from '../types/readingModes';
+import { useReaderContext } from '../context/useReaderContext';
 
 const DEMO_WORDS = (
   'The human brain can process written words far faster than the eye can move across a page. ' +
@@ -32,9 +33,9 @@ function calcOrpIndex(word: string): number {
 }
 
 const MODES = [
-  { id: 'speed' as PresetModeId, label: 'Sprint', emoji: '⚡', wpm: '400–600', desc: 'One word, no pauses. Pure velocity.',         setupDesc: 'Fast, no anchor',    accent: '#f59e0b' },
-  { id: 'focus' as PresetModeId, label: 'Focus',  emoji: '🎯', wpm: '250–350', desc: 'ORP anchor + focal line. Precision reading.', setupDesc: 'ORP + focal line',   accent: 'var(--color-accent)', recommended: true },
-  { id: 'read'  as PresetModeId, label: 'Flow',   emoji: '🌊', wpm: '150–250', desc: '3 words with natural rhythm and context.',    setupDesc: '3 words, context',   accent: '#34d399' },
+  { id: 'speed' as PresetModeId, label: 'Sprint', emoji: '⚡', wpm: '400–500 WPM', desc: 'One word, no pauses. Pure velocity.',         setupDesc: 'Fast, no anchor',    accent: '#f59e0b' },
+  { id: 'focus' as PresetModeId, label: 'Focus',  emoji: '🎯', wpm: '200–300 WPM', desc: 'ORP anchor + focal line. Precision reading.', setupDesc: 'ORP + focal line',   accent: 'var(--color-accent)', recommended: true },
+  { id: 'read'  as PresetModeId, label: 'Flow',   emoji: '🌊', wpm: '150–200 WPM', desc: '3 words with natural rhythm and context.',    setupDesc: '5 words, context',   accent: '#34d399' },
 ];
 
 interface OnboardingOverlayProps {
@@ -42,6 +43,7 @@ interface OnboardingOverlayProps {
 }
 
 export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps) {
+  const { setTheme, selectPresetMode } = useReaderContext();
   const [step, setStep]       = useState(0);
   const [visible, setVisible] = useState(false);
   const [demoIndex, setDemoIndex] = useState(-1);
@@ -239,7 +241,10 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
                       type="button"
                       key={t.id}
                       className={`${styles.themeBtn} ${pickedTheme === t.id ? styles.themeBtnActive : ''}`}
-                      onClick={() => setPickedTheme(t.id)}
+                      onClick={() => {
+                        setPickedTheme(t.id);
+                        setTheme(t.id);
+                      }}
                       aria-pressed={pickedTheme === t.id}
                     >
                       <span
@@ -262,7 +267,10 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
                       type="button"
                       key={m.id}
                       className={`${styles.modeBtn} ${pickedMode === m.id ? styles.modeBtnActive : ''}`}
-                      onClick={() => setPickedMode(m.id)}
+                      onClick={() => {
+                        setPickedMode(m.id);
+                        selectPresetMode(m.id);
+                      }}
                       aria-pressed={pickedMode === m.id}
                     >
                       <span className={styles.modeBtnEmoji} aria-hidden="true">{m.emoji}</span>

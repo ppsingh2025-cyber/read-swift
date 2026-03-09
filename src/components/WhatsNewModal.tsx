@@ -13,11 +13,11 @@ interface WhatsNewEntry {
 }
 
 const WHATS_NEW: WhatsNewEntry[] = [
-  { icon: '⬛', title: 'Obsidian Theme',         body: 'True black surfaces for OLED screens — pixels off, battery saved, maximum contrast.' },
-  { icon: '↺',  title: 'Reset Icon Fixed',        body: 'The reset button now shows the universally recognised counter-clockwise refresh arrow.' },
-  { icon: '☰',  title: 'iOS Menu Fixed',          body: 'The three-bar hamburger icon now renders correctly on all iOS Safari versions.' },
-  { icon: '⚡',  title: 'Sprint & Flow Modes',     body: 'Speed mode is now Sprint. Read mode is now Flow. IDs and settings are unchanged.' },
-  { icon: '▣',  title: 'Consistent Panel Corners', body: 'The viewport, page context panel, and playback bar now share the same border radius.' },
+  { icon: '📖', title: 'Context Window Scrollable', body: 'The page context panel now scrolls within the available screen space and uses real document page numbers.' },
+  { icon: '⚡', title: 'Preset WPM Fixed',          body: 'Sprint, Focus, and Flow modes now apply correct default speeds (450 / 250 / 180 WPM) when first selected.' },
+  { icon: '📊', title: 'Session History',            body: 'Session analytics now tracks and stores your past reading sessions with per-session stats and history.' },
+  { icon: '🖐️', title: '5-Word Window',              body: 'The rolling word window now supports up to 5 words for broader context reading.' },
+  { icon: '🎨', title: 'Theme Preview in Setup',     body: 'Picking a theme or mode in the setup wizard now updates the app immediately as you choose.' },
 ];
 
 interface WhatsNewModalProps {

@@ -44,13 +44,6 @@ const DEFAULT_HIGHLIGHT_COLOR = getThemeOrpAccent(DEFAULT_THEME); // midnight ac
 const DEFAULT_ORIENTATION = 'horizontal' as Orientation;
 const DEFAULT_MAIN_FONT_SIZE = 100;
 
-const THEME_LABELS: Record<'midnight' | 'warm' | 'day' | 'obsidian', string> = {
-  midnight: 'Midnight',
-  warm: 'Warm',
-  day: 'Day',
-  obsidian: 'Obsidian',
-};
-
 // localStorage keys cleared when user resets to defaults
 const RESETTABLE_KEYS = [
   'fastread_window_size', 'fastread_wpm', 'fastread_orientation',
@@ -79,29 +72,16 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
     isPlaying,
     setFocalLine,
     setOrpEnabled,
-    orpColored, setOrpColored,
-    peripheralFade, setPeripheralFade,
-    punctuationPause, setPunctuationPause,
-    longWordCompensation, setLongWordCompensation,
-    chunkMode, setChunkMode,
+    setPeripheralFade,
+    setPunctuationPause,
+    setLongWordCompensation,
+    setChunkMode,
     setActiveMode,
     setActiveCustomModeId,
   } = useReaderContext();
   const { user } = useAuth();
   const [historyOpen, setHistoryOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
-
-  // Advanced settings collapsible — persisted to localStorage
-  const [advancedOpen, setAdvancedOpen] = useState<boolean>(() => {
-    return localStorage.getItem('fastread_advanced_open') === 'true';
-  });
-  const toggleAdvanced = useCallback(() => {
-    setAdvancedOpen(prev => {
-      const next = !prev;
-      localStorage.setItem('fastread_advanced_open', String(next));
-      return next;
-    });
-  }, []);
 
   // During active reading, advanced settings are collapsed unless user expands them.
   // Resets every time the menu is opened while playing (so re-opening the menu during
@@ -267,19 +247,6 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
               <section className={styles.section}>
                 <div className={styles.sectionHeader}>
                   <h3 className={styles.sectionTitle}>Display</h3>
-                  <button
-                    type="button"
-                    className={styles.sectionActionBtn}
-                    onClick={handleResetDefaults}
-                    title="Reset to Default Settings"
-                    aria-label="Reset to Default Settings"
-                  >
-                    {/* Refresh / reset icon */}
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                      <path d="M3 3v5h5"/>
-                    </svg>
-                  </button>
                 </div>
 
                 <label className={styles.row}>
@@ -299,23 +266,6 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
                     <option value="horizontal">Horizontal</option>
                     <option value="vertical">Vertical</option>
                   </select>
-                </label>
-
-                {/* Highlight key letter toggle */}
-                <label className={styles.row}>
-                  <span className={styles.labelWithIcon}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" strokeDasharray="2 3"/>
-                    </svg>
-                    Highlight key letter
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={orpColored}
-                    onChange={(e) => setOrpColored(e.target.checked)}
-                    aria-label="Color the key letter in each word"
-                  />
                 </label>
 
                 {/* ORP key letter color: 4 science-backed options per theme */}
@@ -363,127 +313,6 @@ export default function BurgerMenu({ onFileSelect }: BurgerMenuProps) {
                     <option value={180}>Huge (180%)</option>
                   </select>
                 </label>
-
-                {/* ── Advanced settings (collapsible) ── */}
-                <div className={styles.advancedSection}>
-                  <button
-                    type="button"
-                    className={styles.advancedToggle}
-                    onClick={toggleAdvanced}
-                    aria-expanded={advancedOpen}
-                  >
-                    <span className={styles.advancedToggleLabel}>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                           strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
-                      </svg>
-                      Advanced
-                    </span>
-                    <span
-                      className={styles.advancedChevron}
-                      style={{ transform: advancedOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                      aria-hidden="true"
-                    >▼</span>
-                  </button>
-
-                  {advancedOpen && (
-                    <div className={styles.advancedBody}>
-
-                      <label className={styles.row}>
-                        <span className={styles.labelWithIcon}>
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                               strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <path d="M12 2a10 10 0 0 1 0 20"/><path d="M12 2a10 10 0 0 0 0 20"/>
-                            <line x1="2" y1="12" x2="22" y2="12"/>
-                          </svg>
-                          Dim context words
-                        </span>
-                        <input
-                          type="checkbox"
-                          checked={peripheralFade}
-                          onChange={(e) => setPeripheralFade(e.target.checked)}
-                          aria-label="Dim surrounding context words"
-                        />
-                      </label>
-
-                      <label className={styles.row}>
-                        <span className={styles.labelWithIcon}>
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                               strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>
-                          </svg>
-                          Pause at punctuation
-                        </span>
-                        <input
-                          type="checkbox"
-                          checked={punctuationPause}
-                          onChange={(e) => setPunctuationPause(e.target.checked)}
-                          aria-label="Pause briefly at sentence-ending punctuation"
-                        />
-                      </label>
-
-                      <label className={styles.row}>
-                        <span className={styles.labelWithIcon}>
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                               strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
-                            <polyline points="13 2 13 9 20 9"/>
-                          </svg>
-                          Slow down on long words
-                        </span>
-                        <input
-                          type="checkbox"
-                          checked={longWordCompensation}
-                          onChange={(e) => setLongWordCompensation(e.target.checked)}
-                          aria-label="Slow down when displaying long words"
-                        />
-                      </label>
-
-                      <label className={styles.row}>
-                        <span className={styles.labelWithIcon}>
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                               strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <rect x="2" y="7" width="6" height="10" rx="1"/>
-                            <rect x="9" y="7" width="6" height="10" rx="1"/>
-                            <rect x="16" y="7" width="6" height="10" rx="1"/>
-                          </svg>
-                          Phrase grouping
-                        </span>
-                        <select
-                          className={styles.select}
-                          value={chunkMode}
-                          onChange={(e) => setChunkMode(e.target.value as 'fixed' | 'intelligent')}
-                          aria-label="Word grouping mode"
-                        >
-                          <option value="fixed">Off</option>
-                          <option value="intelligent">On</option>
-                        </select>
-                      </label>
-
-                    </div>
-                  )}
-                </div>
-
-                {/* ── Theme switcher ──────────────────────────── */}
-                <div className={styles.themeSection}>
-                  <span className={styles.sectionLabel}>THEME</span>
-                  <div className={styles.themeRow}>
-                    {(['midnight', 'warm', 'day', 'obsidian'] as const).map(t => (
-                      <button
-                        type="button"
-                        key={t}
-                        className={`${styles.themeBtn} ${theme === t ? styles.themeBtnActive : ''}`}
-                        onClick={() => setTheme(t)}
-                        aria-pressed={theme === t}
-                        title={THEME_LABELS[t]}
-                      >
-                        <span className={styles.themeSwatch} data-swatch={t} />
-                        <span className={styles.themeLabel}>{THEME_LABELS[t]}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
 
               </section>
 

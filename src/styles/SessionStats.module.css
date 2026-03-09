@@ -1,8 +1,159 @@
 /* SessionStats.module.css
  *
- * Stats grid displayed inside the BurgerMenu settings drawer.
+ * Multi-session analytics panel inside the BurgerMenu settings drawer.
  */
 
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ── Current session ── */
+.current {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.currentLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statRow3 {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--color-surface, var(--bg-input));
+  border: 1px solid var(--color-border, var(--border));
+  border-radius: var(--radius-sm, 6px);
+  padding: 0.35rem 0.25rem;
+  min-width: 0;
+}
+
+.statVal {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.statKey {
+  font-size: 0.62rem;
+  color: var(--text-faint);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.empty {
+  color: var(--text-faint);
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+/* ── History section ── */
+.histSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border-top: 1px solid var(--color-border, var(--border));
+  padding-top: 0.6rem;
+}
+
+.histToggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  padding: 0;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.histToggle:hover { color: var(--text); }
+
+.histList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-height: 200px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.histItem {
+  background: var(--color-surface, var(--bg-input));
+  border: 1px solid var(--color-border, var(--border));
+  border-radius: var(--radius-sm, 6px);
+  padding: 0.4rem 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.histMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.histBook {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.histDate {
+  font-size: 0.68rem;
+  color: var(--text-faint);
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.histStats {
+  display: flex;
+  gap: 0.6rem;
+  font-size: 0.72rem;
+  color: var(--color-text-muted, var(--text-muted));
+}
+
+.clearBtn {
+  align-self: flex-end;
+  background: none;
+  border: 1px solid var(--color-border, var(--border));
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  padding: 0.2rem 0.6rem;
+  transition: background 0.12s, color 0.12s;
+}
+.clearBtn:hover { background: var(--state-hover); color: var(--text); }
+
+/* Legacy classes kept for compatibility */
 .grid {
   display: flex;
   flex-direction: column;
@@ -24,31 +175,4 @@
   color: var(--text);
   font-variant-numeric: tabular-nums;
   font-weight: 600;
-}
-
-.empty {
-  color: var(--text-faint);
-  font-size: 0.8rem;
-  margin: 0;
-}
-
-/* Legacy bar class (no longer used for main display) */
-.bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  padding: 0.2rem 1rem;
-  font-size: 0.72rem;
-  color: var(--text-faint);
-  user-select: none;
-}
-
-.stat {
-  white-space: nowrap;
-}
-
-.divider {
-  color: var(--text-faint);
-  opacity: 0.5;
 }

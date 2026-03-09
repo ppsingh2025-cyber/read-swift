@@ -16,6 +16,7 @@ import { ReaderContext, type FileMetadata, type ReadingRecord, type WindowSize, 
 import { loadRecords } from '../utils/recordsUtils';
 import { PRESET_MODES } from '../config/readingModePresets';
 import type { PresetModeId, ModeSettings } from '../types/readingModes';
+import type { StoredSession } from '../types/metadata';
 import { getThemeOrpAccent, isOrpColorInTheme } from '../config/orpColors';
 
 const LS_KEY_INDEX = 'fastread_word_index';
@@ -41,6 +42,7 @@ const LS_KEY_ACTIVE_MODE = 'fastread_active_mode';
 const LS_KEY_CUSTOM_MODES = 'fastread_custom_modes';
 const LS_KEY_ACTIVE_CUSTOM_MODE = 'fastread_active_custom_mode_id';
 const LS_KEY_ORP_COLORED = 'fastread_orp_colored';
+const LS_KEY_SESSION_HISTORY = 'fastread_session_history';
 const DEFAULT_WPM = 250;
 const DEFAULT_WINDOW_SIZE: WindowSize = 1;
 const DEFAULT_ORIENTATION: Orientation = 'horizontal';
@@ -86,7 +88,7 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
   const [windowSize, setWindowSizeState] = useState<WindowSize>(() => {
     const saved = localStorage.getItem(LS_KEY_WINDOW_SIZE);
     const parsed = saved ? parseInt(saved, 10) : DEFAULT_WINDOW_SIZE;
-    return ([1, 2, 3].includes(parsed) ? parsed : DEFAULT_WINDOW_SIZE) as WindowSize;
+    return ([1, 2, 3, 4, 5].includes(parsed) ? parsed : DEFAULT_WINDOW_SIZE) as WindowSize;
   });
   const [highlightColor, setHighlightColorState] = useState<string>(() => {
     return localStorage.getItem(LS_KEY_HIGHLIGHT_COLOR) ?? DEFAULT_HIGHLIGHT_COLOR;
@@ -143,6 +145,13 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
       if (saved) return JSON.parse(saved) as SessionStats;
     } catch { /* ignore parse errors */ }
     return { ...EMPTY_SESSION_STATS };
+  });
+  const [sessionHistory, setSessionHistoryState] = useState<StoredSession[]>(() => {
+    try {
+      const saved = localStorage.getItem(LS_KEY_SESSION_HISTORY);
+      if (saved) return JSON.parse(saved) as StoredSession[];
+    } catch { /* ignore parse errors */ }
+    return [];
   });
   const [focusMarkerEnabled, setFocusMarkerEnabledState] = useState<boolean>(() => {
     const saved = localStorage.getItem(LS_KEY_FOCUS_MARKER);
@@ -442,6 +451,51 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
     try { localStorage.setItem(LS_KEY_SESSION_STATS, JSON.stringify(fresh)); } catch { /* ignore */ }
   }, []);
 
+  const saveCurrentSession = useCallback(() => {
+    setSessionStatsState(prev => {
+      if (prev.wordsRead === 0) return prev;
+      const entry: StoredSession = {
+        id: crypto.randomUUID(),
+        bookName: fileMetadata?.name ?? 'Pasted text',
+        startedAt: prev.startTime > 0 ? new Date(prev.startTime).toISOString() : new Date().toISOString(),
+        durationMs: prev.activeTimeMs,
+        wordsRead: prev.wordsRead,
+        avgWpm: prev.effectiveWpm > 0 ? prev.effectiveWpm : (
+          prev.activeTimeMs >= 2_000 ? Math.round(prev.wordsRead / (prev.activeTimeMs / 60_000)) : 0
+        ),
+      };
+      setSessionHistoryState(hist => {
+        const updated = [entry, ...hist].slice(0, 20);
+        try { localStorage.setItem(LS_KEY_SESSION_HISTORY, JSON.stringify(updated)); } catch { /* ignore */ }
+        return updated;
+      });
+      const fresh = { ...EMPTY_SESSION_STATS };
+      try { localStorage.setItem(LS_KEY_SESSION_STATS, JSON.stringify(fresh)); } catch { /* ignore */ }
+      return fresh;
+    });
+  }, [fileMetadata]);
+
+  const clearSessionHistory = useCallback(() => {
+    setSessionHistoryState([]);
+    try { localStorage.removeItem(LS_KEY_SESSION_HISTORY); } catch { /* ignore */ }
+  }, []);
+
+  // Save session on page hide / close
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        saveCurrentSession();
+      }
+    };
+    const handleBeforeUnload = () => { saveCurrentSession(); };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [saveCurrentSession]);
+
   const setFocusMarkerEnabled = useCallback((enabled: boolean) => {
     setFocusMarkerEnabledState(enabled);
     localStorage.setItem(LS_KEY_FOCUS_MARKER, String(enabled));
@@ -467,15 +521,20 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
     applyMode(PRESET_MODES[modeId].settings);
     setActiveModeState(modeId);
     setActiveCustomModeIdState(null);
-    // Restore saved WPM for this mode if it exists
     const savedModeWpm = localStorage.getItem(modeWpmKey(modeId));
     if (savedModeWpm) {
       const parsed = parseInt(savedModeWpm, 10);
       if (!isNaN(parsed) && parsed >= 60 && parsed <= 1500) {
         setWpmState(parsed);
         localStorage.setItem(LS_KEY_WPM, String(parsed));
+        return;
       }
     }
+    // No saved WPM → use preset default
+    const defaultWpm = PRESET_MODES[modeId].defaultWpm;
+    setWpmState(defaultWpm);
+    localStorage.setItem(LS_KEY_WPM, String(defaultWpm));
+    localStorage.setItem(modeWpmKey(modeId), String(defaultWpm));
   }, [applyMode]);
 
   const selectCustomMode = useCallback((mode: CustomMode) => {
@@ -515,6 +574,7 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
         mainWordFontSize,
         chunkMode,
         sessionStats,
+        sessionHistory,
         focusMarkerEnabled,
         focalLine,
         activeMode,
@@ -547,6 +607,8 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
         setChunkMode,
         updateSessionStats,
         resetSessionStats,
+        saveCurrentSession,
+        clearSessionHistory,
         setFocusMarkerEnabled,
         setFocalLine,
         setActiveMode,

@@ -83,6 +83,7 @@ export default function App() {
     setStructureMap,
     setRecords,
     resetSessionStats,
+    saveCurrentSession,
     setWpm,
     goToPage,
     goToWord,
@@ -120,7 +121,7 @@ export default function App() {
   const [isFocused, setIsFocused] = useState(false);
   const [showPaste, setShowPaste] = useState(false);
   const [sessionCompleted, setSessionCompleted] = useState(false);
-  const [contextExpanded, setContextExpanded] = useState(false);
+  const [, setContextExpanded] = useState(false);
 
   // What's New: shown when stored version ≠ current version
   const [showWhatsNew, setShowWhatsNew] = useState<boolean>(
@@ -215,6 +216,7 @@ export default function App() {
         return;
       }
       setIsPlaying(false);
+      saveCurrentSession();
       setIsLoading(true);
       setLoadingProgress(0);
       setFileMetadata({ name: file.name, size: file.size, type: ext });
@@ -289,7 +291,7 @@ export default function App() {
         setLoadingProgress(100);
       }
     },
-    [setIsPlaying, setIsLoading, setLoadingProgress, setFileMetadata, finaliseWords],
+    [setIsPlaying, saveCurrentSession, setIsLoading, setLoadingProgress, setFileMetadata, finaliseWords],
   );
 
   const handleTextReady = useCallback(
@@ -484,7 +486,7 @@ export default function App() {
       <Toaster position="bottom-center" />
 
       {/* ── Footer ──────────────────────────────────────────────── */}
-      {!isFocused && !contextExpanded && <AppFooter />}
+      {!isFocused && <AppFooter />}
     </div>
     </AuthProvider>
   );

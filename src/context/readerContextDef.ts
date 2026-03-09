@@ -8,6 +8,7 @@
 
 import { createContext } from 'react';
 import type { ModeId, CustomMode, ModeSettings, PresetModeId } from '../types/readingModes';
+import type { StoredSession } from '../types/metadata';
 export type { ModeId, CustomMode, ModeSettings, PresetModeId };
 
 export interface FileMetadata {
@@ -25,7 +26,7 @@ export interface ReadingRecord {
 }
 
 /** Number of words displayed simultaneously in the rolling window */
-export type WindowSize = 1 | 2 | 3;
+export type WindowSize = 1 | 2 | 3 | 4 | 5;
 
 /** Display orientation of the word window */
 export type Orientation = 'horizontal' | 'vertical';
@@ -100,6 +101,8 @@ interface ReaderState {
   chunkMode: ChunkMode;
   /** Lightweight session analytics for the current reading session */
   sessionStats: SessionStats;
+  /** Rolling history of completed sessions (up to 20), persisted in localStorage */
+  sessionHistory: StoredSession[];
   /** Whether to show the focus marker dot beneath the ORP character */
   focusMarkerEnabled: boolean;
   /** Whether to show the vertical focal guide line + ORP letter highlight */
@@ -144,6 +147,10 @@ interface ReaderActions {
   updateSessionStats: (delta: Partial<SessionStats>) => void;
   /** Reset session analytics (called when a new file is loaded) */
   resetSessionStats: () => void;
+  /** Save the current session to history and reset stats */
+  saveCurrentSession: () => void;
+  /** Clear all session history */
+  clearSessionHistory: () => void;
   setFocusMarkerEnabled: (enabled: boolean) => void;
   setFocalLine: (v: boolean) => void;
   setActiveMode: (mode: ModeId) => void;

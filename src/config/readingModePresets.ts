@@ -4,12 +4,14 @@ export const PRESET_MODES: Record<PresetModeId, {
   label: string;
   icon: string;
   description: string;
+  defaultWpm: number;
   settings: ModeSettings;
 }> = {
   speed: {
     label: 'Sprint',
     icon: '⚡',
     description: 'Maximum speed. One word at a time, no anchor, no pauses.',
+    defaultWpm: 450,
     settings: {
       windowSize: 1,
       orpEnabled: false,
@@ -25,6 +27,7 @@ export const PRESET_MODES: Record<PresetModeId, {
     label: 'Focus',
     icon: '🎯',
     description: 'Eye anchor + ORP highlight. One word, zero movement.',
+    defaultWpm: 250,
     settings: {
       windowSize: 1,
       orpEnabled: true,
@@ -40,8 +43,9 @@ export const PRESET_MODES: Record<PresetModeId, {
     label: 'Flow',
     icon: '🌊',
     description: 'Natural rhythm. Three words, phrase grouping, full context.',
+    defaultWpm: 180,
     settings: {
-      windowSize: 3,            // 3 words — max (v11)
+      windowSize: 3,            // 3 words — default (user can adjust up to 5)
       orpEnabled: false,
       orpColored: false,        // context flow — uniform word color
       focalLine: true,          // ticks still useful as anchor in multi-word
