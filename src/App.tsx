@@ -120,6 +120,7 @@ export default function App() {
   const [isFocused, setIsFocused] = useState(false);
   const [showPaste, setShowPaste] = useState(false);
   const [sessionCompleted, setSessionCompleted] = useState(false);
+  const [contextExpanded, setContextExpanded] = useState(false);
 
   // What's New: shown when stored version ≠ current version
   const [showWhatsNew, setShowWhatsNew] = useState<boolean>(
@@ -442,7 +443,7 @@ export default function App() {
 
       {!isFocused && (
         <div className="contextStrip">
-          <ContextPreview />
+          <ContextPreview onExpandChange={setContextExpanded} />
         </div>
       )}
 
@@ -483,7 +484,7 @@ export default function App() {
       <Toaster position="bottom-center" />
 
       {/* ── Footer ──────────────────────────────────────────────── */}
-      {!isFocused && <AppFooter />}
+      {!isFocused && !contextExpanded && <AppFooter />}
     </div>
     </AuthProvider>
   );

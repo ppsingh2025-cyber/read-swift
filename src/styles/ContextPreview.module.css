@@ -67,8 +67,8 @@
 
 /* ── Content — static word block ── */
 .content {
-  min-height: 80px;
-  max-height: 36vh;
+  max-height: 28vh;
+  min-height: 60px;
   overflow-y: auto;
   padding: 0.5rem 0.85rem 0.6rem;
   line-height: 1.8;
@@ -82,6 +82,8 @@
 .content::-webkit-scrollbar { width: 3px; }
 .content::-webkit-scrollbar-track { background: transparent; }
 .content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+@media (max-height: 700px) { .content { max-height: 22vh; } }
+@media (max-height: 600px) { .content { max-height: 18vh; } }
 
 /* ── Words ── */
 .word {
@@ -112,10 +114,11 @@
 .navBar {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.35rem 0.85rem 0.5rem;
+  justify-content: space-between;
+  gap: 0.4rem;
+  padding: 0.3rem 0.85rem 0.45rem;
   border-top: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .navBtn {
@@ -123,14 +126,14 @@
   align-items: center;
   justify-content: center;
   width: 28px;
-  height: 28px;
+  height: 26px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: transparent;
   color: var(--text-faint);
   cursor: pointer;
-  transition: background 0.12s, color 0.12s, border-color 0.12s;
   flex-shrink: 0;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
   touch-action: manipulation;
 }
 .navBtn:hover:not(:disabled) {
@@ -144,39 +147,44 @@
 }
 
 .navInfo {
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   color: var(--text-faint);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.04em;
-  min-width: 3.5rem;
   text-align: center;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .snapBtn {
+  flex-shrink: 0;
+  white-space: nowrap;
   font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.04em;
-  padding: 0.2rem 0.5rem;
+  padding: 0.18rem 0.55rem;
   border-radius: var(--radius-full);
   border: 1px solid var(--color-accent);
   color: var(--color-accent);
   background: var(--color-accent-8);
   cursor: pointer;
   transition: background 0.12s, opacity 0.12s;
-  white-space: nowrap;
   touch-action: manipulation;
 }
 .snapBtn:hover { background: var(--color-accent-15); }
 
 /* Detached badge — shown in header when user has navigated away */
 .detachedBadge {
+  flex-shrink: 0;
   font-size: 0.58rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--color-accent);
   background: var(--color-accent-8);
   border: 1px solid var(--color-accent-25);
   border-radius: var(--radius-full);
-  padding: 0.05rem 0.4rem;
+  padding: 0.05rem 0.45rem;
 }

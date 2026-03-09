@@ -6,13 +6,17 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2, 8px);
-  padding: var(--space-2, 8px) var(--space-4, 16px);
-  background: var(--bg-panel);
-  border-top: 1px solid var(--border);
+  padding: var(--space-2, 8px) var(--space-4, 16px) var(--space-3, 12px);
+  background: transparent;
   position: sticky;
   bottom: 0;
   z-index: 100;
   width: 100%;
+  isolation: isolate;
+}
+
+@media (max-width: 520px) {
+  .controls { padding: 0.5rem 0.75rem 0.6rem; }
 }
 
 @media (max-height: 480px) and (orientation: landscape) {
@@ -41,13 +45,17 @@
   padding: var(--space-2, 8px) var(--space-3, 12px) var(--space-3, 12px);
 }
 
-/* On narrow screens (mobile), card chrome is redundant — remove it */
 @media (max-width: 520px) {
   .inner {
-    border: none;
-    border-radius: 0;
-    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg, 14px);
+    padding: var(--space-2, 8px) var(--space-3, 12px) var(--space-3, 12px);
     max-width: 100%;
+    box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.35);
+    background: var(--bg-panel);
+  }
+  [data-theme='day'] .inner {
+    box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.12);
   }
 }
 

@@ -14,7 +14,11 @@ import styles from '../styles/ContextPreview.module.css';
 const PAGE_SIZE = 80;
 const LS_KEY = 'contextPreview_collapsed';
 
-export default function ContextPreview() {
+interface ContextPreviewProps {
+  onExpandChange?: (expanded: boolean) => void;
+}
+
+export default function ContextPreview({ onExpandChange }: ContextPreviewProps) {
   const { words, currentWordIndex, goToWord, isLoading } = useReaderContext();
 
   const [collapsed, setCollapsed] = useState<boolean>(() => {
@@ -44,9 +48,15 @@ export default function ContextPreview() {
     setCollapsed(prev => {
       const next = !prev;
       localStorage.setItem(LS_KEY, String(next));
+      onExpandChange?.(!next); // !next = expanded
       return next;
     });
-  }, []);
+  }, [onExpandChange]);
+
+  // Fire initial expand state on mount
+  useEffect(() => {
+    onExpandChange?.(!collapsed);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const goPrev = useCallback(() => {
     setViewPage(p => Math.max(0, p - 1));

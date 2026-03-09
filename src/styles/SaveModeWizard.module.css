@@ -277,7 +277,7 @@
   background: var(--color-accent, #22d3ee);
   border: none;
   border-radius: 8px;
-  color: #000;
+  color: var(--bg);
   font-size: 0.88rem;
   font-weight: 700;
   cursor: pointer;
@@ -299,7 +299,7 @@
   background: var(--color-accent, #22d3ee);
   border: none;
   border-radius: 8px;
-  color: #000;
+  color: var(--bg);
   font-size: 0.88rem;
   font-weight: 700;
   cursor: pointer;
@@ -314,3 +314,24 @@
 .saveBtn:not(:disabled):hover {
   opacity: 0.85;
 }
+
+/* ── WPM Stepper (wizard step 9) ────────────────────────────────── */
+
+.wpmStepperWizard {
+  display: flex; align-items: center; justify-content: center; gap: 16px; padding: 1rem 0;
+}
+.wpmWizardBtn {
+  width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;
+  background: var(--bg-input); border: 1px solid var(--border-input);
+  border-radius: var(--radius-sm); color: var(--text-muted);
+  font-size: 1.3rem; font-weight: 700; cursor: pointer;
+  transition: background 0.1s, border-color 0.1s, color 0.1s; touch-action: manipulation;
+}
+.wpmWizardBtn:hover {
+  border-color: var(--color-accent); color: var(--color-accent); background: var(--color-accent-8);
+}
+.wpmWizardValue {
+  font-size: 2rem; font-weight: 800; color: var(--color-accent);
+  font-variant-numeric: tabular-nums; min-width: 5ch; text-align: center; letter-spacing: -0.02em;
+}
+.wpmWizardUnit { font-size: 0.9rem; font-weight: 600; color: var(--text-faint); letter-spacing: 0.04em; }

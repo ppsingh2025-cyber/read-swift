@@ -12,7 +12,9 @@
  *   5  — Pause briefly at punctuation?
  *   6  — Slow down for long words?
  *   7  — Group words into natural phrases?
- *   8  — Confirm and save
+ *   8  — Chunk mode
+ *   9  — What speed? (WPM stepper)
+ *   10 — Confirm and save
  */
 
 import { useState } from 'react';
@@ -34,9 +36,10 @@ type WizardSettings = {
   punctuationPause: boolean;
   longWordCompensation: boolean;
   chunkMode: 'fixed' | 'intelligent';
+  wpm: number;
 };
 
-const TOTAL_STEPS = 10; // 0 (name) + 1 (window) + 2 (orp) + 3 (orp color) + 4 (focal) + 5 (fade) + 6 (punct) + 7 (long word) + 8 (chunk) + 9 (confirm)
+const TOTAL_STEPS = 11; // 0–10
 
 export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizardProps) {
   const {
@@ -48,6 +51,8 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
     punctuationPause: currentPuncPause,
     longWordCompensation: currentLongWord,
     chunkMode: currentChunkMode,
+    wpm: currentWpm,
+    setWpm,
     setSavedCustomModes,
     setActiveMode,
     setActiveCustomModeId,
@@ -56,7 +61,6 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
 
   const [step, setStep] = useState(0);
   const [wizardName, setWizardName] = useState('');
-  const [replaceIndex, setReplaceIndex] = useState<number | null>(null);
 
   // Pre-populate with current settings
   const [settings, setSettings] = useState<WizardSettings>(() => ({
@@ -70,9 +74,8 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
     punctuationPause: currentPuncPause,
     longWordCompensation: currentLongWord,
     chunkMode: currentChunkMode,
+    wpm: currentWpm,
   }));
-
-  const isSlotsFull = existingModes.length >= 3;
 
   const handleSave = () => {
     const finalSettings: ModeSettings = {
@@ -85,26 +88,18 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
       longWordCompensation: settings.longWordCompensation,
       chunkMode: settings.chunkMode,
     };
-
     const newMode: CustomMode = {
       id: crypto.randomUUID(),
       name: wizardName.trim() || 'My Mode',
       settings: finalSettings,
+      wpm: settings.wpm,
       createdAt: new Date().toISOString(),
     };
-
-    let nextModes: CustomMode[];
-    if (replaceIndex !== null) {
-      nextModes = [...existingModes];
-      nextModes[replaceIndex] = newMode;
-    } else {
-      // Add newest first — keeps up to 2 oldest existing modes to maintain 3-slot limit
-      nextModes = [newMode, ...existingModes.slice(0, 2)];
-    }
-    setSavedCustomModes(nextModes);
+    setSavedCustomModes([newMode, ...existingModes]);
     setActiveMode('custom');
     setActiveCustomModeId(newMode.id);
     applyMode(finalSettings);
+    if (newMode.wpm !== undefined) setWpm(newMode.wpm);
     onClose();
   };
 
@@ -301,8 +296,27 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
             </div>
           )}
 
-          {/* ── Step 9: Confirm ─────────────────────────────── */}
+          {/* ── Step 9: WPM ─────────────────────────────────── */}
           {step === 9 && (
+            <div className={styles.stepContent}>
+              <p className={styles.question}>What speed should this mode use?</p>
+              <div className={styles.wpmStepperWizard}>
+                <button type="button" className={styles.wpmWizardBtn}
+                        onClick={() => setSettings(s => ({ ...s, wpm: Math.max(60, s.wpm - 10) }))}
+                        aria-label="Decrease WPM">−</button>
+                <span className={styles.wpmWizardValue}>
+                  {settings.wpm}<span className={styles.wpmWizardUnit}> WPM</span>
+                </span>
+                <button type="button" className={styles.wpmWizardBtn}
+                        onClick={() => setSettings(s => ({ ...s, wpm: Math.min(1500, s.wpm + 10) }))}
+                        aria-label="Increase WPM">+</button>
+              </div>
+              <p className={styles.hint}>Range: 60–1500 WPM. Applied when you activate this mode.</p>
+            </div>
+          )}
+
+          {/* ── Step 10: Confirm ────────────────────────────── */}
+          {step === 10 && (
             <div className={styles.stepContent}>
               <p className={styles.question}>Ready to save?</p>
               <div className={styles.summary}>
@@ -316,25 +330,9 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
                   <li>Punctuation pause: {settings.punctuationPause ? 'On' : 'Off'}</li>
                   <li>Long-word delay: {settings.longWordCompensation ? 'On' : 'Off'}</li>
                   <li>Phrase grouping: {settings.chunkMode === 'intelligent' ? 'On' : 'Off'}</li>
+                  <li>Speed: {settings.wpm} WPM</li>
                 </ul>
               </div>
-
-              {/* Replace slot selector (only when all 3 slots are full) */}
-              {isSlotsFull && (
-                <div className={styles.replaceBox}>
-                  <p className={styles.replaceLabel}>All 3 slots are full. Choose one to replace:</p>
-                  {existingModes.map((m, i) => (
-                    <button
-                      key={m.id}
-                      className={`${styles.replaceBtn} ${replaceIndex === i ? styles.replaceBtnActive : ''}`}
-                      onClick={() => setReplaceIndex(i)}
-                      aria-pressed={replaceIndex === i}
-                    >
-                      Replace "{m.name}"
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
           )}
         </div>
@@ -355,7 +353,6 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
             <button
               className={styles.saveBtn}
               onClick={handleSave}
-              disabled={isSlotsFull && replaceIndex === null}
             >
               ✓ Save Mode
             </button>

@@ -422,11 +422,11 @@ body {
 }
 
 .contextStrip {
-  padding: 0 1rem;
+  padding: 0.5rem 1rem 0;
   flex-shrink: 0;
 }
 @media (max-width: 640px) {
-  .contextStrip { padding: 0 0.75rem; }
+  .contextStrip { padding: 0.4rem 0.75rem 0; }
 }
 
 /* ─── Controls bar wrapper ──────────────────────────────────── */
