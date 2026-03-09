@@ -480,6 +480,7 @@
 .wordNavOverlay {
   display: flex; align-items: center; gap: 2px;
   pointer-events: all; position: relative;
+  margin-left: auto; /* always push to the right edge */
 }
 
 /* Word-jump popover opens above, right-anchored so it never overflows the edge */
