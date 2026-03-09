@@ -1,8 +1,8 @@
-# ReadSwift — Play Store Listing Package
+# PaceRead — Play Store Listing Package
 
 **Client:** Techscript Limited  
-**Product:** ReadSwift  
-**Package name:** `ca.techscript.readswift`  
+**Product:** PaceRead  
+**Package name:** `ca.techscript.paceread`  
 **Document version:** 1.0  
 **Status:** Production-ready
 
@@ -11,12 +11,12 @@
 ## 1. App Title
 
 ```
-ReadSwift: Speed Reader
+PaceRead: Speed Reader
 ```
 
 **Character count:** 30 / 50 limit ✅
 
-**Rationale:** "ReadSwift" is the brand name. "Speed Reader" is the highest-volume two-word keyword in the category. Avoids punctuation that renders inconsistently across locales.
+**Rationale:** "PaceRead" is the brand name. "Speed Reader" is the highest-volume two-word keyword in the category. Avoids punctuation that renders inconsistently across locales.
 
 ---
 
@@ -39,7 +39,7 @@ Read PDFs and EPUBs one word at a time — up to 1000 WPM. No accounts.
 ## 3. Full Description
 
 ```
-ReadSwift is a speed-reading tool built on the RSVP (Rapid Serial Visual Presentation) method. It displays one word at a fixed point on screen, eliminating the eye movement that slows conventional reading. The result: you read faster with less cognitive effort.
+PaceRead is a speed-reading tool built on the RSVP (Rapid Serial Visual Presentation) method. It displays one word at a fixed point on screen, eliminating the eye movement that slows conventional reading. The result: you read faster with less cognitive effort.
 
 Upload any PDF or EPUB file. No account required. No file is ever sent to a server — all processing happens locally on your device. Your reading history and progress are saved on-device and never leave it.
 
@@ -68,7 +68,7 @@ FEATURES
 
 PRIVACY
 
-ReadSwift collects zero data. It has no analytics, no tracking, no advertising, no backend server. Your files are processed entirely on your device using the browser's built-in APIs. Reading history is stored locally using your device's storage and is never transmitted anywhere.
+PaceRead collects zero data. It has no analytics, no tracking, no advertising, no backend server. Your files are processed entirely on your device using the browser's built-in APIs. Reading history is stored locally using your device's storage and is never transmitted anywhere.
 
 Full privacy policy: https://techscript.ca/privacy
 
@@ -76,7 +76,7 @@ Full privacy policy: https://techscript.ca/privacy
 
 TECHNICAL
 
-ReadSwift is a Progressive Web App (PWA) running inside a native Android wrapper (Trusted Web Activity). All PDF processing uses Mozilla's PDF.js library. EPUB processing uses epub.js. Both run entirely in-browser.
+PaceRead is a Progressive Web App (PWA) running inside a native Android wrapper (Trusted Web Activity). All PDF processing uses Mozilla's PDF.js library. EPUB processing uses epub.js. Both run entirely in-browser.
 
 Minimum Android version: Android 7.0 (API 24)
 Storage: reading history uses under 100 KB of local storage
@@ -86,7 +86,7 @@ Permissions: none required
 
 DEVELOPER
 
-ReadSwift is developed and published by Techscript Limited.
+PaceRead is developed and published by Techscript Limited.
 Website: https://techscript.ca
 ```
 
@@ -112,11 +112,11 @@ These map to the "What's new" / highlight feature cards in Play Store listings.
 
 **Primary audience:** Professionals, students, and researchers who need to process large volumes of text quickly.
 
-**Pain point solved:** Conventional reading is slow because the eye scans back and forth across each line. RSVP eliminates this motion. ReadSwift implements RSVP for any document the user already has — no need to buy a proprietary ebook or sign up for a service.
+**Pain point solved:** Conventional reading is slow because the eye scans back and forth across each line. RSVP eliminates this motion. PaceRead implements RSVP for any document the user already has — no need to buy a proprietary ebook or sign up for a service.
 
 **Key differentiators:**
 
-| Differentiator | ReadSwift | Typical competitor |
+| Differentiator | PaceRead | Typical competitor |
 |---|---|---|
 | Works with your own PDFs/EPUBs | ✅ | ❌ (proprietary library) |
 | No account required | ✅ | ❌ |
@@ -170,7 +170,7 @@ ebook reader, speed reader, reading trainer, no ads, offline reader
 ```
 Initial release.
 
-ReadSwift brings RSVP speed reading to Android. Load any PDF or EPUB, set your speed, and read faster — no account, no data collection.
+PaceRead brings RSVP speed reading to Android. Load any PDF or EPUB, set your speed, and read faster — no account, no data collection.
 ```
 
 ---

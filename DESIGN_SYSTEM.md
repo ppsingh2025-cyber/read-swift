@@ -1,12 +1,12 @@
 # DESIGN_SYSTEM.md — UI Rules
 
-> **Purpose:** Single source of truth for all visual and interaction design decisions in ReadSwift. Cross-reference `/AGENT_READSWIFT.md` for component locations and `/READING_ENGINE.md` for engine constraints that affect rendering.
+> **Purpose:** Single source of truth for all visual and interaction design decisions in PaceRead. Cross-reference `/AGENT_PACEREAD.md` for component locations and `/READING_ENGINE.md` for engine constraints that affect rendering.
 
 ---
 
 ## Core Philosophy
 
-ReadSwift is a **reading instrument**, not a typical web app. Every design decision must answer: *Does this help the user read?*
+PaceRead is a **reading instrument**, not a typical web app. Every design decision must answer: *Does this help the user read?*
 
 1. **Reading flow is sacred.** No layout shifts, reflows, or visual noise during active reading.
 2. **Zero visual jitter.** The ORP word must appear stable at a fixed focal point between word changes.

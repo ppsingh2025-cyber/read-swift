@@ -1,7 +1,7 @@
-# ReadSwift — Brand Identity Brief
+# PaceRead — Brand Identity Brief
 
 **Client:** Techscript Limited  
-**Product:** ReadSwift  
+**Product:** PaceRead  
 **Document version:** 1.0  
 **Status:** Production
 
@@ -9,7 +9,7 @@
 
 ## 1. Brand Positioning
 
-ReadSwift is a **precision cognitive-performance tool**. It is not a lifestyle app, entertainment product, or social experience. It exists to solve one problem: helping people read faster and with greater retention.
+PaceRead is a **precision cognitive-performance tool**. It is not a lifestyle app, entertainment product, or social experience. It exists to solve one problem: helping people read faster and with greater retention.
 
 **Core promise:** Remove visual scanning fatigue. Display text at a fixed focal point. Let the reader's mind absorb language at the speed thought allows.
 

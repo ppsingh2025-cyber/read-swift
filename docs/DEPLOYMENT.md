@@ -42,7 +42,7 @@ Make sure to set environment variables as GitHub Actions secrets and inject them
 ```nginx
 server {
     listen 80;
-    root /var/www/readswift/dist;
+    root /var/www/paceread/dist;
     index index.html;
 
     location / {

@@ -1,8 +1,8 @@
-# ReadSwift — GitHub Copilot Instructions
+# PaceRead — GitHub Copilot Instructions
 
 ## Project Overview
 
-**ReadSwift** is a production-quality React web application that implements **Rapid Serial Visual Presentation (RSVP)** reading. It is built and maintained by **TechScript Limited** and is deployed at [readswift.techscript.ca](https://readswift.techscript.ca).
+**PaceRead** is a production-quality React web application that implements **Rapid Serial Visual Presentation (RSVP)** reading. It is built and maintained by **TechScript Limited** and is deployed at [paceread.techscript.ca](https://paceread.techscript.ca).
 
 Users load a document (PDF, EPUB, DOCX, TXT, MD, HTML, RTF, SRT), and the app displays one word (or a small window of words) at a time at high speed — helping readers consume text faster by eliminating eye movement. All parsing runs entirely in the browser; no files are ever uploaded to a server.
 
@@ -117,7 +117,7 @@ Users load a document (PDF, EPUB, DOCX, TXT, MD, HTML, RTF, SRT), and the app di
 ## Core Concepts
 
 ### App Layout (4 layers)
-1. **Top bar** — BurgerMenu (left) · ReadSwift brand (center) · SyncStatusIndicator + UserAvatar + Help + ThemeToggle (right)
+1. **Top bar** — BurgerMenu (left) · PaceRead brand (center) · SyncStatusIndicator + UserAvatar + Help + ThemeToggle (right)
 2. **Reading main** — `ReaderViewport` + `ContextPreview` (side by side)
 3. **Navigation layer** — `PageNavigator` (hidden in focus mode)
 4. **Bottom control bar** — `Controls` (always visible; sticky)
@@ -272,7 +272,7 @@ npm run cap:ios
 
 | Workflow | Trigger | Output |
 |----------|---------|--------|
-| `deploy-web.yml` | Push to `main` | GitHub Pages deployment to `readswift.techscript.ca` |
+| `deploy-web.yml` | Push to `main` | GitHub Pages deployment to `paceread.techscript.ca` |
 | `build-android.yml` | Push to `main` | Debug APK artifact (`fast-read-debug-apk`) |
 | `build-android.yml` | Push tag `v*` | Signed release AAB (requires 4 repo secrets) |
 | `build-ios.yml` | Push to `main` | iOS build on macOS runner |
@@ -296,9 +296,9 @@ Both are optional. Without them the app runs fully offline without auth/sync.
 
 ## Deployment
 
-- **Web**: GitHub Pages at `readswift.techscript.ca` (CNAME in `public/CNAME`).
-- **Android**: Google Play Store, bundle ID `ca.techscript.readswift`.
-- **iOS**: Apple App Store, bundle ID `ca.techscript.readswift`.
+- **Web**: GitHub Pages at `paceread.techscript.ca` (CNAME in `public/CNAME`).
+- **Android**: Google Play Store, bundle ID `ca.techscript.paceread`.
+- **iOS**: Apple App Store, bundle ID `ca.techscript.paceread`.
 - **PWA**: Installable from any browser via "Add to Home Screen".
 
 ---
@@ -321,8 +321,8 @@ Both are optional. Without them the app runs fully offline without auth/sync.
 
 | Field | Value |
 |-------|-------|
-| App name | ReadSwift |
-| Bundle ID | `ca.techscript.readswift` |
+| App name | PaceRead |
+| Bundle ID | `ca.techscript.paceread` |
 | Author | TechScript Limited |
 | Website | https://techscript.ca |
-| Live app | https://readswift.techscript.ca |
+| Live app | https://paceread.techscript.ca |

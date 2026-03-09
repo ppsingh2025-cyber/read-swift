@@ -1,6 +1,6 @@
 # Google OAuth Setup
 
-This guide walks through enabling Google OAuth for ReadSwift via Supabase.
+This guide walks through enabling Google OAuth for PaceRead via Supabase.
 
 ## Steps
 

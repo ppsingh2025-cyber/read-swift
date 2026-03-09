@@ -1,4 +1,4 @@
--- ReadSwift initial database schema
+-- PaceRead initial database schema
 -- Run this in your Supabase project's SQL Editor
 
 -- Enable UUID extension

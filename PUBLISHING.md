@@ -1,6 +1,6 @@
-# Publishing ReadSwift to the App Stores
+# Publishing PaceRead to the App Stores
 
-This guide walks through everything needed to publish **ReadSwift** (`ca.techscript.readswift`) as a native app on **Google Play** and the **Apple App Store**.
+This guide walks through everything needed to publish **PaceRead** (`ca.techscript.paceread`) as a native app on **Google Play** and the **Apple App Store**.
 
 ---
 
@@ -57,8 +57,8 @@ Run this command in your terminal (replace the values in angle brackets):
 
 ```bash
 keytool -genkey -v \
-  -keystore readswift-release.jks \
-  -alias readswift \
+  -keystore paceread-release.jks \
+  -alias paceread \
   -keyalg RSA \
   -keysize 2048 \
   -validity 10000 \
@@ -68,7 +68,7 @@ keytool -genkey -v \
 
 You will be asked for your name and organisation details — these appear in the certificate but not in the app listing.
 
-> **Keep `readswift-release.jks` and both passwords safe** (e.g. in a password manager). Back it up somewhere secure — if you lose it you cannot update your app.
+> **Keep `paceread-release.jks` and both passwords safe** (e.g. in a password manager). Back it up somewhere secure — if you lose it you cannot update your app.
 
 ---
 
@@ -80,8 +80,8 @@ The CI workflow (`.github/workflows/build-android.yml`) automatically signs and 
 
    ```bash
    # macOS / Linux
-   base64 -i readswift-release.jks | pbcopy   # copies to clipboard (macOS)
-   base64 -i readswift-release.jks            # print, then copy (Linux)
+   base64 -i paceread-release.jks | pbcopy   # copies to clipboard (macOS)
+   base64 -i paceread-release.jks            # print, then copy (Linux)
    ```
 
 2. In GitHub, go to your repository → **Settings → Secrets and variables → Actions → New repository secret** and add:
@@ -90,7 +90,7 @@ The CI workflow (`.github/workflows/build-android.yml`) automatically signs and 
    |-------------|-------|
    | `ANDROID_KEYSTORE_BASE64` | The base64 output from above |
    | `ANDROID_KEYSTORE_PASSWORD` | Your keystore password |
-   | `ANDROID_KEY_ALIAS` | `readswift` (or whatever alias you chose) |
+   | `ANDROID_KEY_ALIAS` | `paceread` (or whatever alias you chose) |
    | `ANDROID_KEY_PASSWORD` | Your key password |
 
 ---
@@ -130,7 +130,7 @@ npx cap open android        # opens Android Studio
 In Android Studio:
 1. **Build → Generate Signed Bundle / APK**
 2. Choose **Android App Bundle**
-3. Select your `readswift-release.jks` keystore, enter passwords and alias
+3. Select your `paceread-release.jks` keystore, enter passwords and alias
 4. Choose **release** build variant
 5. Click **Finish** — the `.aab` file is saved under `android/app/release/`
 
@@ -140,7 +140,7 @@ In Android Studio:
 
 1. In the [Play Console](https://play.google.com/console), click **Create app**.
 2. Fill in:
-   - **App name:** ReadSwift
+   - **App name:** PaceRead
    - **Default language:** English (or your preference)
    - **App or game:** App
    - **Free or paid:** Free
@@ -160,16 +160,16 @@ You will be taken to the app dashboard. Before you can publish you need to compl
 
 #### Content rating
 
-Go to **Policy → App content → Content rating** and complete the questionnaire. ReadSwift has no user-generated content, no ads, no violence — you will receive an **Everyone** rating.
+Go to **Policy → App content → Content rating** and complete the questionnaire. PaceRead has no user-generated content, no ads, no violence — you will receive an **Everyone** rating.
 
 #### Data safety
 
 Under **Policy → App content → Data safety**, declare:
-- No data collected (ReadSwift processes files locally, nothing is transmitted).
+- No data collected (PaceRead processes files locally, nothing is transmitted).
 
 #### App access
 
-If your app requires login (ReadSwift does not), you would provide test credentials here. Leave this as **All functionality is accessible without special access**.
+If your app requires login (PaceRead does not), you would provide test credentials here. Leave this as **All functionality is accessible without special access**.
 
 ---
 
@@ -220,7 +220,7 @@ In Xcode:
 
 1. Select the **App** target in the Project Navigator.
 2. Under **Signing & Capabilities**, select your **Team** (your Apple Developer account).
-3. Set the **Bundle Identifier** to `ca.techscript.readswift` (must match `capacitor.config.ts`).
+3. Set the **Bundle Identifier** to `ca.techscript.paceread` (must match `capacitor.config.ts`).
 4. Set the **Version** (e.g. `1.0`) and **Build** number (e.g. `1`).
 5. Xcode will automatically create a **provisioning profile** — wait for "Signing Certificate: Apple Development" to appear.
 
@@ -232,10 +232,10 @@ In Xcode:
 2. Click **+** → **New App**.
 3. Fill in:
    - **Platforms:** iOS
-   - **Name:** ReadSwift
+   - **Name:** PaceRead
    - **Primary language:** English
-   - **Bundle ID:** `ca.techscript.readswift` (select from the dropdown — Xcode registered it)
-   - **SKU:** any unique string, e.g. `readswift-1`
+   - **Bundle ID:** `ca.techscript.paceread` (select from the dropdown — Xcode registered it)
+   - **SKU:** any unique string, e.g. `paceread-1`
 4. Click **Create**.
 
 Complete the listing:
@@ -243,7 +243,7 @@ Complete the listing:
 - **App previews and screenshots** — capture from the iOS Simulator in Xcode (Cmd+S)
 - **App icon** — provided automatically from the Xcode asset catalogue
 - **Category**: Books (or Productivity)
-- **Age rating**: complete the questionnaire (ReadSwift will get 4+)
+- **Age rating**: complete the questionnaire (PaceRead will get 4+)
 - **Privacy policy URL**: required; host a simple page on your site explaining no data is collected
 
 ---
@@ -298,7 +298,7 @@ npx cap sync
 - Apple App Store: **$99/year** Developer Program membership.
 
 **Can I publish for free without a developer account?**  
-Yes, as a PWA. Users can already install ReadSwift directly from the browser via the "Add to Home Screen" prompt — no store account needed.
+Yes, as a PWA. Users can already install PaceRead directly from the browser via the "Add to Home Screen" prompt — no store account needed.
 
 **Can I keep the app free?**  
 Yes. Both stores allow free apps with no monetisation. The "Buy me a coffee" link in the app is not considered in-app purchase and does not need any special configuration.
@@ -311,4 +311,4 @@ Yes. Both stores allow free apps with no monetisation. The "Buy me a coffee" lin
 No, but it is good practice to stay within 1–2 major versions to keep up with OS security updates.
 
 **Where is my app ID?**  
-`ca.techscript.readswift` — defined in `capacitor.config.ts`. This must remain the same for the lifetime of the app on each store.
+`ca.techscript.paceread` — defined in `capacitor.config.ts`. This must remain the same for the lifetime of the app on each store.

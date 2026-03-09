@@ -1,4 +1,4 @@
-# ReadSwift Legacy Redirect
+# PaceRead — Legacy Redirect Setup
 
 This folder is deployed as a separate GitHub Pages site to redirect
 `readswift.techscript.ca` → `paceread.techscript.ca`.

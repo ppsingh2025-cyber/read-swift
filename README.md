@@ -8,7 +8,7 @@ A production-quality React web application that implements **Rapid Serial Visual
 
 ## Authentication & Sync (Optional)
 
-ReadSwift works fully offline without any account. If you want **cross-device reading progress sync**, enable the optional Supabase integration. You'll need two free accounts:
+PaceRead works fully offline without any account. If you want **cross-device reading progress sync**, enable the optional Supabase integration. You'll need two free accounts:
 
 | Account | What it does | Sign up |
 |---------|-------------|---------|
@@ -135,9 +135,9 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ## Deployment
 
-### Web — GitHub Pages + Subdomain (`readswift.techscript.ca`)
+### Web — GitHub Pages + Subdomain (`paceread.techscript.ca`)
 
-ReadSwift deploys automatically to **`https://readswift.techscript.ca`** on every push to `main`. Your main `techscript.ca` domain is completely untouched.
+PaceRead deploys automatically to **`https://paceread.techscript.ca`** on every push to `main`. Your main `techscript.ca` domain is completely untouched.
 
 ---
 
@@ -149,7 +149,7 @@ Log in to [GoDaddy DNS Manager](https://dcc.godaddy.com) for `techscript.ca` and
 
 | Type | Name | Value | TTL |
 |------|------|-------|-----|
-| `CNAME` | `readswift` | `ppsk2011.github.io` | 1 Hour |
+| `CNAME` | `paceread` | `ppsk2011.github.io` | 1 Hour |
 
 This is the only record you need. Everything else in your `techscript.ca` DNS is untouched.
 
@@ -170,7 +170,7 @@ Option B — go to **Actions → Deploy to GitHub Pages → Run workflow → Run
 
 After the workflow finishes (~2 minutes):
 1. Go back to **Settings → Pages**
-2. You should see **"Your site is published at https://readswift.techscript.ca"**
+2. You should see **"Your site is published at https://paceread.techscript.ca"**
 3. Tick **"Enforce HTTPS"** and click **Save**
 
 > If the "Enforce HTTPS" checkbox is greyed out, wait 10–15 minutes for the Let's Encrypt certificate to be issued, then refresh the page.
@@ -184,7 +184,7 @@ Two things were wrong:
 | Problem | Fix applied in this repo |
 |---------|--------------------------|
 | A `jekyll-gh-pages.yml` workflow was also deploying to GitHub Pages on every `main` push, using the same concurrency group. It raced against the Vite build and sometimes won — deploying raw repo files (no CNAME, no built app). | Deleted `jekyll-gh-pages.yml`. Only `deploy-web.yml` runs now. |
-| The PR with the `readswift.techscript.ca` CNAME hadn't been merged to `main` yet, so the deployed site still had the old domain. | Merge this PR → a new deploy runs → `dist/CNAME` becomes `readswift.techscript.ca`. |
+| The PR with the `paceread.techscript.ca` CNAME hadn't been merged to `main` yet, so the deployed site still had the old domain. | Merge this PR → a new deploy runs → `dist/CNAME` becomes `paceread.techscript.ca`. |
 
 ---
 
@@ -192,8 +192,8 @@ Two things were wrong:
 
 | Approach | Notes |
 |----------|-------|
-| **Subdomain** `readswift.techscript.ca` ✅ | Each site is a separate repo. One DNS record. PWA installs correctly. `techscript.ca` is free for your company website. |
-| Sub-folder `techscript.ca/readswift` | Both sites must be in the same repo (or you need a reverse proxy). PWA `scope`/offline breaks in sub-paths. Not recommended with GitHub Pages. |
+| **Subdomain** `paceread.techscript.ca` ✅ | Each site is a separate repo. One DNS record. PWA installs correctly. `techscript.ca` is free for your company website. |
+| Sub-folder `techscript.ca/paceread` | Both sites must be in the same repo (or you need a reverse proxy). PWA `scope`/offline breaks in sub-paths. Not recommended with GitHub Pages. |
 
 ---
 
@@ -352,7 +352,7 @@ Every time a file is successfully parsed, a `ReadingRecord` is saved to `localSt
 
 ## Publishing to the App Stores
 
-For a complete step-by-step guide to publishing ReadSwift on **Google Play** and the **Apple App Store** — including keystore creation, signing configuration, GitHub secrets, store listings, and review submission — see **[PUBLISHING.md](./PUBLISHING.md)**.
+For a complete step-by-step guide to publishing PaceRead on **Google Play** and the **Apple App Store** — including keystore creation, signing configuration, GitHub secrets, store listings, and review submission — see **[PUBLISHING.md](./PUBLISHING.md)**.
 
 ---
 

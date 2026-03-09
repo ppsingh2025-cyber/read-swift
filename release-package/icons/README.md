@@ -1,4 +1,4 @@
-# ReadSwift — Icon Naming Conventions & Specifications
+# PaceRead — Icon Naming Conventions & Specifications
 
 **Client:** Techscript Limited  
 **Document version:** 1.0  

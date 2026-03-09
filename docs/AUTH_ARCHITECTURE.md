@@ -2,7 +2,7 @@
 
 ## Overview
 
-ReadSwift uses an **offline-first** architecture. All data is stored locally in IndexedDB first; Supabase is used for cross-device sync and is entirely optional.
+PaceRead uses an **offline-first** architecture. All data is stored locally in IndexedDB first; Supabase is used for cross-device sync and is entirely optional.
 
 ## Component Map
 

@@ -1,6 +1,6 @@
 # Migration Guide
 
-This guide covers upgrading ReadSwift from versions without auth/sync to the version with Supabase integration.
+This guide covers upgrading PaceRead from versions without auth/sync to the version with Supabase integration.
 
 ## For Existing Users (No Supabase)
 

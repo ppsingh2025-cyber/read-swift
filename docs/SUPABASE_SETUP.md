@@ -23,7 +23,7 @@ Then you paste two values into a `.env` file (~2 min).
 
 1. Go to [supabase.com](https://supabase.com) and click **Start your project** (free tier, no credit card)
 2. Sign up with GitHub or email
-3. Click **New project**, enter a name (e.g. `readswift`), choose any region, set a database password, click **Create new project**
+3. Click **New project**, enter a name (e.g. `paceread`), choose any region, set a database password, click **Create new project**
 4. Wait ~1 minute for provisioning
 
 ### Run the database migration
@@ -50,7 +50,7 @@ This creates three tables (all protected by Row Level Security — users only ev
 ### 2a. Create a Google Cloud project
 
 1. Go to [console.cloud.google.com](https://console.cloud.google.com) and sign in with your Google account (free)
-2. In the top bar, click the project dropdown → **New Project** → give it a name (e.g. `ReadSwift`) → **Create**
+2. In the top bar, click the project dropdown → **New Project** → give it a name (e.g. `PaceRead`) → **Create**
 3. Make sure the new project is selected in the top bar
 
 ### 2b. Configure the OAuth consent screen
@@ -58,7 +58,7 @@ This creates three tables (all protected by Row Level Security — users only ev
 1. In the left sidebar go to **APIs & Services → OAuth consent screen**
 2. Choose **External**, click **Create**
 3. Fill in:
-   - **App name:** `ReadSwift`
+   - **App name:** `PaceRead`
    - **User support email:** your email
    - **Developer contact email:** your email
 4. Click **Save and Continue** through the remaining screens (Scopes and Test users can be left at defaults)
@@ -88,7 +88,7 @@ This creates three tables (all protected by Row Level Security — users only ev
 1. In Supabase go to **Authentication → URL Configuration**
 2. Under **Redirect URLs**, click **Add URL** and add:
    - `http://localhost:5173` (for local development)
-   - `https://readswift.techscript.ca` (for the deployed site)
+   - `https://paceread.techscript.ca` (for the deployed site)
 3. Click **Save**
 
 ---

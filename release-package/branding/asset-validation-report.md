@@ -1,7 +1,7 @@
-# ReadSwift — Asset Validation Report
+# PaceRead — Asset Validation Report
 
 **Client:** Techscript Limited  
-**Product:** ReadSwift  
+**Product:** PaceRead  
 **Document version:** 1.0  
 **Status:** Production
 
@@ -136,7 +136,7 @@ This report audits every visual asset against Google Play Store requirements, An
 - Background: `#060606`
 - Show the reading word display at large scale (e.g., "focus" in Georgia font, `#f0f0f0`)
 - Focal line element (`#e74c3c`) beneath the word
-- App name "ReadSwift" in top-left or centre in Segoe UI, `#f0f0f0`
+- App name "PaceRead" in top-left or centre in Segoe UI, `#f0f0f0`
 - Tagline: "One word at a time." in `#888888`
 
 ---

@@ -1,6 +1,6 @@
 # READING_ENGINE.md — RSVP Algorithm Explanation
 
-> **Purpose:** Complete technical reference for the ReadSwift reading engine. Read this before modifying `useRSVPEngine`, `useChunkEngine`, `useAdaptiveSpeed`, or any file that touches playback timing. Cross-reference `/AGENT_READSWIFT.md` for architecture context.
+> **Purpose:** Complete technical reference for the PaceRead reading engine. Read this before modifying `useRSVPEngine`, `useChunkEngine`, `useAdaptiveSpeed`, or any file that touches playback timing. Cross-reference `/AGENT_PACEREAD.md` for architecture context.
 
 ---
 
@@ -184,7 +184,7 @@ CSS:
 
 The ORP character must remain at a visually consistent horizontal position word-to-word. If the ORP shifts laterally, the eye must re-fixate on every word change, negating the speed benefit.
 
-**How ReadSwift guarantees ORP stability:**
+**How PaceRead guarantees ORP stability:**
 
 In horizontal mode, the center (ORP) word is the *inline-block anchor* of `.wordLayout`. Peripheral words are `position: absolute` relative to `.wordLayout`'s edges. The center word's own position is set by `text-align: center` on the parent — it **never moves** because peripheral words entering or leaving the DOM do not affect the center word's layout box.
 

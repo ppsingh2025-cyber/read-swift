@@ -1,4 +1,4 @@
-# ReadSwift — Screenshot Naming Conventions & Specifications
+# PaceRead — Screenshot Naming Conventions & Specifications
 
 **Client:** Techscript Limited  
 **Document version:** 1.0  
