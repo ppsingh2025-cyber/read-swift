@@ -13,6 +13,7 @@ import { useReaderContext } from '../context/useReaderContext';
 import styles from '../styles/ContextPreview.module.css';
 
 const LS_KEY = 'contextPreview_collapsed';
+const LS_AUTOSCROLL_KEY = 'contextPreview_autoScroll';
 
 interface ContextPreviewProps {
   onExpandChange?: (expanded: boolean) => void;
@@ -23,6 +24,10 @@ export default function ContextPreview({ onExpandChange }: ContextPreviewProps) 
 
   const [collapsed, setCollapsed] = useState<boolean>(() =>
     localStorage.getItem(LS_KEY) === 'true'
+  );
+
+  const [autoScroll, setAutoScroll] = useState<boolean>(() =>
+    localStorage.getItem(LS_AUTOSCROLL_KEY) !== 'false'
   );
 
   // 0-based view page index — tracks the 1-based currentPage from context
@@ -44,6 +49,7 @@ export default function ContextPreview({ onExpandChange }: ContextPreviewProps) 
   // top — giving the reader plenty of forward context below.
   useEffect(() => {
     if (collapsed || !activeWordRef.current || !contentRef.current) return;
+    if (!autoScroll) return;
     const el        = activeWordRef.current;
     const container = contentRef.current;
     const elRect    = el.getBoundingClientRect();
@@ -63,7 +69,7 @@ export default function ContextPreview({ onExpandChange }: ContextPreviewProps) 
       container.scrollTop += relTop - ch * 0.25;
     }
     // Word is in the comfortable zone (top 0–75%) → do nothing
-  }, [currentWordIndex, collapsed]);
+  }, [currentWordIndex, collapsed, autoScroll]);
 
   // When there are no structural page breaks (plain text, short paste),
   // totalPages is 0 or 1 — treat the entire word list as a single page.
@@ -172,6 +178,21 @@ export default function ContextPreview({ onExpandChange }: ContextPreviewProps) 
             </button>
           </div>
         )}
+
+        {/* Auto-scroll toggle */}
+        <button
+          type="button"
+          className={styles.autoScrollBtn}
+          onClick={() => {
+            const next = !autoScroll;
+            setAutoScroll(next);
+            localStorage.setItem(LS_AUTOSCROLL_KEY, String(next));
+          }}
+          aria-label={autoScroll ? 'Auto-scroll on, click to disable' : 'Auto-scroll off, click to enable'}
+          title={autoScroll ? 'Auto-scroll on' : 'Auto-scroll off'}
+        >
+          {autoScroll ? 'Auto ●' : 'Auto ○'}
+        </button>
 
         {/* Collapse toggle */}
         <button

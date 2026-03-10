@@ -319,6 +319,7 @@
   align-items: center;
   align-self: center;
   height: 38px;
+  min-height: 44px;
   background: var(--bg-input);
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
@@ -330,6 +331,8 @@
   align-items: center;
   justify-content: center;
   width: 40px;
+  min-width: 44px;
+  min-height: 44px;
   height: 100%;
   background: transparent;
   border: none;
@@ -394,5 +397,67 @@
   .wpmPill { height: 32px; }
   .wpmPillBtn { width: 32px; }
   .wpmPillValue { min-width: 78px; font-size: 0.8rem; }
+}
+
+/* ── Reset confirmation inline row ────────────────────────────── */
+
+.resetConfirmRow {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 3px;
+  width: 52px; /* same footprint as the single reset button */
+  height: 52px;
+  flex-shrink: 0;
+}
+
+.resetCancelBtn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.resetCancelBtn:hover {
+  background: var(--state-hover);
+  color: var(--text);
+}
+
+.resetConfirmBtn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid var(--color-danger, #e05252);
+  background: transparent;
+  color: var(--color-danger, #e05252);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.resetConfirmBtn:hover:not(:disabled) {
+  background: rgba(224, 82, 82, 0.15);
+}
+
+.resetConfirmBtn:disabled {
+  opacity: var(--state-disabled, 0.35);
+  cursor: not-allowed;
 }
 

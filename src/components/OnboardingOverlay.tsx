@@ -92,7 +92,7 @@ export default function OnboardingOverlay({ onComplete, initialTheme, initialMod
   useEffect(() => () => clearDemo(), [clearDemo]);
 
   const advance = useCallback(() => {
-    if (step < 3) {
+    if (step < 4) {
       const next = step + 1;
       setStep(next);
       if (step === 0) clearDemo(); // leaving the demo step
@@ -131,8 +131,8 @@ export default function OnboardingOverlay({ onComplete, initialTheme, initialMod
          role="dialog" aria-modal="true" aria-label="Welcome to PaceRead">
       <div className={styles.panel}>
 
-        <div className={styles.dots} aria-label={`Step ${step + 1} of 4`}>
-          {[0,1,2,3].map(i => (
+        <div className={styles.dots} aria-label={`Step ${step + 1} of 5`}>
+          {[0,1,2,3,4].map(i => (
             <span key={i} className={`${styles.dot} ${i === step ? styles.dotActive : ''}`} aria-hidden="true" />
           ))}
         </div>
@@ -210,8 +210,22 @@ export default function OnboardingOverlay({ onComplete, initialTheme, initialMod
             </div>
           )}
 
-          {/* Step 3 — Setup: theme + mode */}
+          {/* Step 3 — Burger menu callout */}
           {step === 3 && (
+            <div className={styles.step}>
+              <h1 className={styles.heading}>Everything is in here</h1>
+              <p className={styles.body}>
+                Tap ☰ to open settings. Most features live there — multi-word reading, keyboard shortcuts, and your reading history.
+              </p>
+              <div className={styles.burgerCallout} aria-hidden="true">
+                <span className={styles.burgerCalloutIcon}>☰</span>
+                <span className={styles.burgerCalloutArrow}>→</span>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4 — Setup: theme + mode */}
+          {step === 4 && (
             <div className={styles.step}>
               <h1 className={styles.heading}>Quick setup</h1>
               <p className={styles.body}>Pick a theme and reading mode. You can change both anytime.</p>
@@ -282,7 +296,7 @@ export default function OnboardingOverlay({ onComplete, initialTheme, initialMod
           )}
           {step === 0 && <button type="button" className={styles.btnSecondary} onClick={launchDemo}>Replay</button>}
           <button type="button" className={styles.btnPrimary} onClick={advance}>
-            {step < 3 ? 'Next →' : 'Start Reading →'}
+            {step < 4 ? 'Next →' : 'Start Reading →'}
           </button>
           <button type="button" className={styles.btnSkip} onClick={skip}>Skip</button>
         </div>

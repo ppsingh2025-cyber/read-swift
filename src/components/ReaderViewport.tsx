@@ -23,6 +23,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import type { Orientation } from '../context/readerContextDef';
+import { useReaderContext } from '../context/useReaderContext';
 import styles from '../styles/ReaderViewport.module.css';
 
 interface ReaderViewportProps {
@@ -67,6 +68,12 @@ interface ReaderViewportProps {
   goToPage?: (page: number) => void;
   /** Jump-to-word callback — used for word-count overlay click */
   goToWord?: (index: number) => void;
+  /** Called when user swipes up or taps the word display area */
+  onPlayPause?: () => void;
+  /** Called when user swipes left (faster) */
+  onFaster?: () => void;
+  /** Called when user swipes right (slower) */
+  onSlower?: () => void;
 }
 
 /**
@@ -113,6 +120,11 @@ function getSlotOpacity(
   return peripheralFade ? 0.45 : 0.65;
 }
 
+/** Minimum horizontal pixel delta to trigger a swipe-faster or swipe-slower gesture */
+const SWIPE_THRESHOLD_H = 50;
+/** Minimum vertical pixel delta (upward) to trigger a swipe-play/pause gesture */
+const SWIPE_THRESHOLD_V = 60;
+
 const ReaderViewport = memo(function ReaderViewport({
   wordWindow,
   highlightIndex,
@@ -136,18 +148,48 @@ const ReaderViewport = memo(function ReaderViewport({
   totalPages,
   goToPage,
   goToWord,
+  onPlayPause,
+  onFaster,
+  onSlower,
 }: ReaderViewportProps) {
+  const { isPlaying } = useReaderContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
   /** Outermost viewport div — receives --pre-orp-col and --focal-tick-x CSS variables */
   const viewportRef  = useRef<HTMLDivElement>(null);
   /** Hidden 'n' span — always rendered for font metric measurement */
   const measureRef   = useRef<HTMLSpanElement>(null);
+  /** Touch start coordinates for swipe detection */
+  const touchStartX  = useRef<number>(0);
+  const touchStartY  = useRef<number>(0);
 
   const handleUploadClick = () => fileInputRef.current?.click();
   const handleFileChange  = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && onFileSelect) onFileSelect(file);
   };
+
+  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+    const deltaY = e.changedTouches[0].clientY - touchStartY.current;
+    const absX = Math.abs(deltaX);
+    const absY = Math.abs(deltaY);
+    // Horizontal swipe: must exceed threshold and be more horizontal than vertical
+    if (absX > SWIPE_THRESHOLD_H && absX > absY) {
+      e.preventDefault();
+      if (deltaX < -SWIPE_THRESHOLD_H) { onFaster?.(); }
+      else                              { onSlower?.(); }
+    }
+    // Vertical swipe upward: vertical threshold is larger to avoid accidental triggers
+    else if (deltaY < -SWIPE_THRESHOLD_V && absY > absX) {
+      e.preventDefault();
+      onPlayPause?.();
+    }
+  }, [onFaster, onSlower, onPlayPause]);
 
   /* ── Page-jump popover ──────────────────────────────────────── */
   const [showPageJump, setShowPageJump] = useState(false);
@@ -263,6 +305,8 @@ const ReaderViewport = memo(function ReaderViewport({
       className={`${styles.viewport}${fullHeight ? ` ${styles.viewportFull}` : ''}`}
       aria-live="assertive"
       aria-atomic="true"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       {/* Hidden measuring span — always rendered for layout metrics.
           Must use same CSS class as reading words for accurate char width. */}
@@ -347,6 +391,11 @@ const ReaderViewport = memo(function ReaderViewport({
         <div
           className={styles.windowVertical}
           style={{ '--slot-count': wordWindow.length } as CSSProperties}
+          onClick={() => { if (hasWords && !isLoading) onPlayPause?.(); }}
+          role="button"
+          tabIndex={hasWords && !isLoading ? 0 : -1}
+          aria-label={isPlaying ? 'Tap to pause' : 'Tap to play'}
+          onKeyDown={(e) => { if ((e.key === ' ' || e.key === 'Enter') && hasWords && !isLoading) { e.preventDefault(); onPlayPause?.(); } }}
         >
           {wordWindow.map((word, i) => {
             const isCenter   = i === highlightIndex;
@@ -381,7 +430,14 @@ const ReaderViewport = memo(function ReaderViewport({
          * Long pre-ORP text ("Dos") fills it exactly.
          * The ORP character therefore lands at the same screen X for every word.
          */
-        <div className={styles.wordRow}>
+        <div
+          className={styles.wordRow}
+          onClick={() => { if (hasWords && !isLoading) onPlayPause?.(); }}
+          role="button"
+          tabIndex={hasWords && !isLoading ? 0 : -1}
+          aria-label={isPlaying ? 'Tap to pause' : 'Tap to play'}
+          onKeyDown={(e) => { if ((e.key === ' ' || e.key === 'Enter') && hasWords && !isLoading) { e.preventDefault(); onPlayPause?.(); } }}
+        >
 
           {/* Pre-ORP: right-aligned to the fixed-width column */}
           <span
@@ -519,11 +575,12 @@ const ReaderViewport = memo(function ReaderViewport({
               <button
                 className={styles.pagePillOverlay}
                 onClick={() => { setWordJumpDraft(String(currentWordIndex + 1)); setShowWordJump(p => !p); }}
-                aria-label={`Word ${currentWordIndex + 1} of ${totalWordCount}`}
+                aria-label={`Word ${currentWordIndex + 1} of ${totalWordCount}, ${Math.round(((currentWordIndex + 1) / totalWordCount) * 100)}% complete`}
               >
                 Word {(currentWordIndex + 1).toLocaleString()}
                 <span className={styles.wcSep}>/</span>
                 {totalWordCount.toLocaleString()}
+                <span className={styles.wcPct}>· {Math.round(((currentWordIndex + 1) / totalWordCount) * 100)}%</span>
               </button>
               <button
                 className={styles.pageNavBtn}

@@ -8,13 +8,14 @@ import { openDB, type IDBPDatabase } from 'idb';
 import type { FileMetadata, UserPreferences, ReadingSession } from '../types/metadata';
 
 const DB_NAME = 'readswift_metadata';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 interface ReadSwiftDB {
   files: FileMetadata & { id: string };
   preferences: UserPreferences & { id: string };
   sessions: ReadingSession & { id: string };
   syncState: { key: string; value: string | number };
+  cachedFiles: { name: string; buffer: ArrayBuffer; type: string };
 }
 
 let dbInstance: IDBPDatabase<ReadSwiftDB> | null = null;
@@ -22,26 +23,33 @@ let dbInstance: IDBPDatabase<ReadSwiftDB> | null = null;
 async function getDB(): Promise<IDBPDatabase<ReadSwiftDB>> {
   if (dbInstance) return dbInstance;
   dbInstance = await openDB<ReadSwiftDB>(DB_NAME, DB_VERSION, {
-    upgrade(db) {
-      // Files store
-      if (!db.objectStoreNames.contains('files')) {
-        const filesStore = db.createObjectStore('files', { keyPath: 'id' });
-        filesStore.createIndex('by-hash', 'fileHash');
-        filesStore.createIndex('by-user', 'userId');
+    upgrade(db, oldVersion) {
+      // v1 stores
+      if (oldVersion < 1) {
+        // Files store
+        if (!db.objectStoreNames.contains('files')) {
+          const filesStore = db.createObjectStore('files', { keyPath: 'id' });
+          filesStore.createIndex('by-hash', 'fileHash');
+          filesStore.createIndex('by-user', 'userId');
+        }
+        // Preferences store
+        if (!db.objectStoreNames.contains('preferences')) {
+          db.createObjectStore('preferences', { keyPath: 'id' });
+        }
+        // Sessions store
+        if (!db.objectStoreNames.contains('sessions')) {
+          const sessionsStore = db.createObjectStore('sessions', { keyPath: 'id' });
+          sessionsStore.createIndex('by-file', 'fileId');
+          sessionsStore.createIndex('by-user', 'userId');
+        }
+        // Sync state store
+        if (!db.objectStoreNames.contains('syncState')) {
+          db.createObjectStore('syncState', { keyPath: 'key' });
+        }
       }
-      // Preferences store
-      if (!db.objectStoreNames.contains('preferences')) {
-        db.createObjectStore('preferences', { keyPath: 'id' });
-      }
-      // Sessions store
-      if (!db.objectStoreNames.contains('sessions')) {
-        const sessionsStore = db.createObjectStore('sessions', { keyPath: 'id' });
-        sessionsStore.createIndex('by-file', 'fileId');
-        sessionsStore.createIndex('by-user', 'userId');
-      }
-      // Sync state store
-      if (!db.objectStoreNames.contains('syncState')) {
-        db.createObjectStore('syncState', { keyPath: 'key' });
+      // v2: cached file blobs for auto-resume
+      if (oldVersion < 2) {
+        db.createObjectStore('cachedFiles', { keyPath: 'name' });
       }
     },
   });
@@ -102,5 +110,20 @@ export const IndexedDBService = {
   async clearAllSessions(): Promise<void> {
     const db = await getDB();
     await db.clear('sessions');
+  },
+
+  async saveFileCache(name: string, buffer: ArrayBuffer, type: string): Promise<void> {
+    const db = await getDB();
+    await db.put('cachedFiles', { name, buffer, type });
+  },
+
+  async getFileCache(name: string): Promise<{ name: string; buffer: ArrayBuffer; type: string } | undefined> {
+    const db = await getDB();
+    return db.get('cachedFiles', name);
+  },
+
+  async clearFileCache(): Promise<void> {
+    const db = await getDB();
+    await db.clear('cachedFiles');
   },
 };

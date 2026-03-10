@@ -37,6 +37,17 @@
   background: var(--text, #f0f0f0);
 }
 
+/* Pulse animation — played after onboarding completion to draw attention to the menu */
+@keyframes burgerRing {
+  0%   { box-shadow: 0 0 0 0 var(--color-accent, #22d3ee); }
+  70%  { box-shadow: 0 0 0 8px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+.burgerBtnPulse {
+  animation: burgerRing 0.9s ease-out 3;
+}
+
 /* ── Backdrop ─────────────────────────────────────────────────── */
 
 .backdrop {

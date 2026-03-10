@@ -13,6 +13,7 @@
   overflow: hidden;
   user-select: none;
   border: 1px solid var(--vp-border, #151515);
+  touch-action: pan-y;
 }
 
 @media (max-width: 640px) {
@@ -346,6 +347,15 @@
   white-space: nowrap;
 }
 
+/* Tappable word row — applied when not[tabindex="-1"] */
+.wordRow:not([tabindex="-1"]) {
+  cursor: pointer;
+}
+
+.windowVertical:not([tabindex="-1"]) {
+  cursor: pointer;
+}
+
 /* ── Pre-ORP span — right-aligned fixed-width column ────────────────── */
 
 /*
@@ -475,6 +485,11 @@
   margin-right: 3px;
 }
 .wcSep { margin: 0 0.2em; opacity: 0.5; }
+.wcPct {
+  margin-left: 0.3em;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}
 
 /* ── Word nav overlay — mirrors pageNavOverlay but right-anchored ── */
 .wordNavOverlay {
