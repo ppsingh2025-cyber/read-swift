@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.2 (in progress)
+### Added
+- PDF diagram zones detected spatially and replaced with [Figure] placeholder — garbled diagram label tokens (single letters, arrows, glyph fragments) no longer flow into the RSVP word array
+
 ## v1.3.1 (in progress)
 ### Added
 - InputPanel now wires urlParser.ts for URL inputs (CORS-aware, honest error on blocked sites)

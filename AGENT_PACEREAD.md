@@ -275,7 +275,7 @@ File → ext check → parser → normalizePages → tokenize → finaliseWords 
 
 | Parser | File | Format | Yields |
 |--------|------|--------|--------|
-| `parsePDF` | `parsers/pdfParser.ts` | PDF | page text (pdfjs-dist, `hasEOL` for line breaks) |
+| `parsePDF` | `parsers/pdfParser.ts` | PDF | page text (pdfjs-dist, `hasEOL` for line breaks). Reads full SpatialTextItem shape (str, hasEOL, transform, width, height). Detects diagram zones per page using y-band grouping + x-spread analysis. Diagram zones replaced with '\n[Figure]\n' before yielding page text. Constants: Y_BAND_TOLERANCE=3, X_SPREAD_MIN=60, AVG_ALPHA_LEN_MAX=2.5, ZONE_MERGE_GAP=30, MIN_BAND_ITEMS=2. |
 | `parseEPUB` | `parsers/epubParser.ts` | EPUB | chapter text (epubjs) |
 | `parseFile` | `parsers/textParser.ts` | TXT MD HTML RTF SRT DOCX | `{ words, rawLines? }` |
 | `fetchUrl` | `parsers/urlParser.ts` | URL | article text |
