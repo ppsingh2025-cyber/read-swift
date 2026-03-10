@@ -291,3 +291,29 @@
   line-height: 1.45;
 }
 
+
+/* ── Step 3: Burger menu callout ── */
+.burgerCallout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.burgerCalloutIcon {
+  font-size: 2.5rem;
+  color: var(--color-accent);
+  line-height: 1;
+}
+
+.burgerCalloutArrow {
+  font-size: 1.8rem;
+  color: var(--color-accent);
+  animation: arrowBounce 1s ease-in-out infinite;
+}
+
+@keyframes arrowBounce {
+  0%, 100% { transform: translateX(0); }
+  50%       { transform: translateX(6px); }
+}

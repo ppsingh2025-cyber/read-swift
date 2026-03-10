@@ -192,63 +192,11 @@
 }
 
 /* ── RESET — muted / secondary ── */
-.resetBtn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-
-  width: 52px;
-  height: 52px;
-  border-radius: var(--radius-sm, 8px);
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--text-faint);
-
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-  flex-shrink: 0;
-}
-
-.resetBtn:hover:not(:disabled) {
-  background: var(--state-hover);
-  color: var(--text-muted);
-  border-color: var(--border);
-}
-
-.resetBtn:active:not(:disabled) {
-  background: var(--state-active);
-}
-
-.resetBtn:disabled {
-  opacity: var(--state-disabled, 0.35);
-  cursor: not-allowed;
-}
-
-.resetBtn svg {
-  width: 18px;
-  height: 18px;
-  fill: none;
-  flex-shrink: 0;
-}
-
-.resetBtnLabel {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  line-height: 1;
-  color: inherit;
-  pointer-events: none;
-  user-select: none;
-}
 
 /* ─── Mobile tweaks ──────────────────────────────────────────────── */
 
 @media (min-width: 321px) and (max-width: 400px) {
-  .controlBtn,
-  .resetBtn {
+  .controlBtn {
     width: 46px;
     height: 52px;
   }
@@ -260,8 +208,7 @@
 }
 
 @media (max-width: 320px) {
-  .controlBtn,
-  .resetBtn {
+  .controlBtn {
     width: 44px;
     height: 44px;
   }
@@ -272,8 +219,7 @@
   }
 
   .controlBtnLabel,
-  .playBtnLabel,
-  .resetBtnLabel {
+  .playBtnLabel {
     display: none;
   }
 }
@@ -283,14 +229,12 @@
     padding: 0;
   }
 
-  .controlBtn,
-  .resetBtn {
+  .controlBtn {
     width: 40px;
     height: 40px;
   }
 
-  .controlBtn svg,
-  .resetBtn svg {
+  .controlBtn svg {
     width: 15px;
     height: 15px;
   }
@@ -306,8 +250,7 @@
   }
 
   .controlBtnLabel,
-  .playBtnLabel,
-  .resetBtnLabel {
+  .playBtnLabel {
     display: none;
   }
 }
@@ -319,6 +262,7 @@
   align-items: center;
   align-self: center;
   height: 38px;
+  min-height: 44px;
   background: var(--bg-input);
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
@@ -330,6 +274,8 @@
   align-items: center;
   justify-content: center;
   width: 40px;
+  min-width: 44px;
+  min-height: 44px;
   height: 100%;
   background: transparent;
   border: none;
@@ -391,8 +337,40 @@
 .wpmPillInput::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
 @media (max-height: 480px) and (orientation: landscape) {
-  .wpmPill { height: 32px; }
-  .wpmPillBtn { width: 32px; }
+  .wpmPill { height: 32px; min-height: 32px; }
+  .wpmPillBtn { width: 32px; min-height: 32px; }
   .wpmPillValue { min-width: 78px; font-size: 0.8rem; }
+}
+
+/* ── Row 3: Reset to beginning ────────────────────────────────── */
+
+.resetRow {
+  display: flex;
+  justify-content: center;
+  padding-top: 2px;
+}
+
+.resetRowBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: var(--text-faint);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s, background 0.15s;
+}
+.resetRowBtn:hover:not(:disabled) {
+  color: var(--color-danger, #e05252);
+  background: rgba(224, 82, 82, 0.08);
+}
+.resetRowBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 

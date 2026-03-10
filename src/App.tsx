@@ -15,6 +15,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { APP_VERSION } from './version';
+import { IndexedDBService } from './sync/IndexedDBService';
 import WhatsNewModal from './components/WhatsNewModal';
 import OnboardingOverlay from './components/OnboardingOverlay';
 import { useReaderContext } from './context/useReaderContext';
@@ -40,6 +41,7 @@ import { AuthProvider } from './auth/AuthContext';
 import SignInPrompt from './auth/SignInPrompt';
 import UserAvatar from './components/UserAvatar';
 import SyncStatusIndicator from './components/SyncStatusIndicator';
+import ResetConfirmModal from './components/ResetConfirmModal';
 import { Toaster } from 'react-hot-toast';
 import { PRESET_MODES } from './config/readingModePresets';
 import type { Theme } from './context/readerContextDef';
@@ -72,6 +74,7 @@ export default function App() {
     focalLine,
     currentPage,
     totalPages,
+    structureMap,
     setWords,
     setCurrentWordIndex,
     setFileMetadata,
@@ -121,13 +124,22 @@ export default function App() {
   const [showHelp, setShowHelp] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [showPaste, setShowPaste] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [sessionCompleted, setSessionCompleted] = useState(false);
   const [, setContextExpanded] = useState(false);
   const [pulseHelp, setPulseHelp] = useState(false);
+  const [pulseBurger, setPulseBurger] = useState(false);
 
-  // What's New: shown when stored version ≠ current version
+  // Ref to mirror isPlaying without stale closure issues (used by visibilitychange handler)
+  const isPlayingRef = useRef(isPlaying);
+  useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+
+  // What's New: shown when stored version ≠ current version (skip for brand-new users)
   const [showWhatsNew, setShowWhatsNew] = useState<boolean>(
-    () => localStorage.getItem('fastread_seen_version') !== APP_VERSION,
+    () => {
+      const seen = localStorage.getItem('fastread_seen_version');
+      return seen !== null && seen !== APP_VERSION;
+    },
   );
   // Onboarding: not shown immediately — triggered by handleWhatsNewDismiss
   // if user has never completed it, or shown directly if no version bump
@@ -281,6 +293,14 @@ export default function App() {
           setLoadingProgress(100);
         }
         finaliseWords(allWords, file.name, breaks, allRawLines.length > 0 ? allRawLines : undefined);
+        // Cache the file buffer for auto-resume on next app boot (GROUP 1B/D)
+        try {
+          const buffer = await file.arrayBuffer();
+          await IndexedDBService.clearFileCache();
+          await IndexedDBService.saveFileCache(file.name, buffer, file.type);
+        } catch {
+          // Caching is best-effort; ignore errors
+        }
       } catch (err) {
         console.error('Error parsing file:', err);
         alert(
@@ -305,10 +325,22 @@ export default function App() {
     [setFileMetadata, finaliseWords],
   );
 
+  /** Auto-pause when the user switches away from the tab */
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && isPlayingRef.current) {
+        pause();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [pause]);
+
   /** Global keyboard shortcuts */
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        if (showResetConfirm) { setShowResetConfirm(false); return; }
         setShowHelp(false);
         setIsFocused(false);
         setShowPaste(false);
@@ -343,7 +375,23 @@ export default function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isPlaying, play, pause, faster, slower, prevWord, nextWord]);
+  }, [isPlaying, play, pause, faster, slower, prevWord, nextWord, showResetConfirm, setShowResetConfirm]);
+
+  /** Auto-load the most recently cached file on first mount */
+  useEffect(() => {
+    (async () => {
+      try {
+        if (!records[0]) return;
+        const cached = await IndexedDBService.getFileCache(records[0].name);
+        if (!cached) return;
+        const file = new File([cached.buffer], cached.name, { type: cached.type });
+        await handleFileSelect(file);
+      } catch {
+        // Cache miss or read error — not fatal, ignore silently
+      }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const toggleFocus = useCallback(() => setIsFocused((f) => !f), []);
   const togglePaste = useCallback(() => setShowPaste((p) => !p), []);
@@ -356,6 +404,8 @@ export default function App() {
       setShowOnboarding(false);
       setPulseHelp(true);
       setTimeout(() => setPulseHelp(false), 2500);
+      setPulseBurger(true);
+      setTimeout(() => setPulseBurger(false), 3000);
     },
     [setTheme, applyMode, setActiveMode],
   );
@@ -391,7 +441,7 @@ export default function App() {
       {/* ── 1. Top bar ──────────────────────────────────────────── */}
       <header className="topBar">
         <div className="topBarLeft">
-          <BurgerMenu onFileSelect={handleFileSelect} onReplayIntro={resetOnboarding} />
+          <BurgerMenu onFileSelect={handleFileSelect} onReplayIntro={resetOnboarding} pulseBurger={pulseBurger} />
         </div>
         <div className="topBarBrand">
           <img
@@ -444,6 +494,10 @@ export default function App() {
             totalPages={totalPages}
             goToPage={goToPage}
             goToWord={goToWord}
+            structureMap={structureMap}
+            onPlayPause={() => isPlaying ? pause() : play()}
+            onFaster={() => { manualWpmRef.current = true; faster(); }}
+            onSlower={() => { manualWpmRef.current = true; slower(); }}
           />
           {/* Maximize / minimize button */}
           <button
@@ -498,7 +552,7 @@ export default function App() {
           onFileSelect={handleFileSelect}
           onPlay={play}
           onPause={pause}
-          onReset={reset}
+          onResetRequest={() => setShowResetConfirm(true)}
           onFaster={() => { manualWpmRef.current = true; faster(); }}
           onSlower={() => { manualWpmRef.current = true; slower(); }}
           onPrevWord={prevWord}
@@ -523,6 +577,13 @@ export default function App() {
         onDismiss={() => setSessionCompleted(false)}
       />
       <Toaster position="bottom-center" />
+
+      {showResetConfirm && (
+        <ResetConfirmModal
+          onConfirm={() => { reset(); setShowResetConfirm(false); }}
+          onCancel={() => setShowResetConfirm(false)}
+        />
+      )}
 
       {/* ── Footer ──────────────────────────────────────────────── */}
       {!isFocused && <AppFooter />}

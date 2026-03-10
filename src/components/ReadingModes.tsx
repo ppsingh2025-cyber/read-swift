@@ -45,7 +45,7 @@ export default function ReadingModes() {
 
   const [wizardOpen, setWizardOpen]     = useState(false);
   const [finetuneOpen, setFinetuneOpen] = useState<boolean>(
-    () => localStorage.getItem(LS_FINETUNE) === 'true'
+    () => localStorage.getItem(LS_FINETUNE) !== 'false'
   );
   const [saveName, setSaveName]         = useState('');
   const [saveError, setSaveError]       = useState('');

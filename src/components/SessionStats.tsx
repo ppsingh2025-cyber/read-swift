@@ -114,6 +114,10 @@ const SessionStats = memo(function SessionStats({ onFileSelect }: SessionStatsPr
                 const progress = record && record.wordCount > 1
                   ? Math.min(100, Math.round((record.lastWordIndex / (record.wordCount - 1)) * 100))
                   : 0;
+                // Simpler percentage for the resume hint (uses wordCount directly)
+                const resumePct = record && record.wordCount > 0
+                  ? Math.round((record.lastWordIndex / record.wordCount) * 100)
+                  : 0;
                 return (
                   <li key={s.id} className={styles.histItem}>
                     <div className={styles.histMeta}>
@@ -133,9 +137,9 @@ const SessionStats = memo(function SessionStats({ onFileSelect }: SessionStatsPr
                         <span className={styles.histProgressPct}>{progress}%</span>
                         <button type="button" className={styles.resumeBtn}
                                 onClick={handleResumeClick}
-                                title={`Resume reading ${s.bookName}`}
-                                aria-label={`Resume reading ${s.bookName}`}>
-                          ↩ Resume
+                                title={`Re-upload to resume reading ${s.bookName}`}
+                                aria-label={`Re-upload to resume reading ${s.bookName}`}>
+                          ↩ Re-upload to Resume
                         </button>
                         <button type="button" className={styles.deleteRecordBtn}
                                 onClick={() => handleDeleteRecord(s.bookName)}
@@ -144,6 +148,11 @@ const SessionStats = memo(function SessionStats({ onFileSelect }: SessionStatsPr
                           ✕
                         </button>
                       </div>
+                    )}
+                    {record && record.lastWordIndex > 0 && (
+                      <p className={styles.resumeHint}>
+                        Continue from {resumePct}% · word {record.lastWordIndex.toLocaleString()} of {record.wordCount.toLocaleString()}
+                      </p>
                     )}
                   </li>
                 );

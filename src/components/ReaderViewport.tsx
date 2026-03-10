@@ -20,9 +20,10 @@
  *   currentWordIndex is NEVER in the dependency array — ticks are static.
  */
 
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
-import type { Orientation } from '../context/readerContextDef';
+import type { Orientation, StructuralMarker } from '../context/readerContextDef';
+import { useReaderContext } from '../context/useReaderContext';
 import styles from '../styles/ReaderViewport.module.css';
 
 interface ReaderViewportProps {
@@ -67,6 +68,14 @@ interface ReaderViewportProps {
   goToPage?: (page: number) => void;
   /** Jump-to-word callback — used for word-count overlay click */
   goToWord?: (index: number) => void;
+  /** Structural map from the loaded document — used to build word-jump anchors */
+  structureMap?: Map<number, StructuralMarker>;
+  /** Called when user swipes up or taps the word display area */
+  onPlayPause?: () => void;
+  /** Called when user swipes left (faster) */
+  onFaster?: () => void;
+  /** Called when user swipes right (slower) */
+  onSlower?: () => void;
 }
 
 /**
@@ -113,6 +122,13 @@ function getSlotOpacity(
   return peripheralFade ? 0.45 : 0.65;
 }
 
+/** Minimum horizontal pixel delta to trigger a swipe-faster or swipe-slower gesture */
+const SWIPE_THRESHOLD_H = 50;
+/** Minimum vertical pixel delta (upward) to trigger a swipe-play/pause gesture */
+const SWIPE_THRESHOLD_V = 60;
+/** Minimum fractional distance (0–1) between jump option word indices to avoid duplication */
+const MIN_JUMP_OPTION_SEPARATION = 0.02;
+
 const ReaderViewport = memo(function ReaderViewport({
   wordWindow,
   highlightIndex,
@@ -136,18 +152,49 @@ const ReaderViewport = memo(function ReaderViewport({
   totalPages,
   goToPage,
   goToWord,
+  structureMap,
+  onPlayPause,
+  onFaster,
+  onSlower,
 }: ReaderViewportProps) {
+  const { isPlaying } = useReaderContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
   /** Outermost viewport div — receives --pre-orp-col and --focal-tick-x CSS variables */
   const viewportRef  = useRef<HTMLDivElement>(null);
   /** Hidden 'n' span — always rendered for font metric measurement */
   const measureRef   = useRef<HTMLSpanElement>(null);
+  /** Touch start coordinates for swipe detection */
+  const touchStartX  = useRef<number>(0);
+  const touchStartY  = useRef<number>(0);
 
   const handleUploadClick = () => fileInputRef.current?.click();
   const handleFileChange  = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && onFileSelect) onFileSelect(file);
   };
+
+  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+    const deltaY = e.changedTouches[0].clientY - touchStartY.current;
+    const absX = Math.abs(deltaX);
+    const absY = Math.abs(deltaY);
+    // Horizontal swipe: must exceed threshold and be more horizontal than vertical
+    if (absX > SWIPE_THRESHOLD_H && absX > absY) {
+      e.preventDefault();
+      if (deltaX < -SWIPE_THRESHOLD_H) { onFaster?.(); }
+      else                              { onSlower?.(); }
+    }
+    // Vertical swipe upward: vertical threshold is larger to avoid accidental triggers
+    else if (deltaY < -SWIPE_THRESHOLD_V && absY > absX) {
+      e.preventDefault();
+      onPlayPause?.();
+    }
+  }, [onFaster, onSlower, onPlayPause]);
 
   /* ── Page-jump popover ──────────────────────────────────────── */
   const [showPageJump, setShowPageJump] = useState(false);
@@ -167,7 +214,6 @@ const ReaderViewport = memo(function ReaderViewport({
 
   /* ── Word-jump popover ──────────────────────────────────────── */
   const [showWordJump, setShowWordJump] = useState(false);
-  const [wordJumpDraft, setWordJumpDraft] = useState('');
   const wordJumpRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -180,6 +226,37 @@ const ReaderViewport = memo(function ReaderViewport({
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [showWordJump]);
+
+  /* ── Jump options for word-jump select ──────────────────────── */
+  const jumpOptions = useMemo(() => {
+    const total = totalWordCount ?? 0;
+    if (total === 0) return [];
+    const opts: { label: string; wordIndex: number }[] = [];
+    const pcts = [0, 10, 25, 50, 75, 90];
+    pcts.forEach(p => {
+      const idx = Math.round((p / 100) * (total - 1));
+      opts.push({ label: `${p}% — word ${(idx + 1).toLocaleString()}`, wordIndex: idx });
+    });
+    if (structureMap) {
+      const structural: { label: string; wordIndex: number }[] = [];
+      structureMap.forEach((marker, wordIndex) => {
+        if (marker.type === 'header' || marker.type === 'scene-separator') {
+          const pct = Math.round(((wordIndex + 1) / total) * 100);
+          const label = marker.label
+            ? `${marker.label} — ${pct}%`
+            : `${marker.type === 'header' ? 'Chapter' : 'Scene'} at ${pct}%`;
+          structural.push({ label, wordIndex });
+        }
+      });
+      structural.sort((a, b) => a.wordIndex - b.wordIndex);
+      structural.forEach(s => {
+        const tooClose = opts.some(o => Math.abs(o.wordIndex - s.wordIndex) < total * MIN_JUMP_OPTION_SEPARATION);
+        if (!tooClose) opts.push(s);
+      });
+    }
+    opts.sort((a, b) => a.wordIndex - b.wordIndex);
+    return opts;
+  }, [structureMap, totalWordCount]);
 
   const userScale   = mainWordFontSize / 100;
   const isMultiWord = wordWindow.length > 1;
@@ -263,6 +340,8 @@ const ReaderViewport = memo(function ReaderViewport({
       className={`${styles.viewport}${fullHeight ? ` ${styles.viewportFull}` : ''}`}
       aria-live="assertive"
       aria-atomic="true"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       {/* Hidden measuring span — always rendered for layout metrics.
           Must use same CSS class as reading words for accurate char width. */}
@@ -347,6 +426,11 @@ const ReaderViewport = memo(function ReaderViewport({
         <div
           className={styles.windowVertical}
           style={{ '--slot-count': wordWindow.length } as CSSProperties}
+          onClick={() => { if (hasWords && !isLoading) onPlayPause?.(); }}
+          role="button"
+          tabIndex={hasWords && !isLoading ? 0 : -1}
+          aria-label={isPlaying ? 'Tap to pause' : 'Tap to play'}
+          onKeyDown={(e) => { if ((e.key === ' ' || e.key === 'Enter') && hasWords && !isLoading) { e.preventDefault(); onPlayPause?.(); } }}
         >
           {wordWindow.map((word, i) => {
             const isCenter   = i === highlightIndex;
@@ -381,7 +465,14 @@ const ReaderViewport = memo(function ReaderViewport({
          * Long pre-ORP text ("Dos") fills it exactly.
          * The ORP character therefore lands at the same screen X for every word.
          */
-        <div className={styles.wordRow}>
+        <div
+          className={styles.wordRow}
+          onClick={() => { if (hasWords && !isLoading) onPlayPause?.(); }}
+          role="button"
+          tabIndex={hasWords && !isLoading ? 0 : -1}
+          aria-label={isPlaying ? 'Tap to pause' : 'Tap to play'}
+          onKeyDown={(e) => { if ((e.key === ' ' || e.key === 'Enter') && hasWords && !isLoading) { e.preventDefault(); onPlayPause?.(); } }}
+        >
 
           {/* Pre-ORP: right-aligned to the fixed-width column */}
           <span
@@ -518,12 +609,13 @@ const ReaderViewport = memo(function ReaderViewport({
               </button>
               <button
                 className={styles.pagePillOverlay}
-                onClick={() => { setWordJumpDraft(String(currentWordIndex + 1)); setShowWordJump(p => !p); }}
-                aria-label={`Word ${currentWordIndex + 1} of ${totalWordCount}`}
+                onClick={() => { setShowWordJump(p => !p); }}
+                aria-label={`Word ${currentWordIndex + 1} of ${totalWordCount}, ${Math.round(((currentWordIndex + 1) / totalWordCount) * 100)}% complete`}
               >
                 Word {(currentWordIndex + 1).toLocaleString()}
                 <span className={styles.wcSep}>/</span>
                 {totalWordCount.toLocaleString()}
+                <span className={styles.wcPct}>· {Math.round(((currentWordIndex + 1) / totalWordCount) * 100)}%</span>
               </button>
               <button
                 className={styles.pageNavBtn}
@@ -538,22 +630,22 @@ const ReaderViewport = memo(function ReaderViewport({
               </button>
               {showWordJump && (
                 <div className={styles.wordJumpPopover}>
-                  <input
-                    type="number" min={1} max={totalWordCount}
-                    value={wordJumpDraft}
-                    className={styles.pageJumpInput}
-                    onChange={e => setWordJumpDraft(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter') {
-                        const v = parseInt(wordJumpDraft, 10);
-                        if (v >= 1 && v <= totalWordCount) { goToWord(v - 1); setShowWordJump(false); }
-                      }
-                      if (e.key === 'Escape') setShowWordJump(false);
-                    }}
+                  <select
+                    className={styles.wordJumpSelect}
+                    defaultValue=""
                     autoFocus
-                    aria-label="Jump to word"
-                  />
-                  <span className={styles.pageJumpHint}>Enter to jump</span>
+                    aria-label="Jump to position"
+                    onChange={e => {
+                      const idx = parseInt(e.target.value, 10);
+                      if (!isNaN(idx)) { goToWord(idx); setShowWordJump(false); }
+                    }}
+                    onKeyDown={e => { if (e.key === 'Escape') setShowWordJump(false); }}
+                  >
+                    <option value="" disabled>Jump to…</option>
+                    {jumpOptions.map((opt, i) => (
+                      <option key={i} value={opt.wordIndex}>{opt.label}</option>
+                    ))}
+                  </select>
                 </div>
               )}
             </div>

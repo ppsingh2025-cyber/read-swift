@@ -67,6 +67,11 @@ export default function InputPanel({ onTextReady, onClose, wpm = 250 }: InputPan
       textareaRef.current?.focus();
       return;
     }
+    const isUrl = /^https?:\/\/\S+$/i.test(trimmed) || /^www\.\S+\.\S+$/i.test(trimmed);
+    if (isUrl) {
+      setError("URLs aren't supported — paste the article text directly instead.");
+      return;
+    }
     const { words, rawLines } = parseRawText(trimmed, 'paste');
     if (words.length === 0) {
       setError('No readable words found in the pasted text.');
