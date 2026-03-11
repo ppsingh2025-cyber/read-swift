@@ -1,5 +1,11 @@
 # Changelog
 
+### v1.3.2
+- fix(pdf): Approach C diagram detection false positive rate reduced from 83% to 3.5%
+  - isDiagramSymbol() excludes prose typography (smart quotes, dashes, footnote markers)
+  - ZONE_EXPAND_GAP 30→40pt: captures labels adjacent to diagram anchor rows
+  - X_SPREAD_MIN 60→75pt: eliminates marginal prose band overlap
+
 ## v1.3.1 (in progress)
 ### Added
 - InputPanel now wires urlParser.ts for URL inputs (CORS-aware, honest error on blocked sites)

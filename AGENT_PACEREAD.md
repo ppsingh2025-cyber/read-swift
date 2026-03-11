@@ -275,7 +275,7 @@ File → ext check → parser → normalizePages → tokenize → finaliseWords 
 
 | Parser | File | Format | Yields |
 |--------|------|--------|--------|
-| `parsePDF` | `parsers/pdfParser.ts` | PDF | page text (pdfjs-dist, `hasEOL` for line breaks) |
+| `parsePDF` | `parsers/pdfParser.ts` | PDF | page text (pdfjs-dist, `hasEOL` for line breaks); spatial diagram detection via `isDiagramSymbol()` — see constants `X_SPREAD_MIN=75`, `ZONE_MERGE_GAP=20`, `ZONE_EXPAND_GAP=40`; known benign false positive: TOC pages with garbled `¢` characters (stripped by `contentNormalizer.ts`) |
 | `parseEPUB` | `parsers/epubParser.ts` | EPUB | chapter text (epubjs) |
 | `parseFile` | `parsers/textParser.ts` | TXT MD HTML RTF SRT DOCX | `{ words, rawLines? }` |
 | `fetchUrl` | `parsers/urlParser.ts` | URL | article text |
