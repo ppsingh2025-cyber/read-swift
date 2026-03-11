@@ -193,6 +193,28 @@
 }
 .resumeBtn:hover { background: var(--color-accent-15); }
 
+.resumeBtnCached {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-accent);
+  color: var(--bg);
+  background: var(--color-accent);
+  cursor: pointer;
+  transition: opacity 0.12s;
+  touch-action: manipulation;
+}
+.resumeBtnCached:hover { opacity: 0.85; }
+
+.resumeUnavailable {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  color: var(--text-faint);
+  font-style: italic;
+}
+
 .deleteRecordBtn {
   flex-shrink: 0;
   background: none;
@@ -218,6 +240,53 @@
   transition: background 0.12s, color 0.12s;
 }
 .clearBtn:hover { background: var(--state-hover); color: var(--text); }
+
+/* Inline clear-all confirmation row */
+.clearConfirmRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.clearConfirmLabel {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.clearCancelBtn {
+  flex-shrink: 0;
+  background: none;
+  border: 1px solid var(--color-border, var(--border));
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  padding: 0.2rem 0.6rem;
+  min-height: 44px;
+  transition: background 0.12s, color 0.12s;
+}
+.clearCancelBtn:hover { background: var(--state-hover); color: var(--text); }
+
+.clearConfirmBtn {
+  flex-shrink: 0;
+  background: none;
+  border: 1px solid var(--color-danger, #e05252);
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-danger, #e05252);
+  padding: 0.2rem 0.6rem;
+  min-height: 44px;
+  transition: background 0.12s, color 0.12s;
+}
+.clearConfirmBtn:hover {
+  background: var(--color-danger, #e05252);
+  color: #fff;
+}
 
 /* Legacy classes kept for compatibility */
 .grid {

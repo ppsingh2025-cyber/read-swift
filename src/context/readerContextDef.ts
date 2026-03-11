@@ -23,6 +23,7 @@ export interface ReadingRecord {
   lastWordIndex: number;
   lastReadAt: string; // ISO date string
   wpm: number;
+  sourceType?: 'file' | 'text';
 }
 
 /** Number of words displayed simultaneously in the rolling window */
