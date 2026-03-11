@@ -533,3 +533,32 @@
 }
 [data-theme='day'] .pageNavBtn:hover:not(:disabled),
 [data-theme='day'] .pagePillOverlay:hover { background: rgba(255,255,255,0.8); }
+
+/* ── Source title strip — top-left translucent pill ── */
+.titleStrip {
+  position: absolute;
+  top: 6px;
+  left: 10px;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius-sm);
+  color: var(--text-faint);
+  font-size: 0.62rem;
+  padding: 2px 6px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: calc(100% - 20px);
+  text-overflow: ellipsis;
+  pointer-events: none;
+  user-select: none;
+  z-index: 2;
+}
+
+[data-theme='day'] .titleStrip {
+  background: rgba(255,255,255,0.55);
+  border-color: rgba(0,0,0,0.1);
+  color: var(--text-muted);
+}

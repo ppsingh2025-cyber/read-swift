@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.3.2 (in progress)
+### Added
+- IDB file cache now holds the 3 most recently loaded files (up from 1); auto-resume works across the last 3 sessions.
+- Files larger than 25 MB are silently skipped for caching on all platforms (prevents iOS Safari quota overflows and memory spikes on low-RAM devices).
+- Pasted text and URL-fetched articles persisted to new `savedTexts` IDB store; text sessions auto-resume across boots.
+- Storage operations use independent try/catch blocks — a failed save no longer suppresses pruning.
+- IDB schema bumped to v3 (additive migration, no data loss).
+- Controls revamped: Row 1 playback-only (Back · Play · Next); Row 2 load + speed + word count (Upload · compound WPM pill · Paste); Row 3 Reset unchanged.
+- Compound WPM pill extended with `1 | 2 | 3` word-count selector — word window changeable mid-session without opening BurgerMenu.
+- Upload and Paste buttons moved to Row 2 as icon-only (labels removed).
+- Viewport source title strip: current file or session name shown as a translucent pill (top-left, extension stripped, matches page-number pill style).
+
 ## v1.3.1 (in progress)
 ### Added
 - InputPanel now wires urlParser.ts for URL inputs (CORS-aware, honest error on blocked sites)

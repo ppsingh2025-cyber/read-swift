@@ -104,8 +104,8 @@
 
 | Component | File | Purpose |
 |-----------|------|---------|
-| `ReaderViewport` | `components/ReaderViewport.tsx` | Word display with ORP split, peripheral fade, focus mode. `React.memo` wrapped. |
-| `Controls` | `components/Controls.tsx` | Progress bar, playback buttons, logarithmic WPM slider. |
+| `ReaderViewport` | `components/ReaderViewport.tsx` | Word display with ORP split, peripheral fade, focus mode. `React.memo` wrapped. Reads `fileMetadata` from context to render a `titleStrip` (top-left, `pointer-events: none`, extension stripped, same visual token as `pagePillOverlay`). |
+| `Controls` | `components/Controls.tsx` | Three-row playback panel. Row 1 (`actionRow`): Back · Play/Pause · Next — playback only. Row 2 (`loadRow`, hidden in focus mode): Upload icon · compound WPM pill (`− WPM + \| 1 2 3`) · Paste icon. The compound pill has a thin internal divider between the WPM stepper and the `1\|2\|3` word-count selector (word counts `4` and `5` remain in BurgerMenu → ReadingModes only). Row 3 (`resetRow`): Reset to beginning. |
 | `BurgerMenu` | `components/BurgerMenu.tsx` | Slide-in settings drawer: Reading Mode (presets + fine-tune), Display (theme only), Session Analytics, Reset. Layout/font size/key letter color moved to Fine-tune in ReadingModes. |
 | `Settings` | `components/Settings.tsx` | Legacy collapsible settings (used inside BurgerMenu). |
 | `PageNavigator` | `components/PageNavigator.tsx` | Page/chapter jump (prev/next/direct input). |

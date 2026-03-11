@@ -8,14 +8,16 @@ import { openDB, type IDBPDatabase } from 'idb';
 import type { FileMetadata, UserPreferences, ReadingSession } from '../types/metadata';
 
 const DB_NAME = 'readswift_metadata';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
+const FILE_CACHE_LIMIT = 3;
 
 interface ReadSwiftDB {
   files: FileMetadata & { id: string };
   preferences: UserPreferences & { id: string };
   sessions: ReadingSession & { id: string };
   syncState: { key: string; value: string | number };
-  cachedFiles: { name: string; buffer: ArrayBuffer; type: string };
+  cachedFiles: { name: string; buffer: ArrayBuffer; type: string; savedAt: string };
+  savedTexts: { name: string; rawText: string; savedAt: string };
 }
 
 let dbInstance: IDBPDatabase<ReadSwiftDB> | null = null;
@@ -50,6 +52,12 @@ async function getDB(): Promise<IDBPDatabase<ReadSwiftDB>> {
       // v2: cached file blobs for auto-resume
       if (oldVersion < 2) {
         db.createObjectStore('cachedFiles', { keyPath: 'name' });
+      }
+      // v3: saved text content (paste / URL) for text-session auto-resume
+      if (oldVersion < 3) {
+        if (!db.objectStoreNames.contains('savedTexts')) {
+          db.createObjectStore('savedTexts', { keyPath: 'name' });
+        }
       }
     },
   });
@@ -114,10 +122,10 @@ export const IndexedDBService = {
 
   async saveFileCache(name: string, buffer: ArrayBuffer, type: string): Promise<void> {
     const db = await getDB();
-    await db.put('cachedFiles', { name, buffer, type });
+    await db.put('cachedFiles', { name, buffer, type, savedAt: new Date().toISOString() });
   },
 
-  async getFileCache(name: string): Promise<{ name: string; buffer: ArrayBuffer; type: string } | undefined> {
+  async getFileCache(name: string): Promise<{ name: string; buffer: ArrayBuffer; type: string; savedAt: string } | undefined> {
     const db = await getDB();
     return db.get('cachedFiles', name);
   },
@@ -125,5 +133,47 @@ export const IndexedDBService = {
   async clearFileCache(): Promise<void> {
     const db = await getDB();
     await db.clear('cachedFiles');
+  },
+
+  /**
+   * Prune `cachedFiles` to at most FILE_CACHE_LIMIT entries.
+   * Fetches all entries, sorts by savedAt ascending (oldest first),
+   * and deletes any beyond the newest FILE_CACHE_LIMIT entries.
+   */
+  async pruneFileCacheToLimit(): Promise<void> {
+    const db = await getDB();
+    const all = await db.getAll('cachedFiles');
+    if (all.length <= FILE_CACHE_LIMIT) return;
+    // Sort oldest first (ascending savedAt)
+    all.sort((a, b) => a.savedAt.localeCompare(b.savedAt));
+    const toDelete = all.slice(0, all.length - FILE_CACHE_LIMIT);
+    for (const entry of toDelete) {
+      await db.delete('cachedFiles', entry.name);
+    }
+  },
+
+  async saveTextCache(name: string, rawText: string): Promise<void> {
+    const db = await getDB();
+    await db.put('savedTexts', { name, rawText, savedAt: new Date().toISOString() });
+  },
+
+  async getTextCache(name: string): Promise<{ name: string; rawText: string; savedAt: string } | undefined> {
+    const db = await getDB();
+    return db.get('savedTexts', name);
+  },
+
+  /**
+   * Delete every `savedTexts` entry whose key is not in `names`.
+   * Keeps the text store in sync with the current records list.
+   */
+  async pruneTextCacheToRecords(names: string[]): Promise<void> {
+    const db = await getDB();
+    const keys = await db.getAllKeys('savedTexts');
+    const nameSet = new Set(names);
+    for (const key of keys) {
+      if (!nameSet.has(key as string)) {
+        await db.delete('savedTexts', key);
+      }
+    }
   },
 };

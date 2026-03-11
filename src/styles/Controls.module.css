@@ -1,4 +1,4 @@
-/* Controls.module.css — v2: two-row layout, WPM pill stepper */
+/* Controls.module.css — v3: three-row layout (playback · load+speed+count · reset) */
 
 /* ─── Wrapper ───────────────────────────────────────────────────── */
 
@@ -265,6 +265,14 @@
   }
 }
 
+/* ── Row 2: Load row (Upload · pill · Paste) ── */
+.loadRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
 /* ── WPM pill stepper ── */
 .wpmPill {
   display: flex;
@@ -360,6 +368,42 @@
   .wpmPill { height: 32px; min-height: 32px; }
   .wpmPillBtn { width: 32px; min-height: 32px; }
   .wpmPillValue { min-width: 78px; font-size: 0.8rem; }
+  .wordCountBtn { min-height: 32px; }
+}
+
+/* Internal divider between WPM stepper and word count buttons */
+.wpmPillDivider {
+  width: 1px;
+  background: var(--border);
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+/* Word count buttons inside the compound WPM pill */
+.wordCountBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  width: 28px;
+  min-height: 44px;
+  height: 100%;
+  background: transparent;
+  border: none;
+  border-left: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  flex-shrink: 0;
+}
+.wordCountBtn:hover:not(:disabled) { background: var(--state-hover); color: var(--text); }
+
+/* Active word count button */
+.wordCountBtnActive {
+  background: var(--color-accent-dim);
+  color: var(--color-accent);
 }
 
 /* ── Row 3: Reset to beginning ────────────────────────────────── */

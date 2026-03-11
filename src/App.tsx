@@ -32,10 +32,10 @@ import AppFooter from './components/AppFooter';
 import HelpModal from './components/HelpModal';
 import { parsePDF } from './parsers/pdfParser';
 import { parseEPUB } from './parsers/epubParser';
-import { parseFile } from './parsers/textParser';
+import { parseFile, parseRawText } from './parsers/textParser';
 import { normalizeText, tokenize } from './utils/textUtils';
 import { normalizePages } from './utils/contentNormalizer';
-import { saveRecord } from './utils/recordsUtils';
+import { saveRecord, loadRecords } from './utils/recordsUtils';
 import { buildStructureMap, buildStructureMapFromWords } from './utils/structureUtils';
 import { AuthProvider } from './auth/AuthContext';
 import SignInPrompt from './auth/SignInPrompt';
@@ -49,6 +49,7 @@ import type { PresetModeId } from './types/readingModes';
 import './styles/app.css';
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
+const FILE_CACHE_SIZE_LIMIT_BYTES = 25 * 1024 * 1024; // 25 MB
 const STREAMING_EXTS = new Set(['pdf', 'epub']);
 const TEXT_EXTS = new Set(['txt', 'md', 'html', 'htm', 'rtf', 'srt', 'docx']);
 
@@ -304,13 +305,20 @@ export default function App() {
           setLoadingProgress(100);
         }
         finaliseWords(allWords, file.name, breaks, allRawLines.length > 0 ? allRawLines : undefined);
-        // Cache the file buffer for auto-resume on next app boot (GROUP 1B/D)
+        // Block 1: Save file to cache (skipped if file is too large)
+        if (file.size <= FILE_CACHE_SIZE_LIMIT_BYTES) {
+          try {
+            const buffer = await file.arrayBuffer();
+            await IndexedDBService.saveFileCache(file.name, buffer, file.type);
+          } catch {
+            // Quota exceeded or memory error — silently skip
+          }
+        }
+        // Block 2: Prune (always runs, regardless of whether save succeeded)
         try {
-          const buffer = await file.arrayBuffer();
-          await IndexedDBService.clearFileCache();
-          await IndexedDBService.saveFileCache(file.name, buffer, file.type);
+          await IndexedDBService.pruneFileCacheToLimit();
         } catch {
-          // Caching is best-effort; ignore errors
+          // Ignore
         }
       } catch (err) {
         console.error('Error parsing file:', err);
@@ -332,6 +340,13 @@ export default function App() {
       setFileMetadata({ name: sourceName, size: 0, type: 'text' });
       finaliseWords(words, sourceName, [], rawLines);
       setShowPaste(false); // collapse paste panel after loading
+      // Save text (fire-and-forget)
+      if (rawLines && rawLines.length > 0) {
+        IndexedDBService.saveTextCache(sourceName, rawLines.join('\n')).catch(() => {});
+        // Prune text cache independently (fire-and-forget)
+        const names = loadRecords().map(r => r.name);
+        IndexedDBService.pruneTextCacheToRecords(names).catch(() => {});
+      }
     },
     [setFileMetadata, finaliseWords],
   );
@@ -404,11 +419,25 @@ export default function App() {
       try {
         if (!records[0]) return;
         const cached = await IndexedDBService.getFileCache(records[0].name);
-        if (!cached) return;
-        const file = new File([cached.buffer], cached.name, { type: cached.type });
-        await handleFileSelect(file);
+        if (cached) {
+          const file = new File([cached.buffer], cached.name, { type: cached.type });
+          await handleFileSelect(file);
+          return;
+        }
       } catch {
         // Cache miss or read error — not fatal, ignore silently
+      }
+      // Fall back to saved text cache
+      try {
+        if (!records[0]) return;
+        const cachedText = await IndexedDBService.getTextCache(records[0].name);
+        if (!cachedText || !cachedText.rawText) return;
+        const parsed = parseRawText(cachedText.rawText, 'resume');
+        if (parsed.words.length === 0) return;
+        setFileMetadata({ name: records[0].name, size: 0, type: 'text' });
+        finaliseWords(parsed.words, records[0].name, [], parsed.rawLines);
+      } catch {
+        // Text cache miss or parse error — not fatal, ignore silently
       }
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps

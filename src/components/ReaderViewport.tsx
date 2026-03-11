@@ -159,7 +159,7 @@ const ReaderViewport = memo(function ReaderViewport({
   onFaster,
   onSlower,
 }: ReaderViewportProps) {
-  const { isPlaying, wpm } = useReaderContext();
+  const { isPlaying, wpm, fileMetadata } = useReaderContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
   /** Outermost viewport div — receives --pre-orp-col and --focal-tick-x CSS variables */
   const viewportRef  = useRef<HTMLDivElement>(null);
@@ -349,6 +349,9 @@ const ReaderViewport = memo(function ReaderViewport({
   }, [currentWord, wpm]);
 
   const scaledFont = computeMainWordFontSize(fullHeight ?? false, userScale);
+  const titleDisplayName = fileMetadata?.name
+    ? fileMetadata.name.replace(/\.[^.]+$/, '')
+    : null;
 
   return (
     <div
@@ -374,6 +377,17 @@ const ReaderViewport = memo(function ReaderViewport({
           border: 0,
         }}
       />
+
+      {/* Source title strip — top-left translucent pill, extension stripped */}
+      {titleDisplayName && (
+        <div
+          className={styles.titleStrip}
+          aria-label={`Current source: ${titleDisplayName}`}
+        >
+          {titleDisplayName}
+        </div>
+      )}
+
       {/* Hidden measuring span — always rendered for layout metrics.
           Must use same CSS class as reading words for accurate char width. */}
       <span
