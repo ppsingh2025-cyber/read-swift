@@ -33,15 +33,17 @@ function fmtDate(iso: string) {
 interface SessionStatsProps {
   onFileSelect: (file: File) => void;
   onResumeFromCache: (name: string) => void;
+  onClearAll: () => void;
 }
 
-const SessionStats = memo(function SessionStats({ onFileSelect, onResumeFromCache }: SessionStatsProps) {
+const SessionStats = memo(function SessionStats({ onFileSelect, onResumeFromCache, onClearAll }: SessionStatsProps) {
   const {
-    sessionStats, sessionHistory, clearSessionHistory, fileMetadata,
+    sessionStats, sessionHistory, fileMetadata,
     records, setRecords,
   } = useReaderContext();
   const { wordsRead, activeTimeMs, effectiveWpm } = sessionStats;
   const [histOpen, setHistOpen] = useState(false);
+  const [confirmingClear, setConfirmingClear] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [resumeTargetName, setResumeTargetName] = useState<string | null>(null);
   const [cachedNames, setCachedNames] = useState<{ fileCached: Set<string>; textCached: Set<string> }>({
@@ -84,13 +86,6 @@ const SessionStats = memo(function SessionStats({ onFileSelect, onResumeFromCach
     [setRecords],
   );
 
-  const handleClearAll = useCallback(() => {
-    clearSessionHistory();
-    IndexedDBService.clearFileCache().catch(() => {});
-    IndexedDBService.clearTextCache().catch(() => {});
-    setCachedNames({ fileCached: new Set(), textCached: new Set() });
-  }, [clearSessionHistory]);
-
   return (
     <div className={styles.wrapper}>
       <input
@@ -128,10 +123,28 @@ const SessionStats = memo(function SessionStats({ onFileSelect, onResumeFromCach
                     onClick={() => setHistOpen(v => !v)}>
               Past sessions ({sessionHistory.length}) {histOpen ? '▲' : '▼'}
             </button>
-            <button type="button" className={styles.clearBtn}
-                    onClick={handleClearAll} aria-label="Clear session history">
-              Clear ✕
-            </button>
+            {confirmingClear ? (
+              <div className={styles.clearConfirmRow}>
+                <span className={styles.clearConfirmLabel}>Clear all history and saved positions?</span>
+                <button type="button" className={styles.clearCancelBtn}
+                        onClick={() => setConfirmingClear(false)}>
+                  Cancel
+                </button>
+                <button type="button" className={styles.clearConfirmBtn}
+                        onClick={() => {
+                          onClearAll();
+                          setCachedNames({ fileCached: new Set(), textCached: new Set() });
+                          setConfirmingClear(false);
+                        }}>
+                  Clear all
+                </button>
+              </div>
+            ) : (
+              <button type="button" className={styles.clearBtn}
+                      onClick={() => setConfirmingClear(true)} aria-label="Clear session history">
+                Clear ✕
+              </button>
+            )}
           </div>
           {histOpen && (
             <ul className={styles.histList}>

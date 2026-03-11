@@ -35,7 +35,7 @@ import { parseEPUB } from './parsers/epubParser';
 import { parseFile, parseRawText } from './parsers/textParser';
 import { normalizeText, tokenize } from './utils/textUtils';
 import { normalizePages } from './utils/contentNormalizer';
-import { saveRecord } from './utils/recordsUtils';
+import { saveRecord, clearAllRecords } from './utils/recordsUtils';
 import { buildStructureMap, buildStructureMapFromWords } from './utils/structureUtils';
 import { AuthProvider } from './auth/AuthContext';
 import SignInPrompt from './auth/SignInPrompt';
@@ -87,6 +87,7 @@ export default function App() {
     setRecords,
     resetSessionStats,
     saveCurrentSession,
+    clearSessionHistory,
     setWpm,
     goToPage,
     goToWord,
@@ -139,6 +140,9 @@ export default function App() {
   // Ref to mirror isPlaying without stale closure issues (used by visibilitychange handler)
   const isPlayingRef = useRef(isPlaying);
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+
+  // Suppresses the eviction toast for exactly one file load after a bulk clear
+  const skipEvictionToastRef = useRef(false);
 
   // What's New: shown when stored version ≠ current version (skip for brand-new users)
   const [showWhatsNew, setShowWhatsNew] = useState<boolean>(
@@ -316,10 +320,11 @@ export default function App() {
         }
         // Block 2 — prune + eviction toast (always runs, sibling of block 1)
         try {
-          const pruned = await IndexedDBService.pruneFileCacheToLimit();
-          if (pruned) {
-            toast('Auto-resume updated — oldest cached session removed', { duration: 4000 });
+          const evicted = await IndexedDBService.pruneFileCacheToLimit();
+          if (evicted && !skipEvictionToastRef.current) {
+            toast('Saved session removed to make room for your new one', { duration: 4000 });
           }
+          skipEvictionToastRef.current = false; // always reset after prune
         } catch {
           // Prune is best-effort; ignore errors
         }
@@ -351,6 +356,15 @@ export default function App() {
     },
     [setFileMetadata, finaliseWords, records],
   );
+
+  /** Clear all history, position records, and IDB caches in one operation */
+  const handleClearAll = useCallback(() => {
+    skipEvictionToastRef.current = true;
+    clearSessionHistory();
+    setRecords(clearAllRecords());
+    IndexedDBService.clearFileCache().catch(() => {});
+    IndexedDBService.clearTextCache().catch(() => {});
+  }, [clearSessionHistory, setRecords]);
 
   /** Auto-pause when the user switches away from the tab */
   useEffect(() => {
@@ -526,7 +540,7 @@ export default function App() {
       {/* ── 1. Top bar ──────────────────────────────────────────── */}
       <header className="topBar">
         <div className="topBarLeft">
-          <BurgerMenu onFileSelect={handleFileSelect} onReplayIntro={resetOnboarding} pulseBurger={pulseBurger} onResumeFromCache={handleResumeFromCache} />
+          <BurgerMenu onFileSelect={handleFileSelect} onReplayIntro={resetOnboarding} pulseBurger={pulseBurger} onResumeFromCache={handleResumeFromCache} onClearAll={handleClearAll} />
         </div>
         <div className="topBarBrand">
           <img
