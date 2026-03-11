@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.3 (in progress)
+### Fixed
+- PDF diagram detection rewritten as token-level filtering — single-char/arrow tokens (e.g. "D", "A", "→") are discarded as diagram labels; paragraphs and headings adjacent to diagrams are no longer incorrectly deleted
+
 ## v1.3.2 (in progress)
 ### Added
 - PDF diagram zones detected spatially and replaced with [Figure] placeholder — garbled diagram label tokens (single letters, arrows, glyph fragments) no longer flow into the RSVP word array
