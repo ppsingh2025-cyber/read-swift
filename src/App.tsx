@@ -15,7 +15,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { APP_VERSION } from './version';
-import { IndexedDBService } from './sync/IndexedDBService';
+import { IndexedDBService, FILE_CACHE_SIZE_LIMIT_BYTES } from './sync/IndexedDBService';
 import WhatsNewModal from './components/WhatsNewModal';
 import OnboardingOverlay from './components/OnboardingOverlay';
 import { useReaderContext } from './context/useReaderContext';
@@ -32,10 +32,10 @@ import AppFooter from './components/AppFooter';
 import HelpModal from './components/HelpModal';
 import { parsePDF } from './parsers/pdfParser';
 import { parseEPUB } from './parsers/epubParser';
-import { parseFile } from './parsers/textParser';
+import { parseFile, parseRawText } from './parsers/textParser';
 import { normalizeText, tokenize } from './utils/textUtils';
 import { normalizePages } from './utils/contentNormalizer';
-import { saveRecord } from './utils/recordsUtils';
+import { saveRecord, clearAllRecords } from './utils/recordsUtils';
 import { buildStructureMap, buildStructureMapFromWords } from './utils/structureUtils';
 import { AuthProvider } from './auth/AuthContext';
 import SignInPrompt from './auth/SignInPrompt';
@@ -75,6 +75,8 @@ export default function App() {
     currentPage,
     totalPages,
     structureMap,
+    contextWordSameSize,
+    contextWordOpacity,
     setWords,
     setCurrentWordIndex,
     setFileMetadata,
@@ -87,7 +89,7 @@ export default function App() {
     setRecords,
     resetSessionStats,
     saveCurrentSession,
-    setWpm,
+    clearSessionHistory,
     goToPage,
     goToWord,
     setTheme,
@@ -123,14 +125,13 @@ export default function App() {
 
   const [showHelp, setShowHelp] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [isEyeFocus, setIsEyeFocus] = useState(false);
   const [showPaste, setShowPaste] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [sessionCompleted, setSessionCompleted] = useState(false);
   const [, setContextExpanded] = useState(false);
-  const [pulseHelp, setPulseHelp] = useState(false);
-  const [pulseBurger, setPulseBurger] = useState(false);
-  const [showPostOnboardingHint, setShowPostOnboardingHint] = useState(false);
-  const [pulseUpload, setPulseUpload] = useState(false);
+  const [showPostOnboardingCoach, setShowPostOnboardingCoach] = useState(false);
+  const [showBurgerCoach, setShowBurgerCoach] = useState(false);
   const [showFocusHint, setShowFocusHint] = useState(false);
 
   // Ref to store word index before reset (for undo)
@@ -165,10 +166,11 @@ export default function App() {
       // Compute adaptive adjustment and persist new baseline for future sessions.
       // Only apply to current session WPM if user didn't manually change speed.
       const newBaseline = finalizeSession(wpm);
+      // Store adaptive baseline in fastread_adaptive_wpm only (via finalizeSession).
+      // Never overwrite fastread_wpm — that is the user's saved preference.
       if (!manualWpmRef.current && newBaseline !== wpm) {
-        setWpm(newBaseline);
         const direction = newBaseline > wpm ? '⚡' : '🐢';
-        toast(`${direction} Speed adjusted to ${newBaseline} WPM`, { duration: 4000 });
+        toast(`${direction} Suggested speed for next session: ${newBaseline} WPM`, { duration: 4000 });
       }
       manualWpmRef.current = false; // reset manual flag after each session
 
@@ -191,7 +193,7 @@ export default function App() {
   }, [isPlaying]);
 
   const finaliseWords = useCallback(
-    (allWords: string[], sourceName: string, breaks: number[] = [], rawLines?: string[]) => {
+    (allWords: string[], sourceName: string, breaks: number[] = [], rawLines?: string[], sourceType: 'file' | 'text' = 'file') => {
       if (allWords.length === 0) {
         alert('No readable text found.');
         return;
@@ -219,6 +221,7 @@ export default function App() {
         lastWordIndex: restoredIndex,
         lastReadAt: new Date().toISOString(),
         wpm,
+        sourceType,
       });
       setRecords(updated);
     },
@@ -303,14 +306,21 @@ export default function App() {
           if (rawLines) allRawLines.push(...rawLines);
           setLoadingProgress(100);
         }
-        finaliseWords(allWords, file.name, breaks, allRawLines.length > 0 ? allRawLines : undefined);
-        // Cache the file buffer for auto-resume on next app boot (GROUP 1B/D)
+        finaliseWords(allWords, file.name, breaks, allRawLines.length > 0 ? allRawLines : undefined, 'file');
+        // Block 1 — save (size-guarded)
+        if (file.size <= FILE_CACHE_SIZE_LIMIT_BYTES) {
+          try {
+            const buffer = await file.arrayBuffer();
+            await IndexedDBService.saveFileCache(file.name, buffer, file.type);
+          } catch {
+            // Caching is best-effort; ignore errors
+          }
+        }
+        // Block 2 — prune (always runs, sibling of block 1)
         try {
-          const buffer = await file.arrayBuffer();
-          await IndexedDBService.clearFileCache();
-          await IndexedDBService.saveFileCache(file.name, buffer, file.type);
+          await IndexedDBService.pruneFileCacheToLimit();
         } catch {
-          // Caching is best-effort; ignore errors
+          // Prune is best-effort; ignore errors
         }
       } catch (err) {
         console.error('Error parsing file:', err);
@@ -330,11 +340,28 @@ export default function App() {
   const handleTextReady = useCallback(
     (words: string[], sourceName: string, rawLines?: string[]) => {
       setFileMetadata({ name: sourceName, size: 0, type: 'text' });
-      finaliseWords(words, sourceName, [], rawLines);
+      finaliseWords(words, sourceName, [], rawLines, 'text');
       setShowPaste(false); // collapse paste panel after loading
+      // Always persist text so paste sessions can be resumed.
+      // Use rawLines when available; fall back to words array.
+      const textToCache = rawLines && rawLines.length > 0 ? rawLines.join('\n') : words.join(' ');
+      IndexedDBService.saveTextCache(sourceName, textToCache)
+        // Sequence the prune after the save so the new entry is never deleted;
+        // include sourceName in the keep list because `records` is still the
+        // pre-setState snapshot and does not yet contain this session.
+        .then(() => IndexedDBService.pruneTextCacheToNames([...records.map(r => r.name), sourceName]))
+        .catch(() => {});
     },
-    [setFileMetadata, finaliseWords],
+    [setFileMetadata, finaliseWords, records],
   );
+
+  /** Clear all history, position records, and IDB caches in one operation */
+  const handleClearAll = useCallback(() => {
+    clearSessionHistory();
+    setRecords(clearAllRecords());
+    IndexedDBService.clearFileCache().catch(() => {});
+    IndexedDBService.clearTextCache().catch(() => {});
+  }, [clearSessionHistory, setRecords]);
 
   /** Auto-pause when the user switches away from the tab */
   useEffect(() => {
@@ -354,6 +381,7 @@ export default function App() {
         if (showResetConfirm) { setShowResetConfirm(false); return; }
         setShowHelp(false);
         setIsFocused(false);
+        setIsEyeFocus(false);
         setShowPaste(false);
         return;
       }
@@ -403,16 +431,47 @@ export default function App() {
     (async () => {
       try {
         if (!records[0]) return;
-        const cached = await IndexedDBService.getFileCache(records[0].name);
-        if (!cached) return;
-        const file = new File([cached.buffer], cached.name, { type: cached.type });
-        await handleFileSelect(file);
+        const name = records[0].name;
+        const cached = await IndexedDBService.getFileCache(name);
+        if (cached) {
+          const file = new File([cached.buffer], cached.name, { type: cached.type });
+          await handleFileSelect(file);
+          return;
+        }
+        // Fallback to text cache
+        const textCached = await IndexedDBService.getTextCache(name);
+        if (!textCached) return;
+        const { words: parsed, rawLines } = parseRawText(textCached.rawText, 'resume');
+        setFileMetadata({ name, size: 0, type: 'text' });
+        finaliseWords(parsed, name, [], rawLines, 'text');
       } catch {
         // Cache miss or read error — not fatal, ignore silently
       }
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /** Resume from IDB cache (file or text) without a file picker */
+  const handleResumeFromCache = useCallback(async (name: string) => {
+    saveCurrentSession();
+    try {
+      const cached = await IndexedDBService.getFileCache(name);
+      if (cached) {
+        const file = new File([cached.buffer], cached.name, { type: cached.type });
+        await handleFileSelect(file);
+        return;
+      }
+      const textCached = await IndexedDBService.getTextCache(name);
+      if (textCached) {
+        const { words: parsed, rawLines } = parseRawText(textCached.rawText, 'resume');
+        setFileMetadata({ name, size: 0, type: 'text' });
+        finaliseWords(parsed, name, [], rawLines, 'text');
+        return;
+      }
+    } catch {
+      // Swallow silently — UI should not break
+    }
+  }, [saveCurrentSession, handleFileSelect, setFileMetadata, finaliseWords]);
 
   const toggleFocus = useCallback(() => {
     setIsFocused((f) => {
@@ -424,6 +483,15 @@ export default function App() {
       return !f;
     });
   }, []);
+
+  const toggleEyeFocus = useCallback(() => {
+    setIsEyeFocus((prev) => {
+      const entering = !prev;
+      // Eye focus borrows the shell's focus mode to hide topBar + controlsBar
+      setIsFocused(entering);
+      return entering;
+    });
+  }, []);
   const togglePaste = useCallback(() => setShowPaste((p) => !p), []);
   const completeOnboarding = useCallback(
     (prefs: { theme: Theme; modeId: PresetModeId }) => {
@@ -432,18 +500,7 @@ export default function App() {
       setActiveMode(prefs.modeId);
       localStorage.setItem('fastread_onboarding_complete', 'true');
       setShowOnboarding(false);
-      setPulseHelp(true);
-      setTimeout(() => setPulseHelp(false), 2500);
-      // Delayed burger pulse — fires after hint bar is visible
-      setTimeout(() => {
-        setPulseBurger(true);
-        setTimeout(() => setPulseBurger(false), 6000);
-      }, 2000);
-      // Post-onboarding hint + upload pulse
-      setShowPostOnboardingHint(true);
-      setPulseUpload(true);
-      setTimeout(() => setPulseUpload(false), 4000);
-      setTimeout(() => setShowPostOnboardingHint(false), 6000);
+      setShowPostOnboardingCoach(true);
     },
     [setTheme, applyMode, setActiveMode],
   );
@@ -462,6 +519,28 @@ export default function App() {
     setShowOnboarding(true);
   }, []);
 
+  // Coach mark: show 3s after onboarding completes, auto-dismiss after 5s
+  useEffect(() => {
+    if (!showPostOnboardingCoach) return;
+    const show = setTimeout(() => setShowBurgerCoach(true), 3000);
+    const hide = setTimeout(() => {
+      setShowBurgerCoach(false);
+      setShowPostOnboardingCoach(false);
+    }, 8000);
+    return () => { clearTimeout(show); clearTimeout(hide); };
+  }, [showPostOnboardingCoach]);
+
+  // Dismiss coach mark on any click
+  useEffect(() => {
+    if (!showBurgerCoach) return;
+    const dismiss = () => {
+      setShowBurgerCoach(false);
+      setShowPostOnboardingCoach(false);
+    };
+    window.addEventListener('click', dismiss, { once: true });
+    return () => window.removeEventListener('click', dismiss);
+  }, [showBurgerCoach]);
+
   return (
     <AuthProvider>
     {showWhatsNew && (
@@ -479,7 +558,13 @@ export default function App() {
       {/* ── 1. Top bar ──────────────────────────────────────────── */}
       <header className="topBar">
         <div className="topBarLeft">
-          <BurgerMenu onFileSelect={handleFileSelect} onReplayIntro={resetOnboarding} pulseBurger={pulseBurger} />
+          <BurgerMenu onFileSelect={handleFileSelect} onReplayIntro={resetOnboarding} onResumeFromCache={handleResumeFromCache} onClearAll={handleClearAll} />
+          {showBurgerCoach && (
+            <div className="burgerCoach" aria-live="polite" role="status">
+              Settings & history live here
+              <span className="burgerCoachArrow" aria-hidden="true" />
+            </div>
+          )}
         </div>
         <div className="topBarBrand">
           <img
@@ -495,7 +580,7 @@ export default function App() {
 
           <UserAvatar />
           <button
-            className={`helpBtn${pulseHelp ? ' helpBtnPulse' : ''}`}
+            className="helpBtn"
             onClick={() => setShowHelp(true)}
             title="How to Use PaceRead"
             aria-label="How to Use PaceRead"
@@ -505,13 +590,6 @@ export default function App() {
           <ThemeToggle />
         </div>
       </header>
-
-      {/* Post-onboarding hint bar */}
-      {showPostOnboardingHint && words.length === 0 && (
-        <div className="postOnboardingHint" aria-live="polite">
-          Upload a file or paste text to begin
-        </div>
-      )}
 
       {/* ── 2. Reading main ─────────────────────────────────────── */}
       <main className="readingMain">
@@ -543,6 +621,10 @@ export default function App() {
             onPlayPause={() => isPlaying ? pause() : play()}
             onFaster={() => { manualWpmRef.current = true; faster(); }}
             onSlower={() => { manualWpmRef.current = true; slower(); }}
+            isEyeFocus={isEyeFocus}
+            onEyeToggle={toggleEyeFocus}
+            contextWordSameSize={contextWordSameSize}
+            contextWordOpacity={contextWordOpacity}
           />
           {/* Maximize / minimize button */}
           <button
@@ -571,12 +653,6 @@ export default function App() {
               </svg>
             )}
           </button>
-          {/* WPM badge — visible only in focus mode, mirrored at top-left */}
-          {isFocused && (
-            <div className="focusWpmBadge" role="status" aria-label={`${wpm} words per minute`}>
-              {wpm} <span className="focusWpmUnit">WPM</span>
-            </div>
-          )}
           {/* Focus mode exit hint — fades after 3s */}
           {isFocused && showFocusHint && (
             <div className="focusExitHint" aria-hidden="true">Esc or F to exit</div>
@@ -609,7 +685,6 @@ export default function App() {
           onPasteToggle={togglePaste}
           pasteOpen={showPaste}
           focused={isFocused}
-          pulseUpload={pulseUpload}
         />
       </div>
 

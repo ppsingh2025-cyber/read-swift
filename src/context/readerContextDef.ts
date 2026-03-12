@@ -23,6 +23,7 @@ export interface ReadingRecord {
   lastWordIndex: number;
   lastReadAt: string; // ISO date string
   wpm: number;
+  sourceType?: 'file' | 'text';
 }
 
 /** Number of words displayed simultaneously in the rolling window */
@@ -99,6 +100,10 @@ interface ReaderState {
   mainWordFontSize: number;
   /** Word grouping strategy: fixed window or intelligent phrase-based chunks */
   chunkMode: ChunkMode;
+  /** When true, context words render at the same font size as the main word */
+  contextWordSameSize: boolean;
+  /** Opacity of context words when peripheralFade is true (0.20–1.00) */
+  contextWordOpacity: number;
   /** Lightweight session analytics for the current reading session */
   sessionStats: SessionStats;
   /** Rolling history of completed sessions (up to 20), persisted in localStorage */
@@ -143,6 +148,8 @@ interface ReaderActions {
   setLongWordCompensation: (enabled: boolean) => void;
   setMainWordFontSize: (size: number) => void;
   setChunkMode: (mode: ChunkMode) => void;
+  setContextWordSameSize: (v: boolean) => void;
+  setContextWordOpacity: (v: number) => void;
   /** Update session analytics (called by the RSVP engine) */
   updateSessionStats: (delta: Partial<SessionStats>) => void;
   /** Reset session analytics (called when a new file is loaded) */

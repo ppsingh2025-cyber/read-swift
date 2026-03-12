@@ -28,8 +28,6 @@ interface ControlsProps {
   pasteOpen: boolean;
   /** When true (maximize/focus mode) upload and paste buttons are hidden */
   focused?: boolean;
-  /** When true, pulse-animate the upload button to draw attention post-onboarding */
-  pulseUpload?: boolean;
 }
 
 /** Duration in ms for the WPM flash animation — matches the CSS @keyframes wpmFlash */
@@ -47,7 +45,6 @@ export default function Controls({
   onPasteToggle,
   pasteOpen,
   focused,
-  pulseUpload,
 }: ControlsProps) {
   const { isPlaying, wpm, setWpm, words, isLoading, currentWordIndex } =
     useReaderContext();
@@ -102,7 +99,7 @@ export default function Controls({
         {!focused && (
           <button
             type="button"
-            className={`${styles.controlBtn}${pulseUpload ? ` ${styles.controlBtnPulse}` : ''}`}
+            className={styles.controlBtn}
             onClick={handleFileClick}
             disabled={isLoading}
             title="Upload file (PDF, EPUB, TXT, MD, HTML, RTF, SRT, DOCX)"

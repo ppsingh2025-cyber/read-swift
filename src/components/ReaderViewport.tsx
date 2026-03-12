@@ -26,6 +26,11 @@ import type { Orientation, StructuralMarker } from '../context/readerContextDef'
 import { useReaderContext } from '../context/useReaderContext';
 import styles from '../styles/ReaderViewport.module.css';
 
+/** Truncate a source label to at most `max` characters, appending an ellipsis. */
+function truncateLabel(text: string, max = 28): string {
+  return text.length > max ? `${text.slice(0, max)}\u2026` : text;
+}
+
 interface ReaderViewportProps {
   /** Ordered list of words in the current window (length = windowSize) */
   wordWindow: string[];
@@ -76,6 +81,14 @@ interface ReaderViewportProps {
   onFaster?: () => void;
   /** Called when user swipes right (slower) */
   onSlower?: () => void;
+  /** When true, applies eye focus mode (hides nav overlays, keeps word display unchanged) */
+  isEyeFocus?: boolean;
+  /** Called when the user clicks the eye focus button */
+  onEyeToggle?: () => void;
+  /** When true, context words render at the same font size as the main word */
+  contextWordSameSize?: boolean;
+  /** Opacity of context words when peripheralFade is true (0.20–1.00) */
+  contextWordOpacity?: number;
 }
 
 /**
@@ -110,16 +123,23 @@ function computeMainWordFontSize(
 
 function getSlotOpacity(
   slotIndex: number,
-  windowSize: number,
   peripheralFade: boolean,
+  contextWordOpacity: number,
 ): number {
-  if (windowSize === 1) return 1;
-  if (slotIndex === 0) return 1;            // main word always full opacity
-  // ALL context slots receive the same uniform value (no progressive gradient).
-  // fade ON:  0.45 — clearly subordinate to the main word
-  // fade OFF: 0.65 — slightly dim to maintain size-based hierarchy
-  // windowSize is capped at 3 in v11; both slots 1 and 2 receive the same value.
-  return peripheralFade ? 0.45 : 0.65;
+  if (slotIndex === 0) return 1;
+  return peripheralFade ? contextWordOpacity : 1.0;
+}
+
+/**
+ * Return the inline fontSize for a context word based on the contextWordSameSize
+ * setting and whether a user-scaled font size is active.
+ */
+function getContextWordFontSize(
+  contextWordSameSize: boolean,
+  scaledFont: string | undefined,
+): string | undefined {
+  if (!contextWordSameSize) return undefined;
+  return scaledFont ?? 'clamp(1.1rem, 8vw, 3.2rem)';
 }
 
 /** Pixels from left edge to exclude from swipe detection (iOS back-navigation zone) */
@@ -158,8 +178,12 @@ const ReaderViewport = memo(function ReaderViewport({
   onPlayPause,
   onFaster,
   onSlower,
+  isEyeFocus = false,
+  onEyeToggle,
+  contextWordSameSize = true,
+  contextWordOpacity = 0.65,
 }: ReaderViewportProps) {
-  const { isPlaying, wpm } = useReaderContext();
+  const { isPlaying, wpm, fileMetadata } = useReaderContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
   /** Outermost viewport div — receives --pre-orp-col and --focal-tick-x CSS variables */
   const viewportRef  = useRef<HTMLDivElement>(null);
@@ -267,6 +291,11 @@ const ReaderViewport = memo(function ReaderViewport({
   const userScale   = mainWordFontSize / 100;
   const isMultiWord = wordWindow.length > 1;
 
+  // Progress percentage — used in both the aria-label and the display span
+  const progressPct = (currentWordIndex !== undefined && totalWordCount)
+    ? Math.round((currentWordIndex / totalWordCount) * 100)
+    : 0;
+
   // ORP coloring: focalLine always wins
   // Structural split always happens (pre/ORP/post) — required for tick alignment.
   // Color is only applied when orpColored is true.
@@ -353,7 +382,11 @@ const ReaderViewport = memo(function ReaderViewport({
   return (
     <div
       ref={viewportRef}
-      className={`${styles.viewport}${fullHeight ? ` ${styles.viewportFull}` : ''}`}
+      className={[
+        styles.viewport,
+        fullHeight ? styles.viewportFull : '',
+        isEyeFocus ? styles.viewportEyeFocus : '',
+      ].filter(Boolean).join(' ')}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -418,7 +451,7 @@ const ReaderViewport = memo(function ReaderViewport({
           </div>
         </div>
       ) : !hasWords ? (
-        <div className={styles.placeholder}>
+        <div className={styles.emptyState}>
           <input
             ref={fileInputRef}
             type="file"
@@ -428,26 +461,43 @@ const ReaderViewport = memo(function ReaderViewport({
             aria-hidden="true"
             tabIndex={-1}
           />
-          <p className={styles.helpHeading}>Ready to speed-read?</p>
-          <p className={styles.helpBody}>
+          <p className={styles.emptyHeading}>Ready to read</p>
+          <p className={styles.emptySubhead}>Load something to get started</p>
+          <div className={styles.emptyActions}>
             <button
-              className={styles.helpLink}
+              className={styles.emptyActionBtn}
               onClick={handleUploadClick}
-              aria-label="Upload a file to start reading"
+              aria-label="Upload a file"
             >
-              Upload a file
+              <span className={styles.emptyActionIcon} aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"
+                     strokeLinejoin="round" aria-hidden="true">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+              </span>
+              <span className={styles.emptyActionLabel}>Upload file</span>
+              <span className={styles.emptyActionSub}>PDF · EPUB · DOCX · TXT · MD</span>
             </button>
-            {' '}(PDF, EPUB, TXT, MD, HTML, RTF, SRT, DOCX){' '}
-            or{' '}
             <button
-              className={styles.helpLink}
+              className={styles.emptyActionBtn}
               onClick={() => onShowPaste?.()}
-              aria-label="Paste text to start reading"
+              aria-label="Paste text"
             >
-              paste text
+              <span className={styles.emptyActionIcon} aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"
+                     strokeLinejoin="round" aria-hidden="true">
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                </svg>
+              </span>
+              <span className={styles.emptyActionLabel}>Paste text</span>
+              <span className={styles.emptyActionSub}>Article · URL · any text</span>
             </button>
-            {' '}to get started.
-          </p>
+          </div>
         </div>
       ) : orientation === 'vertical' ? (
         /*
@@ -465,7 +515,7 @@ const ReaderViewport = memo(function ReaderViewport({
         >
           {wordWindow.map((word, i) => {
             const isCenter   = i === highlightIndex;
-            const isPeripheral = !isCenter && getSlotOpacity(i, wordWindow.length, peripheralFade) < 1;
+            const isPeripheral = !isCenter && getSlotOpacity(i, peripheralFade, contextWordOpacity) < 1;
             return (
               <span
                 key={i}
@@ -474,6 +524,7 @@ const ReaderViewport = memo(function ReaderViewport({
                   ...(isCenter && !focalLine ? { color: highlightColor } : undefined),
                   ...(isPeripheral ? { color: 'var(--vp-text-peripheral)', opacity: 1 } : undefined),
                   ...(isCenter && scaledFont ? { fontSize: scaledFont } : undefined),
+                  ...(!isCenter ? { fontSize: getContextWordFontSize(contextWordSameSize, scaledFont) } : undefined),
                 }}
                 aria-hidden={!word ? true : undefined}
               >
@@ -551,10 +602,11 @@ const ReaderViewport = memo(function ReaderViewport({
                       : styles.contextWord
                   }
                   style={{
-                    color: getSlotOpacity(actualSlot, wordWindow.length, peripheralFade) < 1
+                    color: getSlotOpacity(actualSlot, peripheralFade, contextWordOpacity) < 1
                       ? 'var(--vp-text-peripheral)'
                       : undefined,
                     opacity: 1,
+                    fontSize: getContextWordFontSize(contextWordSameSize, scaledFont),
                   }}
                 >
                   {word}
@@ -624,6 +676,23 @@ const ReaderViewport = memo(function ReaderViewport({
             </div>
           )}
 
+          {/* Eye focus button — centered between nav clusters */}
+          {onEyeToggle && (
+            <button
+              className={`${styles.eyeBtn}${isEyeFocus ? ` ${styles.eyeBtnActive}` : ''}`}
+              onClick={(e) => { e.stopPropagation(); onEyeToggle(); }}
+              aria-label={isEyeFocus ? 'Exit eye focus mode' : 'Eye focus mode'}
+              title={isEyeFocus ? 'Exit eye focus mode' : 'Eye focus mode'}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                   strokeLinecap="round" strokeLinejoin="round"
+                   width="14" height="14" aria-hidden="true">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          )}
+
           {currentWordIndex !== undefined && totalWordCount !== undefined && goToWord && (
             <div className={styles.wordNavOverlay} ref={wordJumpRef}>
               <button
@@ -640,12 +709,13 @@ const ReaderViewport = memo(function ReaderViewport({
               <button
                 className={styles.pagePillOverlay}
                 onClick={() => { setShowWordJump(p => !p); }}
-                aria-label={`Word ${currentWordIndex + 1} of ${totalWordCount}, ${Math.round(((currentWordIndex + 1) / totalWordCount) * 100)}% complete`}
+                aria-label={`Word ${currentWordIndex + 1} of ${totalWordCount}, ${progressPct}% complete`}
               >
-                Word {(currentWordIndex + 1).toLocaleString()}
+                <span className={styles.wcPctPre}>{progressPct}%</span>
+                {' '}<span className={styles.wcLabel}>W</span>{' '}
+                {(currentWordIndex + 1).toLocaleString()}
                 <span className={styles.wcSep}>/</span>
                 {totalWordCount.toLocaleString()}
-                <span className={styles.wcPct}>· {Math.round(((currentWordIndex + 1) / totalWordCount) * 100)}%</span>
               </button>
               <button
                 className={styles.pageNavBtn}
@@ -681,6 +751,13 @@ const ReaderViewport = memo(function ReaderViewport({
             </div>
           )}
 
+        </div>
+      )}
+
+      {/* ── Source label — top-left overlay ── */}
+      {hasWords && !isLoading && fileMetadata && (
+        <div className={styles.sourceLabel} aria-label={`Source: ${fileMetadata.name}`}>
+          {truncateLabel(fileMetadata.name)}
         </div>
       )}
     </div>

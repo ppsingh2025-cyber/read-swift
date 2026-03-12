@@ -21,6 +21,8 @@ export const PRESET_MODES: Record<PresetModeId, {
       punctuationPause: false,
       longWordCompensation: false,
       chunkMode: 'fixed',
+      contextWordSameSize: true,
+      contextWordOpacity: 0.65,
     },
   },
   focus: {
@@ -37,6 +39,8 @@ export const PRESET_MODES: Record<PresetModeId, {
       punctuationPause: true,
       longWordCompensation: true,
       chunkMode: 'fixed',
+      contextWordSameSize: true,
+      contextWordOpacity: 0.65,
     },
   },
   read: {
@@ -53,6 +57,8 @@ export const PRESET_MODES: Record<PresetModeId, {
       punctuationPause: true,
       longWordCompensation: true,
       chunkMode: 'intelligent',
+      contextWordSameSize: true,
+      contextWordOpacity: 0.65,
     },
   },
 };

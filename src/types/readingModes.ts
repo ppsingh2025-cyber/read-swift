@@ -12,6 +12,8 @@ export interface ModeSettings {
   punctuationPause: boolean;
   longWordCompensation: boolean;
   chunkMode: ChunkMode;
+  contextWordSameSize: boolean;
+  contextWordOpacity: number;
 }
 
 export interface CustomMode {

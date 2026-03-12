@@ -41,6 +41,8 @@ export default function ReadingModes() {
     highlightColor, setHighlightColor,
     mainWordFontSize, setMainWordFontSize,
     theme,
+    contextWordSameSize, setContextWordSameSize,
+    contextWordOpacity, setContextWordOpacity,
   } = useReaderContext();
 
   const [wizardOpen, setWizardOpen]     = useState(false);
@@ -79,13 +81,15 @@ export default function ReadingModes() {
     const updated = savedCustomModes.map((m: CustomMode) =>
       m.id === activeCustomModeId
         ? { ...m, wpm, settings: { windowSize, orpEnabled, orpColored, focalLine,
-            peripheralFade, punctuationPause, longWordCompensation, chunkMode } }
+            peripheralFade, punctuationPause, longWordCompensation, chunkMode,
+            contextWordSameSize, contextWordOpacity } }
         : m
     );
     setSavedCustomModes(updated);
     setIsDirty(false);
   }, [activeCustomModeId, wpm, windowSize, orpEnabled, orpColored, focalLine,
       peripheralFade, punctuationPause, longWordCompensation, chunkMode,
+      contextWordSameSize, contextWordOpacity,
       savedCustomModes, setSavedCustomModes]);
 
   const handleInlineSave = useCallback(() => {
@@ -100,7 +104,8 @@ export default function ReadingModes() {
       name: trimmed,
       wpm,
       settings: { windowSize, orpEnabled, orpColored, focalLine,
-                  peripheralFade, punctuationPause, longWordCompensation, chunkMode },
+                  peripheralFade, punctuationPause, longWordCompensation, chunkMode,
+                  contextWordSameSize, contextWordOpacity },
       createdAt: new Date().toISOString(),
     };
     setSavedCustomModes([newMode, ...savedCustomModes]);
@@ -110,6 +115,7 @@ export default function ReadingModes() {
     setIsDirty(false);
   }, [saveName, wpm, windowSize, orpEnabled, orpColored, focalLine,
       peripheralFade, punctuationPause, longWordCompensation, chunkMode,
+      contextWordSameSize, contextWordOpacity,
       savedCustomModes, setSavedCustomModes, setActiveMode, setActiveCustomModeId]);
 
   const activePreset = (['speed', 'focus', 'read'] as PresetModeId[]).includes(
@@ -332,6 +338,32 @@ export default function ReadingModes() {
                      onChange={e => handleFinetuneChange(() =>
                        setChunkMode(e.target.checked ? 'intelligent' : 'fixed'))} />
             </label>
+
+            {/* 8 — Context word size */}
+            <label className={styles.fineRow} style={{ cursor: 'pointer' }}>
+              <span className={styles.fineName}>Context word size</span>
+              <input type="checkbox" className={styles.toggle}
+                     checked={contextWordSameSize}
+                     onChange={e => handleFinetuneChange(() => setContextWordSameSize(e.target.checked))} />
+            </label>
+
+            {/* 9 — Dim amount (only shown when peripheralFade is ON) */}
+            {peripheralFade && (
+              <div className={styles.fineRow}>
+                <span className={styles.fineName}>Dim amount</span>
+                <div className={styles.wpmStepper}>
+                  <button type="button" className={styles.wpmStepBtn}
+                          onClick={() => handleFinetuneChange(() =>
+                            setContextWordOpacity(Math.max(0.20, contextWordOpacity - 0.05)))}
+                          aria-label="Less dim">−</button>
+                  <span className={styles.wpmValue}>{Math.round(contextWordOpacity * 100)}%</span>
+                  <button type="button" className={styles.wpmStepBtn}
+                          onClick={() => handleFinetuneChange(() =>
+                            setContextWordOpacity(Math.min(1.0, contextWordOpacity + 0.05)))}
+                          aria-label="More dim">+</button>
+                </div>
+              </div>
+            )}
 
           </div>
         )}

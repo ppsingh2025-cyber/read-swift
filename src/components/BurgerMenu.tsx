@@ -56,10 +56,11 @@ const RESETTABLE_KEYS = [
 interface BurgerMenuProps {
   onFileSelect: (file: File) => void;
   onReplayIntro?: () => void;
-  pulseBurger?: boolean;
+  onResumeFromCache: (name: string) => void;
+  onClearAll: () => void;
 }
 
-export default function BurgerMenu({ onFileSelect, onReplayIntro, pulseBurger }: BurgerMenuProps) {
+export default function BurgerMenu({ onFileSelect, onReplayIntro, onResumeFromCache, onClearAll }: BurgerMenuProps) {
   const [open, setOpen] = useState(false);
 
   const {
@@ -122,6 +123,15 @@ export default function BurgerMenu({ onFileSelect, onReplayIntro, pulseBurger }:
     [close, onFileSelect],
   );
 
+  // Wrap resume so the menu closes when a cached session is resumed
+  const handleResumeFromCache = useCallback(
+    (name: string) => {
+      close();
+      onResumeFromCache(name);
+    },
+    [close, onResumeFromCache],
+  );
+
   // Reset all user preferences to new-user defaults
   const handleResetDefaults = useCallback(() => {
     RESETTABLE_KEYS.forEach(key => { try { localStorage.removeItem(key); } catch { /* ignore */ } });
@@ -159,7 +169,7 @@ export default function BurgerMenu({ onFileSelect, onReplayIntro, pulseBurger }:
       {/* Hamburger button */}
       <button
         type="button"
-        className={`${styles.burgerBtn}${pulseBurger ? ` ${styles.burgerBtnPulse}` : ''}`}
+        className={styles.burgerBtn}
         onClick={handleOpen}
         aria-label="Open settings menu"
         aria-expanded={open}
@@ -250,7 +260,7 @@ export default function BurgerMenu({ onFileSelect, onReplayIntro, pulseBurger }:
               {/* ── Session Analytics (unified: current session + history + resume) ── */}
               <section className={styles.section}>
                 <h3 className={styles.sectionTitle}>Session Analytics</h3>
-                <SessionStats onFileSelect={handleHistoryFileSelect} />
+                <SessionStats onFileSelect={handleHistoryFileSelect} onResumeFromCache={handleResumeFromCache} onClearAll={onClearAll} />
               </section>
 
               {/* ── Reset to Defaults ───────────────────────────────── */}

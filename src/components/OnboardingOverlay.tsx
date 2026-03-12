@@ -1,12 +1,12 @@
 /**
- * OnboardingOverlay v4 — demo is step 0 and auto-plays on mount.
+ * OnboardingOverlay v5 — demo is step 0 and auto-plays on mount.
  * 4 steps total. 250 WPM, ORP split, focal ticks, theme tokens throughout.
  *
  * Step flow (0-indexed):
  *   0 — Live RSVP demo (auto-plays immediately on open)
- *   1 — Your first session (tips)
- *   2 — Load anything
- *   3 — Quick setup (theme + mode picker)
+ *   1 — Pick reading mode (3 vertical tiles)
+ *   2 — Pick theme (2×2 grid)
+ *   3 — How to load content (3 cards)
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styles from '../styles/OnboardingOverlay.module.css';
@@ -92,7 +92,7 @@ export default function OnboardingOverlay({ onComplete, initialTheme, initialMod
   useEffect(() => () => clearDemo(), [clearDemo]);
 
   const advance = useCallback(() => {
-    if (step < 4) {
+    if (step < 3) {
       const next = step + 1;
       setStep(next);
       if (step === 0) clearDemo(); // leaving the demo step
@@ -131,12 +131,6 @@ export default function OnboardingOverlay({ onComplete, initialTheme, initialMod
          role="dialog" aria-modal="true" aria-label="Welcome to PaceRead">
       <div className={styles.panel}>
 
-        <div className={styles.dots} aria-label={`Step ${step + 1} of 5`}>
-          {[0,1,2,3,4].map(i => (
-            <span key={i} className={`${styles.dot} ${i === step ? styles.dotActive : ''}`} aria-hidden="true" />
-          ))}
-        </div>
-
         <div className={styles.stepContent} key={step}>
 
           {/* Step 0 — Live demo (auto-plays on mount) */}
@@ -165,30 +159,62 @@ export default function OnboardingOverlay({ onComplete, initialTheme, initialMod
             </div>
           )}
 
-          {/* Step 1 — How to succeed */}
+          {/* Step 1 — Pick reading mode */}
           {step === 1 && (
             <div className={styles.step}>
-              <h1 className={styles.heading}>Your first session</h1>
-              <div className={styles.inputCards}>
-                {[
-                  { icon: '👁',  title: 'Lock your gaze',          desc: 'Keep your eyes completely still on the tick marks. Words come to you — do not chase them. This is the single habit that unlocks every speed gain.' },
-                  { icon: '🐢', title: 'Start slow',               desc: 'Begin at 200–250 WPM. The goal of your first session is not speed — it is building stillness. Add 25 WPM only when a speed feels genuinely comfortable.' },
-                  { icon: '📈', title: 'It clicks after 2–3 sessions', desc: 'RSVP feels unfamiliar at first, like a new physical skill. If the first session feels hard, that is expected and temporary — not a sign something is wrong.' },
-                ].map(tip => (
-                  <div key={tip.title} className={styles.inputCard}>
-                    <span className={styles.inputCardIcon} aria-hidden="true">{tip.icon}</span>
-                    <div>
-                      <strong>{tip.title}</strong>
-                      <span className={styles.inputFormats}>{tip.desc}</span>
-                    </div>
-                  </div>
+              <h1 className={styles.heading}>Choose your reading style</h1>
+              <p className={styles.body}>You can change this anytime in settings.</p>
+              <div className={styles.modeStack}>
+                {MODES.map(m => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    className={`${styles.modeStackBtn} ${pickedMode === m.id ? styles.modeStackBtnActive : ''}`}
+                    onClick={() => { setPickedMode(m.id); selectPresetMode(m.id); }}
+                    aria-pressed={pickedMode === m.id}
+                  >
+                    <span className={styles.modeStackEmoji} aria-hidden="true">{m.emoji}</span>
+                    <span className={styles.modeStackLabel}>{m.label}</span>
+                    <span className={styles.modeStackWpm} style={{ color: m.accent }}>{m.wpm}</span>
+                    <span className={styles.modeStackDesc}>{m.desc}</span>
+                    {m.recommended && <span className={styles.modeStackBadge}>Recommended</span>}
+                  </button>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Step 2 — Load content */}
+          {/* Step 2 — Pick theme */}
           {step === 2 && (
+            <div className={styles.step}>
+              <h1 className={styles.heading}>Pick your theme</h1>
+              <p className={styles.body}>Optimised for long reading sessions.</p>
+              <div className={styles.themeGrid}>
+                {([
+                  { id: 'midnight', label: 'Midnight', bg: '#0f0f12', accent: '#5b8dee' },
+                  { id: 'warm',     label: 'Warm',     bg: '#120f0a', accent: '#e8a830' },
+                  { id: 'obsidian', label: 'Obsidian', bg: '#000000', accent: '#00d4ff' },
+                  { id: 'day',      label: 'Day',      bg: '#f5f0e8', accent: '#2a7a6e' },
+                ] as const).map(t => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    className={`${styles.themeGridBtn} ${pickedTheme === t.id ? styles.themeGridBtnActive : ''}`}
+                    onClick={() => { setPickedTheme(t.id); setTheme(t.id); }}
+                    aria-pressed={pickedTheme === t.id}
+                  >
+                    <span className={styles.themeSwatch}
+                          style={{ background: t.bg, boxShadow: `inset 0 0 0 3px ${t.accent}` }}
+                          aria-hidden="true" />
+                    <span className={styles.themeLabel}>{t.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Step 3 — Load content */}
+          {step === 3 && (
             <div className={styles.step}>
               <h1 className={styles.heading}>Load anything</h1>
               <div className={styles.inputCards}>
@@ -210,95 +236,38 @@ export default function OnboardingOverlay({ onComplete, initialTheme, initialMod
             </div>
           )}
 
-          {/* Step 3 — Burger menu callout */}
-          {step === 3 && (
-            <div className={styles.step}>
-              <h1 className={styles.heading}>Everything is in here</h1>
-              <p className={styles.body}>
-                Tap ☰ to open settings. Most features live there — multi-word reading, keyboard shortcuts, and your reading history.
-              </p>
-              <div className={styles.burgerCallout} aria-hidden="true">
-                <span className={styles.burgerCalloutIcon}>☰</span>
-                <span className={styles.burgerCalloutArrow}>→</span>
-              </div>
-            </div>
+        </div>
+
+        <div className={styles.navRow}>
+          {step > 0 && (
+            <button type="button" className={styles.btnBack} onClick={goBack}
+                    aria-label="Go back">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"
+                   strokeLinejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+            </button>
           )}
-
-          {/* Step 4 — Setup: theme + mode */}
-          {step === 4 && (
-            <div className={styles.step}>
-              <h1 className={styles.heading}>Quick setup</h1>
-              <p className={styles.body}>Pick a theme and reading mode. You can change both anytime.</p>
-
-              {/* Theme picker */}
-              <div className={styles.setupSection}>
-                <p className={styles.setupLabel}>Theme</p>
-                <div className={styles.themeRow}>
-                  {([
-                    { id: 'midnight',  label: 'Midnight',  bg: '#0f0f12', accent: '#5b8dee' },
-                    { id: 'warm',      label: 'Warm',      bg: '#120f0a', accent: '#e8a830' },
-                    { id: 'day',       label: 'Day',       bg: '#f5f0e8', accent: '#2a7a6e' },
-                    { id: 'obsidian',  label: 'Obsidian',  bg: '#000000', accent: '#00d4ff' },
-                  ] as const).map(t => (
-                    <button
-                      type="button"
-                      key={t.id}
-                      className={`${styles.themeBtn} ${pickedTheme === t.id ? styles.themeBtnActive : ''}`}
-                      onClick={() => {
-                        setPickedTheme(t.id);
-                        setTheme(t.id);
-                      }}
-                      aria-pressed={pickedTheme === t.id}
-                    >
-                      <span
-                        className={styles.themeSwatch}
-                        style={{ background: t.bg, boxShadow: `inset 0 0 0 3px ${t.accent}` }}
-                        aria-hidden="true"
-                      />
-                      <span className={styles.themeLabel}>{t.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Mode picker */}
-              <div className={styles.setupSection}>
-                <p className={styles.setupLabel}>Reading Mode</p>
-                <div className={styles.modeRow}>
-                  {MODES.map(m => (
-                    <button
-                      type="button"
-                      key={m.id}
-                      className={`${styles.modeBtn} ${pickedMode === m.id ? styles.modeBtnActive : ''}`}
-                      onClick={() => {
-                        setPickedMode(m.id);
-                        selectPresetMode(m.id);
-                      }}
-                      aria-pressed={pickedMode === m.id}
-                    >
-                      <span className={styles.modeBtnEmoji} aria-hidden="true">{m.emoji}</span>
-                      <span className={styles.modeBtnLabel}>{m.label}</span>
-                      <span className={styles.modeBtnWpm} style={{ color: m.accent }}>{m.wpm}</span>
-                      <span className={styles.modeBtnDesc}>{m.setupDesc}</span>
-                      {m.recommended && <span className={styles.modeBtnBadge}>Recommended</span>}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+          <div className={styles.dotsCenter} aria-label={`Step ${step + 1} of 4`}>
+            {[0,1,2,3].map(i => (
+              <span key={i} className={`${styles.dot} ${i === step ? styles.dotActive : ''}`}
+                    aria-hidden="true" />
+            ))}
+          </div>
+          {step === 0 && (
+            <button type="button" className={styles.btnReplay} onClick={launchDemo}
+                    aria-label="Replay demo">↺</button>
           )}
-
         </div>
 
         <div className={styles.actions}>
-          {step > 0 && (
-            <button type="button" className={styles.btnBack} onClick={goBack}>← Back</button>
-          )}
-          {step === 0 && <button type="button" className={styles.btnSecondary} onClick={launchDemo}>Replay</button>}
           <button type="button" className={styles.btnPrimary} onClick={advance}>
-            {step < 4 ? 'Next →' : 'Start Reading →'}
+            {step < 3 ? 'Continue →' : "Let's go →"}
           </button>
-          <button type="button" className={styles.btnSkip} onClick={skip}>Skip</button>
+          <button type="button" className={styles.btnSkip} onClick={skip}>
+            skip for now
+          </button>
         </div>
 
       </div>

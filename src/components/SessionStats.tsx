@@ -3,9 +3,10 @@
  * Shows current session stats + rolling history of past sessions with resume.
  */
 
-import { memo, useCallback, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useReaderContext } from '../context/useReaderContext';
 import { deleteRecord } from '../utils/recordsUtils';
+import { IndexedDBService } from '../sync/IndexedDBService';
 import styles from '../styles/SessionStats.module.css';
 
 function fmtTime(ms: number) {
@@ -31,18 +32,32 @@ function fmtDate(iso: string) {
 
 interface SessionStatsProps {
   onFileSelect: (file: File) => void;
+  onResumeFromCache: (name: string) => void;
+  onClearAll: () => void;
 }
 
-const SessionStats = memo(function SessionStats({ onFileSelect }: SessionStatsProps) {
+const SessionStats = memo(function SessionStats({ onFileSelect, onResumeFromCache, onClearAll }: SessionStatsProps) {
   const {
-    sessionStats, sessionHistory, clearSessionHistory, fileMetadata,
+    sessionStats, sessionHistory, fileMetadata,
     records, setRecords,
   } = useReaderContext();
   const { wordsRead, activeTimeMs, effectiveWpm } = sessionStats;
   const [histOpen, setHistOpen] = useState(false);
+  const [confirmingClear, setConfirmingClear] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [resumeTargetName, setResumeTargetName] = useState<string | null>(null);
+  const [cachedNames, setCachedNames] = useState<{ fileCached: Set<string>; textCached: Set<string> }>({
+    fileCached: new Set(), textCached: new Set(),
+  });
 
-  const handleResumeClick = useCallback(() => {
+  useEffect(() => {
+    IndexedDBService.getCachedSessionNames(records.map(r => r.name))
+      .then(result => setCachedNames(result))
+      .catch(() => { /* leave as empty sets — graceful degradation */ });
+  }, [records]);
+
+  const handleResumeClick = useCallback((name: string) => {
+    setResumeTargetName(name);
     fileInputRef.current?.click();
   }, []);
 
@@ -52,6 +67,7 @@ const SessionStats = memo(function SessionStats({ onFileSelect }: SessionStatsPr
       if (file) {
         onFileSelect(file);
         e.target.value = '';
+        setResumeTargetName(null);
       }
     },
     [onFileSelect],
@@ -60,6 +76,12 @@ const SessionStats = memo(function SessionStats({ onFileSelect }: SessionStatsPr
   const handleDeleteRecord = useCallback(
     (name: string) => {
       setRecords(deleteRecord(name));
+      IndexedDBService.deleteFileCache(name).catch(() => {});
+      IndexedDBService.deleteTextCache(name).catch(() => {});
+      setCachedNames(prev => ({
+        fileCached: new Set([...prev.fileCached].filter(n => n !== name)),
+        textCached: new Set([...prev.textCached].filter(n => n !== name)),
+      }));
     },
     [setRecords],
   );
@@ -72,7 +94,7 @@ const SessionStats = memo(function SessionStats({ onFileSelect }: SessionStatsPr
         accept=".pdf,.epub,.txt,.md,.html,.htm,.rtf,.srt,.docx"
         style={{ display: 'none' }}
         onChange={handleResumeFileChange}
-        aria-label="Re-upload file to resume reading"
+        aria-label={resumeTargetName ? `Re-upload ${resumeTargetName} to resume reading` : 'Re-upload file to resume reading'}
       />
 
       {/* Current session */}
@@ -101,10 +123,28 @@ const SessionStats = memo(function SessionStats({ onFileSelect }: SessionStatsPr
                     onClick={() => setHistOpen(v => !v)}>
               Past sessions ({sessionHistory.length}) {histOpen ? '▲' : '▼'}
             </button>
-            <button type="button" className={styles.clearBtn}
-                    onClick={clearSessionHistory} aria-label="Clear session history">
-              Clear ✕
-            </button>
+            {confirmingClear ? (
+              <div className={styles.clearConfirmRow}>
+                <span className={styles.clearConfirmLabel}>Clear all history and saved positions?</span>
+                <button type="button" className={styles.clearCancelBtn}
+                        onClick={() => setConfirmingClear(false)}>
+                  Cancel
+                </button>
+                <button type="button" className={styles.clearConfirmBtn}
+                        onClick={() => {
+                          onClearAll();
+                          setCachedNames({ fileCached: new Set(), textCached: new Set() });
+                          setConfirmingClear(false);
+                        }}>
+                  Clear all
+                </button>
+              </div>
+            ) : (
+              <button type="button" className={styles.clearBtn}
+                      onClick={() => setConfirmingClear(true)} aria-label="Clear session history">
+                Clear ✕
+              </button>
+            )}
           </div>
           {histOpen && (
             <ul className={styles.histList}>
@@ -118,6 +158,11 @@ const SessionStats = memo(function SessionStats({ onFileSelect }: SessionStatsPr
                 const resumePct = record && record.wordCount > 0
                   ? Math.round((record.lastWordIndex / record.wordCount) * 100)
                   : 0;
+                // Determine resume tier
+                const isTextSession = record?.sourceType === 'text';
+                const isCached = isTextSession
+                  ? cachedNames.textCached.has(s.bookName)
+                  : cachedNames.fileCached.has(s.bookName);
                 return (
                   <li key={s.id} className={styles.histItem}>
                     <div className={styles.histMeta}>
@@ -135,12 +180,23 @@ const SessionStats = memo(function SessionStats({ onFileSelect }: SessionStatsPr
                           <div className={styles.histProgressFill} style={{ width: `${progress}%` }} />
                         </div>
                         <span className={styles.histProgressPct}>{progress}%</span>
-                        <button type="button" className={styles.resumeBtn}
-                                onClick={handleResumeClick}
-                                title={`Re-upload to resume reading ${s.bookName}`}
-                                aria-label={`Re-upload to resume reading ${s.bookName}`}>
-                          ↩ Re-upload to Resume
-                        </button>
+                        {isCached ? (
+                          <button type="button" className={styles.resumeBtnCached}
+                                  onClick={() => onResumeFromCache(s.bookName)}
+                                  title={`Resume reading ${s.bookName}`}
+                                  aria-label={`Resume reading ${s.bookName}`}>
+                            ↩ Resume
+                          </button>
+                        ) : isTextSession ? (
+                          <span className={styles.resumeUnavailable}>Session unavailable</span>
+                        ) : (
+                          <button type="button" className={styles.resumeBtn}
+                                  onClick={() => handleResumeClick(s.bookName)}
+                                  title={`Select file to resume reading ${s.bookName}`}
+                                  aria-label={`Select file to resume reading ${s.bookName}`}>
+                            ↩ Select file to resume
+                          </button>
+                        )}
                         <button type="button" className={styles.deleteRecordBtn}
                                 onClick={() => handleDeleteRecord(s.bookName)}
                                 title={`Remove progress for ${s.bookName}`}

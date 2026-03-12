@@ -182,51 +182,79 @@
   opacity: 1;
 }
 
-.placeholder {
+.emptyState {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0 2rem;
-  text-align: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  height: 100%;
+  padding: 1.5rem;
 }
 
 .hiddenFileInput {
   display: none;
 }
 
-.helpHeading {
+.emptyHeading {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--vp-text, #d4d4d4);
-  letter-spacing: 0.01em;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--vp-text);
 }
 
-.helpBody {
-  margin: 0;
-  font-size: 0.85rem;
+.emptySubhead {
+  font-size: 0.82rem;
   color: var(--vp-placeholder, #888);
-  line-height: 1.6;
-  /* Keeps text comfortably narrow in the wide viewport */
-  max-width: 340px;
+  margin: 0;
 }
 
-.helpLink {
+.emptyActions {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 360px;
+  margin-top: 0.5rem;
+}
+
+.emptyActionBtn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
   background: none;
-  border: none;
-  padding: 0;
+  border: 1px solid var(--vp-border);
+  border-radius: var(--radius-md);
+  padding: 1rem 0.75rem;
   cursor: pointer;
-  font-size: inherit;
-  font-family: inherit;
-  color: #6fa3ef;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  transition: color 0.15s;
+  transition: border-color 0.15s, background 0.15s;
+  color: var(--vp-text);
+}
+.emptyActionBtn:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent-8);
 }
 
-.helpLink:hover {
-  color: #a8cbff;
+.emptyActionIcon {
+  color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emptyActionLabel {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--vp-text);
+}
+
+.emptyActionSub {
+  font-size: 0.7rem;
+  color: var(--vp-placeholder, #888);
+  text-align: center;
+  line-height: 1.4;
 }
 
 .loading {
@@ -533,3 +561,98 @@
 }
 [data-theme='day'] .pageNavBtn:hover:not(:disabled),
 [data-theme='day'] .pagePillOverlay:hover { background: rgba(255,255,255,0.8); }
+
+/* ── Feature 1: Percentage prefix in word-count pill ─────────── */
+
+/* Percentage shown BEFORE the "W" label — muted color to visually separate */
+.wcPctPre {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+  opacity: 0.85;
+  margin-right: 3px;
+}
+
+/* ── Feature 2: Source label — top-left viewport overlay ───────── */
+
+.sourceLabel {
+  position: absolute;
+  top: 6px;
+  left: 10px;
+  z-index: 2;
+  font-size: 0.6rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 55%;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.75;
+}
+
+[data-theme='day'] .sourceLabel {
+  color: var(--text-muted);
+}
+
+/* ── Eye icon — focus mode toggle ──────────────────────────────── */
+
+.eyeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-1, 4px);
+  color: var(--text-muted);
+  opacity: 0.4;
+  transition: opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  flex-shrink: 0;
+  pointer-events: all;
+}
+
+.eyeBtn:hover {
+  opacity: 0.75;
+}
+
+/* Active = eye focus ON */
+.eyeBtnActive {
+  opacity: 0.2;
+}
+
+.eyeBtnActive:hover {
+  opacity: 0.4;
+}
+
+/* ── Eye focus mode — hide viewport nav children, keep word display as-is ── */
+
+/* Keep overlayBar present so eye button stays clickable */
+.viewportEyeFocus .overlayBar {
+  pointer-events: none;
+}
+
+.viewportEyeFocus .eyeBtn {
+  pointer-events: all;
+}
+
+/* Hide page/word nav clusters */
+.viewportEyeFocus .pageNavOverlay,
+.viewportEyeFocus .wordNavOverlay {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Hide source label */
+.viewportEyeFocus .sourceLabel {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Focal tick marks are distracting in eye focus — hide them */
+.viewportEyeFocus .focalTickTop,
+.viewportEyeFocus .focalTickBottom {
+  visibility: hidden;
+}

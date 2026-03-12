@@ -5,6 +5,110 @@
   - isDiagramSymbol() excludes prose typography (smart quotes, dashes, footnote markers)
   - ZONE_EXPAND_GAP 30→40pt: captures labels adjacent to diagram anchor rows
   - X_SPREAD_MIN 60→75pt: eliminates marginal prose band overlap
+## [1.5.0]
+### Changed
+- **Onboarding redesigned** — 4 steps (was 5): Demo → Pick mode → Pick theme → Load content.
+  Burger menu callout step removed entirely.
+  Step 1 is now a vertical stack of 3 tappable mode tiles (Sprint / Focus / Flow) with emoji,
+  WPM range, description, and a "Recommended" badge on Focus.
+  Step 2 is a 2×2 theme grid (Midnight / Warm / Obsidian / Day) — better thumb reach than
+  the single row of 4. Step 3 keeps the original load-content cards unchanged.
+- **Button layout fixed** — Back is now a small chevron icon in a top nav row alongside the
+  progress dots and a Replay button (step 0 only). Primary action is full-width at the bottom
+  so it never moves between steps. Skip is a small text link below the primary button.
+- **Post-onboarding empty state** — the reading viewport now shows two large tappable cards
+  ("Upload file" and "Paste text") when no document is loaded, replacing the plain text
+  placeholder. Cards show icons, labels, and format hints.
+- **Post-onboarding coach mark** — a single tooltip anchored to the burger menu appears 3 s
+  after onboarding completes ("Settings & history live here") and auto-dismisses after 5 s or
+  on any click. Replaces the previous scatter of help-button pulse, burger-button pulse, and
+  upload-button pulse.
+
+### Removed
+- Burger menu callout step from onboarding overlay.
+- `pulseHelp`, `pulseBurger`, `pulseUpload`, `showPostOnboardingHint` states and all related
+  CSS (`helpBtnPulse`, `@keyframes helpPulse`, `postOnboardingHint`, `@keyframes hintBarFade`).
+- `pulseBurger` prop from `BurgerMenuProps`.
+- `pulseUpload` prop from `ControlsProps`.
+### Added
+- **Context word size toggle** — new setting `contextWordSameSize` (default: `true`). When
+  enabled, context words render at the same font size as the main word. When disabled, they
+  use a smaller size (`clamp(1.1rem, 5vw, 1.8rem)`) to create visual hierarchy. Persisted
+  in `fastread_context_same_size`.
+- **Dim amount slider** — new setting `contextWordOpacity` (default: `0.65`, range 0.20–1.00,
+  step 0.05). Controls the opacity of context words when `peripheralFade` is on. When
+  `peripheralFade` is off, context words always render at full opacity. Persisted in
+  `fastread_context_opacity`.
+- **Wizard 1–5 word count** — Step 1 of the Save Mode Wizard now offers all five window
+  sizes (1–5) instead of the previous 1–3.
+- **Wizard Step 6: Context word size** — new Yes/No step asking whether context words
+  should match the main word size.
+- **Wizard Step 7: Dim amount** — new stepper step to configure context word opacity,
+  applied when dimming is enabled.
+- **Wizard keyboard navigation** — press `←`/`→` or `Enter` to move between steps,
+  `Y`/`N` on Yes/No steps, `1`–`5` on the word-count step, `Escape` to close.
+- **Wizard keyboard hint** — small hint line below the progress bar shows available
+  keyboard shortcuts.
+- **Burger menu closes on Resume** — clicking "Resume" in the Session Analytics panel now
+  closes the burger menu before resuming the session.
+
+### Changed
+- `getSlotOpacity` signature updated: the `windowSize` parameter is replaced by
+  `contextWordOpacity: number`, which is used as the fade value when `peripheralFade`
+  is true (previously hard-coded to `0.45`).
+- All three presets (`speed`, `focus`, `read`) updated with `contextWordSameSize: true`
+  and `contextWordOpacity: 0.65`.
+
+## [1.4.1]
+### Fixed
+- **Eye focus button unclickable** — the base `.overlayBar` rule carries
+  `pointer-events: none` (so the transparent overlay doesn't swallow word-area
+  taps). Child clusters (`.pageNavOverlay`, `.wordNavOverlay`) individually
+  restore `pointer-events: all`, but the `.eyeBtn` rule was missing the same
+  restoration. Added `pointer-events: all` to the base `.eyeBtn` rule in
+  `ReaderViewport.module.css` so the eye button is always clickable regardless
+  of eye-focus state.
+
+## [1.4.0]
+### Fixed
+- **WPM resets to 238 on refresh** — the adaptive speed system (`finalizeSession`)
+  was calling `setWpm(newBaseline)` which overwrote `fastread_wpm` in localStorage
+  with the adjusted value. On every subsequent refresh the app would initialise to
+  238 (250 × 0.95) instead of the user's saved preference. Fix: removed
+  `setWpm(newBaseline)` entirely — `finalizeSession` still runs to track rewinds
+  and store its baseline in `fastread_adaptive_wpm`, but the user's WPM preference
+  is never overwritten. Adaptive toast message updated to "Suggested speed for next
+  session" to match the new non-mutating behaviour.
+
+### Changed
+- **WPM badge removed** — the WPM number that appeared inside the reading area
+  during fullscreen focus mode has been removed. The Controls bar WPM stepper
+  remains unchanged. Removed `.focusWpmBadge` and `.focusWpmUnit` CSS classes.
+- **Eye focus mode rearchitected** — `isFocusMode` local state removed from
+  `ReaderViewport`; replaced with `isEyeFocus` prop driven from `App`. Eye focus
+  now borrows `appShellFocused` to hide the top bar and controls bar (same as the
+  existing maximize button), and hides page nav, word nav, source label, and focal
+  ticks within the viewport. **The word display is completely unchanged** in eye
+  focus — same size, same position, same color. Eye button lives inside the
+  `overlayBar` between the page nav and word nav clusters. Pressing Escape exits
+  eye focus mode.
+
+## v1.3.2 (in progress)
+### Added
+- **Progress % in word panel** — percentage now prepended before the "W" label
+  (`[XX%] W [current] / [total]`). Calculated as
+  `Math.round((currentWordIndex / totalWords) * 100)` with a 0% guard when
+  no document is loaded. Uses muted `--text-faint` token so it recedes behind
+  the word count without a badge or border.
+- **Source label** — small, non-interactive overlay at the top-left of the reading
+  viewport showing the loaded filename (files) or session title / first line
+  (pasted text), truncated to 28 characters with a trailing ellipsis. Renders
+  `null` when no source is loaded. Hides in focus mode.
+- **Paste text resume** — pasted and URL-fetched content now reliably creates an
+  IndexedDB entry so sessions resume from the correct word position on next visit.
+  Fixed a pruning-race bug where the `pruneTextCacheToNames` call ran with a
+  stale `records` snapshot that did not yet include the newly created session,
+  causing the just-saved entry to be immediately deleted.
 
 ## v1.3.1 (in progress)
 ### Added

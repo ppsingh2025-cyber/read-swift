@@ -17,7 +17,7 @@
  *   10 — Confirm and save
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useReaderContext } from '../context/useReaderContext';
 import type { CustomMode, ModeSettings } from '../types/readingModes';
 import styles from '../styles/SaveModeWizard.module.css';
@@ -28,18 +28,22 @@ interface SaveModeWizardProps {
 }
 
 type WizardSettings = {
-  windowSize: 1 | 2 | 3;
+  windowSize: 1 | 2 | 3 | 4 | 5;
   orpEnabled: boolean;
   orpColored: boolean;
   focalLine: boolean;
   peripheralFade: boolean;
+  contextWordSameSize: boolean;
+  contextWordOpacity: number;
   punctuationPause: boolean;
   longWordCompensation: boolean;
   chunkMode: 'fixed' | 'intelligent';
   wpm: number;
 };
 
-const TOTAL_STEPS = 11; // 0–10
+const TOTAL_STEPS = 13; // 0–12
+/** Wizard steps that present a Yes/No choice (for Y/N keyboard shortcut) */
+const YES_NO_STEPS = [2, 3, 4, 5, 6, 8, 9, 12];
 
 export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizardProps) {
   const {
@@ -52,6 +56,8 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
     longWordCompensation: currentLongWord,
     chunkMode: currentChunkMode,
     wpm: currentWpm,
+    contextWordSameSize: currentContextSameSize,
+    contextWordOpacity: currentContextOpacity,
     setWpm,
     setSavedCustomModes,
     setActiveMode,
@@ -64,13 +70,15 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
 
   // Pre-populate with current settings
   const [settings, setSettings] = useState<WizardSettings>(() => ({
-    windowSize: ([1, 2, 3].includes(currentWindowSize)
+    windowSize: ([1, 2, 3, 4, 5].includes(currentWindowSize)
       ? currentWindowSize
-      : 1) as 1 | 2 | 3,
+      : 1) as 1 | 2 | 3 | 4 | 5,
     orpEnabled: currentOrp,
     orpColored: currentOrpColored,
     focalLine: currentFocalLine,
     peripheralFade: currentPeripheralFade,
+    contextWordSameSize: currentContextSameSize,
+    contextWordOpacity: currentContextOpacity,
     punctuationPause: currentPuncPause,
     longWordCompensation: currentLongWord,
     chunkMode: currentChunkMode,
@@ -87,6 +95,8 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
       punctuationPause: settings.punctuationPause,
       longWordCompensation: settings.longWordCompensation,
       chunkMode: settings.chunkMode,
+      contextWordSameSize: settings.contextWordSameSize,
+      contextWordOpacity: settings.contextWordOpacity,
     };
     const newMode: CustomMode = {
       id: crypto.randomUUID(),
@@ -103,10 +113,69 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
     onClose();
   };
 
-  const next = () => setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
-  const back = () => setStep((s) => Math.max(s - 1, 0));
+  const next = useCallback(() => setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1)), []);
+  const back = useCallback(() => setStep((s) => Math.max(s - 1, 0)), []);
 
   const stepLabel = `Step ${step + 1} of ${TOTAL_STEPS}`;
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName.toLowerCase();
+      if (tag === 'input') return;
+
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'Enter':
+          if (step < TOTAL_STEPS - 1) {
+            e.preventDefault();
+            if (step === 0 && wizardName.trim().length === 0) return;
+            next();
+          }
+          break;
+        case 'ArrowLeft':
+          if (step > 0) { e.preventDefault(); back(); }
+          break;
+        case 'Escape':
+          e.preventDefault();
+          onClose();
+          break;
+        case '1': case '2': case '3': case '4': case '5':
+          if (step === 1) {
+            e.preventDefault();
+            setSettings(s => ({ ...s, windowSize: parseInt(e.key, 10) as 1|2|3|4|5 }));
+          }
+          break;
+        case 'y': case 'Y':
+          if (YES_NO_STEPS.includes(step)) {
+            e.preventDefault();
+            if (step === 2)  setSettings(s => ({ ...s, orpEnabled: true }));
+            if (step === 3)  setSettings(s => ({ ...s, orpColored: true }));
+            if (step === 4)  setSettings(s => ({ ...s, focalLine: true }));
+            if (step === 5)  setSettings(s => ({ ...s, peripheralFade: true }));
+            if (step === 6)  setSettings(s => ({ ...s, contextWordSameSize: true }));
+            if (step === 8)  setSettings(s => ({ ...s, punctuationPause: true }));
+            if (step === 9)  setSettings(s => ({ ...s, longWordCompensation: true }));
+            if (step === 12) setSettings(s => ({ ...s, chunkMode: 'intelligent' }));
+          }
+          break;
+        case 'n': case 'N':
+          if (YES_NO_STEPS.includes(step)) {
+            e.preventDefault();
+            if (step === 2)  setSettings(s => ({ ...s, orpEnabled: false }));
+            if (step === 3)  setSettings(s => ({ ...s, orpColored: false }));
+            if (step === 4)  setSettings(s => ({ ...s, focalLine: false }));
+            if (step === 5)  setSettings(s => ({ ...s, peripheralFade: false }));
+            if (step === 6)  setSettings(s => ({ ...s, contextWordSameSize: false }));
+            if (step === 8)  setSettings(s => ({ ...s, punctuationPause: false }));
+            if (step === 9)  setSettings(s => ({ ...s, longWordCompensation: false }));
+            if (step === 12) setSettings(s => ({ ...s, chunkMode: 'fixed' }));
+          }
+          break;
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [step, wizardName, next, back, onClose]);
 
   return (
     <div className={styles.overlay} role="dialog" aria-modal="true" aria-label="Save custom mode">
@@ -123,6 +192,9 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
             style={{ width: `${((step + 1) / TOTAL_STEPS) * 100}%` }}
           />
         </div>
+        <p className={styles.keyHint} aria-hidden="true">
+          ← → to navigate · Y/N to choose · 1–5 for word count
+        </p>
 
         <div className={styles.body}>
           <p className={styles.stepLabel}>{stepLabel}</p>
@@ -147,9 +219,9 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
           {/* ── Step 1: Window size ──────────────────────────── */}
           {step === 1 && (
             <div className={styles.stepContent}>
-              <p className={styles.question}>How many words at once? (1–3)</p>
+              <p className={styles.question}>How many words at once? (1–5)</p>
               <div className={styles.options}>
-                {([1, 2, 3] as const).map((n) => (
+                {([1, 2, 3, 4, 5] as const).map((n) => (
                   <button
                     key={n}
                     className={`${styles.optionBtn} ${settings.windowSize === n ? styles.optionBtnActive : ''}`}
@@ -239,8 +311,54 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
             </div>
           )}
 
-          {/* ── Step 6: Punctuation pause ────────────────────── */}
+          {/* ── Step 6: Context word size ────────────────────── */}
           {step === 6 && (
+            <div className={styles.stepContent}>
+              <p className={styles.question}>Should context words be the same size as the main word?</p>
+              <p className={styles.hint}>Off = context words appear smaller, creating visual hierarchy.</p>
+              <div className={styles.options}>
+                <button
+                  className={`${styles.optionBtn} ${settings.contextWordSameSize ? styles.optionBtnActive : ''}`}
+                  onClick={() => setSettings(s => ({ ...s, contextWordSameSize: true }))}
+                  aria-pressed={settings.contextWordSameSize}
+                >Same size</button>
+                <button
+                  className={`${styles.optionBtn} ${!settings.contextWordSameSize ? styles.optionBtnActive : ''}`}
+                  onClick={() => setSettings(s => ({ ...s, contextWordSameSize: false }))}
+                  aria-pressed={!settings.contextWordSameSize}
+                >Smaller</button>
+              </div>
+            </div>
+          )}
+
+          {/* ── Step 7: Dim amount ───────────────────────────── */}
+          {step === 7 && (
+            <div className={styles.stepContent}>
+              <p className={styles.question}>How much should context words dim?</p>
+              <p className={styles.hint}>100% = fully visible. 20% = very faint. Applied when dimming is on.</p>
+              <div className={styles.wpmStepperWizard}>
+                <button type="button" className={styles.wpmWizardBtn}
+                        onClick={() => setSettings(s => ({
+                          ...s,
+                          contextWordOpacity: Math.max(0.20, Math.round((s.contextWordOpacity - 0.05) * 20) / 20)
+                        }))}
+                        aria-label="Decrease opacity">−</button>
+                <span className={styles.wpmWizardValue}>
+                  {Math.round(settings.contextWordOpacity * 100)}
+                  <span className={styles.wpmWizardUnit}>%</span>
+                </span>
+                <button type="button" className={styles.wpmWizardBtn}
+                        onClick={() => setSettings(s => ({
+                          ...s,
+                          contextWordOpacity: Math.min(1.0, Math.round((s.contextWordOpacity + 0.05) * 20) / 20)
+                        }))}
+                        aria-label="Increase opacity">+</button>
+              </div>
+            </div>
+          )}
+
+          {/* ── Step 8: Punctuation pause ────────────────────── */}
+          {step === 8 && (
             <div className={styles.stepContent}>
               <p className={styles.question}>Pause briefly at punctuation?</p>
               <div className={styles.options}>
@@ -258,8 +376,8 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
             </div>
           )}
 
-          {/* ── Step 7: Long word compensation ──────────────── */}
-          {step === 7 && (
+          {/* ── Step 9: Long word compensation ──────────────── */}
+          {step === 9 && (
             <div className={styles.stepContent}>
               <p className={styles.question}>Slow down for long words?</p>
               <div className={styles.options}>
@@ -277,8 +395,8 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
             </div>
           )}
 
-          {/* ── Step 8: Chunk mode ───────────────────────────── */}
-          {step === 8 && (
+          {/* ── Step 10: Chunk mode ───────────────────────────── */}
+          {step === 10 && (
             <div className={styles.stepContent}>
               <p className={styles.question}>Group words into natural phrases?</p>
               <div className={styles.options}>
@@ -296,8 +414,8 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
             </div>
           )}
 
-          {/* ── Step 9: WPM ─────────────────────────────────── */}
-          {step === 9 && (
+          {/* ── Step 11: WPM ─────────────────────────────────── */}
+          {step === 11 && (
             <div className={styles.stepContent}>
               <p className={styles.question}>What speed should this mode use?</p>
               <div className={styles.wpmStepperWizard}>
@@ -315,8 +433,8 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
             </div>
           )}
 
-          {/* ── Step 10: Confirm ────────────────────────────── */}
-          {step === 10 && (
+          {/* ── Step 12: Confirm ────────────────────────────── */}
+          {step === 12 && (
             <div className={styles.stepContent}>
               <p className={styles.question}>Ready to save?</p>
               <div className={styles.summary}>
@@ -327,6 +445,8 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
                   <li>Color key letter: {settings.orpColored ? 'On' : 'Off'}</li>
                   <li>Focal ticks: {settings.focalLine ? 'On' : 'Off'}</li>
                   <li>Peripheral fade: {settings.peripheralFade ? 'On' : 'Off'}</li>
+                  <li>Context word size: {settings.contextWordSameSize ? 'Same as main' : 'Smaller'}</li>
+                  <li>Context word opacity: {Math.round(settings.contextWordOpacity * 100)}%</li>
                   <li>Punctuation pause: {settings.punctuationPause ? 'On' : 'Off'}</li>
                   <li>Long-word delay: {settings.longWordCompensation ? 'On' : 'Off'}</li>
                   <li>Phrase grouping: {settings.chunkMode === 'intelligent' ? 'On' : 'Off'}</li>
