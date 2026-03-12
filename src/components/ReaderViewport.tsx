@@ -26,6 +26,11 @@ import type { Orientation, StructuralMarker } from '../context/readerContextDef'
 import { useReaderContext } from '../context/useReaderContext';
 import styles from '../styles/ReaderViewport.module.css';
 
+/** Truncate a source label to at most `max` characters, appending an ellipsis. */
+function truncateLabel(text: string, max = 28): string {
+  return text.length > max ? `${text.slice(0, max)}\u2026` : text;
+}
+
 interface ReaderViewportProps {
   /** Ordered list of words in the current window (length = windowSize) */
   wordWindow: string[];
@@ -76,6 +81,10 @@ interface ReaderViewportProps {
   onFaster?: () => void;
   /** Called when user swipes right (slower) */
   onSlower?: () => void;
+  /** When true, applies eye focus mode (hides nav overlays, keeps word display unchanged) */
+  isEyeFocus?: boolean;
+  /** Called when the user clicks the eye focus button */
+  onEyeToggle?: () => void;
 }
 
 /**
@@ -158,8 +167,10 @@ const ReaderViewport = memo(function ReaderViewport({
   onPlayPause,
   onFaster,
   onSlower,
+  isEyeFocus = false,
+  onEyeToggle,
 }: ReaderViewportProps) {
-  const { isPlaying, wpm } = useReaderContext();
+  const { isPlaying, wpm, fileMetadata } = useReaderContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
   /** Outermost viewport div — receives --pre-orp-col and --focal-tick-x CSS variables */
   const viewportRef  = useRef<HTMLDivElement>(null);
@@ -267,6 +278,11 @@ const ReaderViewport = memo(function ReaderViewport({
   const userScale   = mainWordFontSize / 100;
   const isMultiWord = wordWindow.length > 1;
 
+  // Progress percentage — used in both the aria-label and the display span
+  const progressPct = (currentWordIndex !== undefined && totalWordCount)
+    ? Math.round((currentWordIndex / totalWordCount) * 100)
+    : 0;
+
   // ORP coloring: focalLine always wins
   // Structural split always happens (pre/ORP/post) — required for tick alignment.
   // Color is only applied when orpColored is true.
@@ -353,7 +369,11 @@ const ReaderViewport = memo(function ReaderViewport({
   return (
     <div
       ref={viewportRef}
-      className={`${styles.viewport}${fullHeight ? ` ${styles.viewportFull}` : ''}`}
+      className={[
+        styles.viewport,
+        fullHeight ? styles.viewportFull : '',
+        isEyeFocus ? styles.viewportEyeFocus : '',
+      ].filter(Boolean).join(' ')}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -624,6 +644,23 @@ const ReaderViewport = memo(function ReaderViewport({
             </div>
           )}
 
+          {/* Eye focus button — centered between nav clusters */}
+          {onEyeToggle && (
+            <button
+              className={`${styles.eyeBtn}${isEyeFocus ? ` ${styles.eyeBtnActive}` : ''}`}
+              onClick={(e) => { e.stopPropagation(); onEyeToggle(); }}
+              aria-label={isEyeFocus ? 'Exit eye focus mode' : 'Eye focus mode'}
+              title={isEyeFocus ? 'Exit eye focus mode' : 'Eye focus mode'}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                   strokeLinecap="round" strokeLinejoin="round"
+                   width="14" height="14" aria-hidden="true">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          )}
+
           {currentWordIndex !== undefined && totalWordCount !== undefined && goToWord && (
             <div className={styles.wordNavOverlay} ref={wordJumpRef}>
               <button
@@ -640,12 +677,13 @@ const ReaderViewport = memo(function ReaderViewport({
               <button
                 className={styles.pagePillOverlay}
                 onClick={() => { setShowWordJump(p => !p); }}
-                aria-label={`Word ${currentWordIndex + 1} of ${totalWordCount}, ${Math.round(((currentWordIndex + 1) / totalWordCount) * 100)}% complete`}
+                aria-label={`Word ${currentWordIndex + 1} of ${totalWordCount}, ${progressPct}% complete`}
               >
-                Word {(currentWordIndex + 1).toLocaleString()}
+                <span className={styles.wcPctPre}>{progressPct}%</span>
+                {' '}<span className={styles.wcLabel}>W</span>{' '}
+                {(currentWordIndex + 1).toLocaleString()}
                 <span className={styles.wcSep}>/</span>
                 {totalWordCount.toLocaleString()}
-                <span className={styles.wcPct}>· {Math.round(((currentWordIndex + 1) / totalWordCount) * 100)}%</span>
               </button>
               <button
                 className={styles.pageNavBtn}
@@ -681,6 +719,13 @@ const ReaderViewport = memo(function ReaderViewport({
             </div>
           )}
 
+        </div>
+      )}
+
+      {/* ── Source label — top-left overlay ── */}
+      {hasWords && !isLoading && fileMetadata && (
+        <div className={styles.sourceLabel} aria-label={`Source: ${fileMetadata.name}`}>
+          {truncateLabel(fileMetadata.name)}
         </div>
       )}
     </div>

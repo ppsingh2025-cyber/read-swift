@@ -526,40 +526,6 @@ body {
   background: rgba(255, 255, 255, 0.9);
 }
 
-/* ─── WPM badge inside viewport — shown only in focus mode ──── */
-
-.focusWpmBadge {
-  position: absolute;
-  top: 0.5rem;
-  left: 0.5rem;
-  z-index: 10;
-  display: flex;
-  align-items: baseline;
-  gap: 0.2rem;
-  background: rgba(0, 0, 0, 0.45);
-  color: var(--text-muted);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 0 0.55rem;
-  height: 30px;
-  font-size: 0.78rem;
-  font-variant-numeric: tabular-nums;
-  pointer-events: none;
-  user-select: none;
-}
-
-[data-theme='day'] .focusWpmBadge {
-  background: rgba(255, 255, 255, 0.55);
-  border-color: rgba(0, 0, 0, 0.12);
-}
-
-.focusWpmUnit {
-  font-size: 0.65rem;
-  opacity: 0.7;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
 /* ─── Top bar left group (burger + upload + paste) ──────────── */
 
 .topBarLeft {

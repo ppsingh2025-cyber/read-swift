@@ -1,5 +1,56 @@
 # Changelog
 
+## [1.4.1]
+### Fixed
+- **Eye focus button unclickable** — the base `.overlayBar` rule carries
+  `pointer-events: none` (so the transparent overlay doesn't swallow word-area
+  taps). Child clusters (`.pageNavOverlay`, `.wordNavOverlay`) individually
+  restore `pointer-events: all`, but the `.eyeBtn` rule was missing the same
+  restoration. Added `pointer-events: all` to the base `.eyeBtn` rule in
+  `ReaderViewport.module.css` so the eye button is always clickable regardless
+  of eye-focus state.
+
+## [1.4.0]
+### Fixed
+- **WPM resets to 238 on refresh** — the adaptive speed system (`finalizeSession`)
+  was calling `setWpm(newBaseline)` which overwrote `fastread_wpm` in localStorage
+  with the adjusted value. On every subsequent refresh the app would initialise to
+  238 (250 × 0.95) instead of the user's saved preference. Fix: removed
+  `setWpm(newBaseline)` entirely — `finalizeSession` still runs to track rewinds
+  and store its baseline in `fastread_adaptive_wpm`, but the user's WPM preference
+  is never overwritten. Adaptive toast message updated to "Suggested speed for next
+  session" to match the new non-mutating behaviour.
+
+### Changed
+- **WPM badge removed** — the WPM number that appeared inside the reading area
+  during fullscreen focus mode has been removed. The Controls bar WPM stepper
+  remains unchanged. Removed `.focusWpmBadge` and `.focusWpmUnit` CSS classes.
+- **Eye focus mode rearchitected** — `isFocusMode` local state removed from
+  `ReaderViewport`; replaced with `isEyeFocus` prop driven from `App`. Eye focus
+  now borrows `appShellFocused` to hide the top bar and controls bar (same as the
+  existing maximize button), and hides page nav, word nav, source label, and focal
+  ticks within the viewport. **The word display is completely unchanged** in eye
+  focus — same size, same position, same color. Eye button lives inside the
+  `overlayBar` between the page nav and word nav clusters. Pressing Escape exits
+  eye focus mode.
+
+## v1.3.2 (in progress)
+### Added
+- **Progress % in word panel** — percentage now prepended before the "W" label
+  (`[XX%] W [current] / [total]`). Calculated as
+  `Math.round((currentWordIndex / totalWords) * 100)` with a 0% guard when
+  no document is loaded. Uses muted `--text-faint` token so it recedes behind
+  the word count without a badge or border.
+- **Source label** — small, non-interactive overlay at the top-left of the reading
+  viewport showing the loaded filename (files) or session title / first line
+  (pasted text), truncated to 28 characters with a trailing ellipsis. Renders
+  `null` when no source is loaded. Hides in focus mode.
+- **Paste text resume** — pasted and URL-fetched content now reliably creates an
+  IndexedDB entry so sessions resume from the correct word position on next visit.
+  Fixed a pruning-race bug where the `pruneTextCacheToNames` call ran with a
+  stale `records` snapshot that did not yet include the newly created session,
+  causing the just-saved entry to be immediately deleted.
+
 ## v1.3.1 (in progress)
 ### Added
 - InputPanel now wires urlParser.ts for URL inputs (CORS-aware, honest error on blocked sites)
