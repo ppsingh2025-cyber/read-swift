@@ -684,8 +684,6 @@ export default function App() {
           onNextWord={nextWord}
           onPasteToggle={togglePaste}
           pasteOpen={showPaste}
-          prevDisabled={!words.length || currentWordIndex <= 0}
-          nextDisabled={!words.length || currentWordIndex >= words.length - 1}
           focused={isFocused}
         />
       </div>

@@ -9,7 +9,7 @@
  * All interactive elements meet the 44 px minimum touch-target size.
  */
 
-import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useReaderContext } from '../context/useReaderContext';
 import styles from '../styles/Controls.module.css';
 
@@ -26,10 +26,6 @@ interface ControlsProps {
   onPasteToggle: () => void;
   /** Whether the paste panel is currently open */
   pasteOpen: boolean;
-  /** When true, the "previous word" button is disabled */
-  prevDisabled?: boolean;
-  /** When true, the "next word" button is disabled */
-  nextDisabled?: boolean;
   /** When true (maximize/focus mode) upload and paste buttons are hidden */
   focused?: boolean;
 }
@@ -37,7 +33,7 @@ interface ControlsProps {
 /** Duration in ms for the WPM flash animation — matches the CSS @keyframes wpmFlash */
 const WPM_FLASH_DURATION = 200;
 
-export default memo(function Controls({
+export default function Controls({
   onFileSelect,
   onPlay,
   onPause,
@@ -48,11 +44,9 @@ export default memo(function Controls({
   onNextWord,
   onPasteToggle,
   pasteOpen,
-  prevDisabled,
-  nextDisabled,
   focused,
 }: ControlsProps) {
-  const { isPlaying, wpm, setWpm, words, isLoading } =
+  const { isPlaying, wpm, setWpm, words, isLoading, currentWordIndex } =
     useReaderContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -144,7 +138,7 @@ export default memo(function Controls({
           type="button"
           className={styles.controlBtn}
           onClick={onPrevWord}
-          disabled={prevDisabled}
+          disabled={!hasWords || currentWordIndex <= 0}
           title="Previous word (←)"
           aria-label="Previous word"
         >
@@ -180,7 +174,7 @@ export default memo(function Controls({
           type="button"
           className={styles.controlBtn}
           onClick={onNextWord}
-          disabled={nextDisabled}
+          disabled={!hasWords || currentWordIndex >= words.length - 1}
           title="Next word (→)"
           aria-label="Next word"
         >
@@ -280,4 +274,4 @@ export default memo(function Controls({
       </div>
     </div>
   );
-})
+}
