@@ -1,6 +1,30 @@
 # Changelog
 
 ## [1.5.0]
+### Changed
+- **Onboarding redesigned** — 4 steps (was 5): Demo → Pick mode → Pick theme → Load content.
+  Burger menu callout step removed entirely.
+  Step 1 is now a vertical stack of 3 tappable mode tiles (Sprint / Focus / Flow) with emoji,
+  WPM range, description, and a "Recommended" badge on Focus.
+  Step 2 is a 2×2 theme grid (Midnight / Warm / Obsidian / Day) — better thumb reach than
+  the single row of 4. Step 3 keeps the original load-content cards unchanged.
+- **Button layout fixed** — Back is now a small chevron icon in a top nav row alongside the
+  progress dots and a Replay button (step 0 only). Primary action is full-width at the bottom
+  so it never moves between steps. Skip is a small text link below the primary button.
+- **Post-onboarding empty state** — the reading viewport now shows two large tappable cards
+  ("Upload file" and "Paste text") when no document is loaded, replacing the plain text
+  placeholder. Cards show icons, labels, and format hints.
+- **Post-onboarding coach mark** — a single tooltip anchored to the burger menu appears 3 s
+  after onboarding completes ("Settings & history live here") and auto-dismisses after 5 s or
+  on any click. Replaces the previous scatter of help-button pulse, burger-button pulse, and
+  upload-button pulse.
+
+### Removed
+- Burger menu callout step from onboarding overlay.
+- `pulseHelp`, `pulseBurger`, `pulseUpload`, `showPostOnboardingHint` states and all related
+  CSS (`helpBtnPulse`, `@keyframes helpPulse`, `postOnboardingHint`, `@keyframes hintBarFade`).
+- `pulseBurger` prop from `BurgerMenuProps`.
+- `pulseUpload` prop from `ControlsProps`.
 ### Added
 - **Context word size toggle** — new setting `contextWordSameSize` (default: `true`). When
   enabled, context words render at the same font size as the main word. When disabled, they

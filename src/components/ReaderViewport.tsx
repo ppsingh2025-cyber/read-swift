@@ -451,7 +451,7 @@ const ReaderViewport = memo(function ReaderViewport({
           </div>
         </div>
       ) : !hasWords ? (
-        <div className={styles.placeholder}>
+        <div className={styles.emptyState}>
           <input
             ref={fileInputRef}
             type="file"
@@ -461,26 +461,43 @@ const ReaderViewport = memo(function ReaderViewport({
             aria-hidden="true"
             tabIndex={-1}
           />
-          <p className={styles.helpHeading}>Ready to speed-read?</p>
-          <p className={styles.helpBody}>
+          <p className={styles.emptyHeading}>Ready to read</p>
+          <p className={styles.emptySubhead}>Load something to get started</p>
+          <div className={styles.emptyActions}>
             <button
-              className={styles.helpLink}
+              className={styles.emptyActionBtn}
               onClick={handleUploadClick}
-              aria-label="Upload a file to start reading"
+              aria-label="Upload a file"
             >
-              Upload a file
+              <span className={styles.emptyActionIcon} aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"
+                     strokeLinejoin="round" aria-hidden="true">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+              </span>
+              <span className={styles.emptyActionLabel}>Upload file</span>
+              <span className={styles.emptyActionSub}>PDF · EPUB · DOCX · TXT · MD</span>
             </button>
-            {' '}(PDF, EPUB, TXT, MD, HTML, RTF, SRT, DOCX){' '}
-            or{' '}
             <button
-              className={styles.helpLink}
+              className={styles.emptyActionBtn}
               onClick={() => onShowPaste?.()}
-              aria-label="Paste text to start reading"
+              aria-label="Paste text"
             >
-              paste text
+              <span className={styles.emptyActionIcon} aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"
+                     strokeLinejoin="round" aria-hidden="true">
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                </svg>
+              </span>
+              <span className={styles.emptyActionLabel}>Paste text</span>
+              <span className={styles.emptyActionSub}>Article · URL · any text</span>
             </button>
-            {' '}to get started.
-          </p>
+          </div>
         </div>
       ) : orientation === 'vertical' ? (
         /*

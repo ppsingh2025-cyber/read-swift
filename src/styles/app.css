@@ -533,6 +533,7 @@ body {
   align-items: center;
   gap: 0.25rem;
   flex-shrink: 0;
+  position: relative;
 }
 
 .topBarHiddenInput {
@@ -618,14 +619,6 @@ body {
   background: var(--bg-panel, #eeeeea);
 }
 
-.helpBtnPulse {
-  animation: helpPulse 0.6s ease-in-out 3;
-}
-
-@keyframes helpPulse {
-  0%, 100% { box-shadow: 0 0 0 0 var(--color-accent-22); }
-  50% { box-shadow: 0 0 0 8px var(--color-accent-22); transform: scale(1.15); }
-}
 
 
 /* ─── Landscape mode on mobile ──────────────────────────────────── */
@@ -711,24 +704,6 @@ kbd {
   color: var(--kbd-text);
 }
 
-/* ─── Post-onboarding hint bar ──────────────────────────────── */
-
-@keyframes hintBarFade {
-  0%   { opacity: 1; }
-  70%  { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-.postOnboardingHint {
-  text-align: center;
-  font-size: 0.82rem;
-  color: var(--text-faint);
-  padding: 0.4rem 1rem;
-  animation: hintBarFade 6s ease forwards;
-  pointer-events: none;
-  user-select: none;
-}
-
 /* ─── Focus mode exit hint pill ─────────────────────────────── */
 
 @keyframes focusHintFade {
@@ -752,4 +727,40 @@ kbd {
   pointer-events: none;
   user-select: none;
   animation: focusHintFade 3s ease forwards;
+}
+
+/* ─── Post-onboarding burger coach mark ─────────────────────── */
+
+.burgerCoach {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0.75rem;
+  background: var(--color-accent);
+  color: var(--bg);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 600;
+  animation: coachFade 5s ease forwards;
+}
+
+.burgerCoachArrow {
+  position: absolute;
+  top: -5px;
+  left: 1rem;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid var(--color-accent);
+}
+
+@keyframes coachFade {
+  0%   { opacity: 0; transform: translateY(-4px); }
+  15%  { opacity: 1; transform: translateY(0); }
+  75%  { opacity: 1; }
+  100% { opacity: 0; }
 }

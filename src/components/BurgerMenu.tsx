@@ -56,12 +56,11 @@ const RESETTABLE_KEYS = [
 interface BurgerMenuProps {
   onFileSelect: (file: File) => void;
   onReplayIntro?: () => void;
-  pulseBurger?: boolean;
   onResumeFromCache: (name: string) => void;
   onClearAll: () => void;
 }
 
-export default function BurgerMenu({ onFileSelect, onReplayIntro, pulseBurger, onResumeFromCache, onClearAll }: BurgerMenuProps) {
+export default function BurgerMenu({ onFileSelect, onReplayIntro, onResumeFromCache, onClearAll }: BurgerMenuProps) {
   const [open, setOpen] = useState(false);
 
   const {
@@ -170,7 +169,7 @@ export default function BurgerMenu({ onFileSelect, onReplayIntro, pulseBurger, o
       {/* Hamburger button */}
       <button
         type="button"
-        className={`${styles.burgerBtn}${pulseBurger ? ` ${styles.burgerBtnPulse}` : ''}`}
+        className={styles.burgerBtn}
         onClick={handleOpen}
         aria-label="Open settings menu"
         aria-expanded={open}

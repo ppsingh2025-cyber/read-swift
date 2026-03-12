@@ -130,10 +130,8 @@ export default function App() {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [sessionCompleted, setSessionCompleted] = useState(false);
   const [, setContextExpanded] = useState(false);
-  const [pulseHelp, setPulseHelp] = useState(false);
-  const [pulseBurger, setPulseBurger] = useState(false);
-  const [showPostOnboardingHint, setShowPostOnboardingHint] = useState(false);
-  const [pulseUpload, setPulseUpload] = useState(false);
+  const [showPostOnboardingCoach, setShowPostOnboardingCoach] = useState(false);
+  const [showBurgerCoach, setShowBurgerCoach] = useState(false);
   const [showFocusHint, setShowFocusHint] = useState(false);
 
   // Ref to store word index before reset (for undo)
@@ -502,18 +500,7 @@ export default function App() {
       setActiveMode(prefs.modeId);
       localStorage.setItem('fastread_onboarding_complete', 'true');
       setShowOnboarding(false);
-      setPulseHelp(true);
-      setTimeout(() => setPulseHelp(false), 2500);
-      // Delayed burger pulse — fires after hint bar is visible
-      setTimeout(() => {
-        setPulseBurger(true);
-        setTimeout(() => setPulseBurger(false), 6000);
-      }, 2000);
-      // Post-onboarding hint + upload pulse
-      setShowPostOnboardingHint(true);
-      setPulseUpload(true);
-      setTimeout(() => setPulseUpload(false), 4000);
-      setTimeout(() => setShowPostOnboardingHint(false), 6000);
+      setShowPostOnboardingCoach(true);
     },
     [setTheme, applyMode, setActiveMode],
   );
@@ -532,6 +519,28 @@ export default function App() {
     setShowOnboarding(true);
   }, []);
 
+  // Coach mark: show 3s after onboarding completes, auto-dismiss after 5s
+  useEffect(() => {
+    if (!showPostOnboardingCoach) return;
+    const show = setTimeout(() => setShowBurgerCoach(true), 3000);
+    const hide = setTimeout(() => {
+      setShowBurgerCoach(false);
+      setShowPostOnboardingCoach(false);
+    }, 8000);
+    return () => { clearTimeout(show); clearTimeout(hide); };
+  }, [showPostOnboardingCoach]);
+
+  // Dismiss coach mark on any click
+  useEffect(() => {
+    if (!showBurgerCoach) return;
+    const dismiss = () => {
+      setShowBurgerCoach(false);
+      setShowPostOnboardingCoach(false);
+    };
+    window.addEventListener('click', dismiss, { once: true });
+    return () => window.removeEventListener('click', dismiss);
+  }, [showBurgerCoach]);
+
   return (
     <AuthProvider>
     {showWhatsNew && (
@@ -549,7 +558,13 @@ export default function App() {
       {/* ── 1. Top bar ──────────────────────────────────────────── */}
       <header className="topBar">
         <div className="topBarLeft">
-          <BurgerMenu onFileSelect={handleFileSelect} onReplayIntro={resetOnboarding} pulseBurger={pulseBurger} onResumeFromCache={handleResumeFromCache} onClearAll={handleClearAll} />
+          <BurgerMenu onFileSelect={handleFileSelect} onReplayIntro={resetOnboarding} onResumeFromCache={handleResumeFromCache} onClearAll={handleClearAll} />
+          {showBurgerCoach && (
+            <div className="burgerCoach" aria-live="polite" role="status">
+              Settings & history live here
+              <span className="burgerCoachArrow" aria-hidden="true" />
+            </div>
+          )}
         </div>
         <div className="topBarBrand">
           <img
@@ -565,7 +580,7 @@ export default function App() {
 
           <UserAvatar />
           <button
-            className={`helpBtn${pulseHelp ? ' helpBtnPulse' : ''}`}
+            className="helpBtn"
             onClick={() => setShowHelp(true)}
             title="How to Use PaceRead"
             aria-label="How to Use PaceRead"
@@ -575,13 +590,6 @@ export default function App() {
           <ThemeToggle />
         </div>
       </header>
-
-      {/* Post-onboarding hint bar */}
-      {showPostOnboardingHint && words.length === 0 && (
-        <div className="postOnboardingHint" aria-live="polite">
-          Upload a file or paste text to begin
-        </div>
-      )}
 
       {/* ── 2. Reading main ─────────────────────────────────────── */}
       <main className="readingMain">
@@ -677,7 +685,6 @@ export default function App() {
           onPasteToggle={togglePaste}
           pasteOpen={showPaste}
           focused={isFocused}
-          pulseUpload={pulseUpload}
         />
       </div>
 
