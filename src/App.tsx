@@ -493,6 +493,26 @@ export default function App() {
     });
   }, []);
   const togglePaste = useCallback(() => setShowPaste((p) => !p), []);
+
+  // Stable callbacks for Controls / ReaderViewport memo props.
+  // Using refs (manualWpmRef, isPlayingRef) avoids capturing state values as
+  // deps, which would make these recreate on every WPM or play-state change.
+  const handleFaster = useCallback(() => {
+    manualWpmRef.current = true;
+    faster();
+  }, [faster]);
+
+  const handleSlower = useCallback(() => {
+    manualWpmRef.current = true;
+    slower();
+  }, [slower]);
+
+  const handleResetRequest = useCallback(() => setShowResetConfirm(true), []);
+
+  const handlePlayPause = useCallback(() => {
+    if (isPlayingRef.current) pause(); else play();
+  }, [play, pause]);
+
   const completeOnboarding = useCallback(
     (prefs: { theme: Theme; modeId: PresetModeId }) => {
       setTheme(prefs.theme);
@@ -618,9 +638,9 @@ export default function App() {
             goToPage={goToPage}
             goToWord={goToWord}
             structureMap={structureMap}
-            onPlayPause={() => isPlaying ? pause() : play()}
-            onFaster={() => { manualWpmRef.current = true; faster(); }}
-            onSlower={() => { manualWpmRef.current = true; slower(); }}
+            onPlayPause={handlePlayPause}
+            onFaster={handleFaster}
+            onSlower={handleSlower}
             isEyeFocus={isEyeFocus}
             onEyeToggle={toggleEyeFocus}
             contextWordFontSize={contextWordFontSize}
@@ -677,9 +697,9 @@ export default function App() {
           onFileSelect={handleFileSelect}
           onPlay={play}
           onPause={pause}
-          onResetRequest={() => setShowResetConfirm(true)}
-          onFaster={() => { manualWpmRef.current = true; faster(); }}
-          onSlower={() => { manualWpmRef.current = true; slower(); }}
+          onResetRequest={handleResetRequest}
+          onFaster={handleFaster}
+          onSlower={handleSlower}
           onPrevWord={prevWord}
           onNextWord={nextWord}
           onPasteToggle={togglePaste}

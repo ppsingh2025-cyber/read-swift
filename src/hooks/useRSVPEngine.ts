@@ -215,23 +215,24 @@ export function useRSVPEngine() {
     resetReader();
   }, [resetReader]);
 
+  // Use refs so these callbacks are stable — no stale closure on currentWordIndex or wpm
   const faster = useCallback(() => {
-    setWpm(Math.min(1500, wpm + 10));
-  }, [setWpm, wpm]);
+    setWpm(Math.min(1500, wpmRef.current + 10));
+  }, [setWpm]);
 
   const slower = useCallback(() => {
-    setWpm(Math.max(60, wpm - 10));
-  }, [setWpm, wpm]);
+    setWpm(Math.max(60, wpmRef.current - 10));
+  }, [setWpm]);
 
   const prevWord = useCallback(() => {
     setIsPlaying(false);
-    setCurrentWordIndex(Math.max(0, currentWordIndex - 1));
-  }, [setIsPlaying, setCurrentWordIndex, currentWordIndex]);
+    setCurrentWordIndex(Math.max(0, indexRef.current - 1));
+  }, [setIsPlaying, setCurrentWordIndex]);
 
   const nextWord = useCallback(() => {
     setIsPlaying(false);
-    setCurrentWordIndex(Math.min(words.length - 1, currentWordIndex + 1));
-  }, [setIsPlaying, setCurrentWordIndex, currentWordIndex, words.length]);
+    setCurrentWordIndex(Math.min(wordsLenRef.current - 1, indexRef.current + 1));
+  }, [setIsPlaying, setCurrentWordIndex]);
 
   /**
    * Build the rolling word window centered on currentWordIndex.
