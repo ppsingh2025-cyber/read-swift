@@ -235,10 +235,32 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
 
   const totalPages = pageBreaks.length;
 
-  // Persist word index to localStorage whenever it changes
+  // Persist word index to localStorage — debounced so rapid playback
+  // doesn't hammer storage on every word tick.
+  const indexSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const currentWordIndexRef = useRef(currentWordIndex);
+  currentWordIndexRef.current = currentWordIndex;
+
   useEffect(() => {
-    localStorage.setItem(LS_KEY_INDEX, String(currentWordIndex));
+    if (indexSaveTimerRef.current !== null) {
+      clearTimeout(indexSaveTimerRef.current);
+    }
+    indexSaveTimerRef.current = setTimeout(() => {
+      localStorage.setItem(LS_KEY_INDEX, String(currentWordIndexRef.current));
+      indexSaveTimerRef.current = null;
+    }, 500);
   }, [currentWordIndex]);
+
+  // Flush the debounce on unmount so the final position is never lost.
+  useEffect(() => {
+    return () => {
+      if (indexSaveTimerRef.current !== null) {
+        clearTimeout(indexSaveTimerRef.current);
+        localStorage.setItem(LS_KEY_INDEX, String(currentWordIndexRef.current));
+        indexSaveTimerRef.current = null;
+      }
+    };
+  }, []);
 
   // Persist WPM
   useEffect(() => {
