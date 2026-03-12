@@ -33,7 +33,7 @@ type WizardSettings = {
   orpColored: boolean;
   focalLine: boolean;
   peripheralFade: boolean;
-  contextWordSameSize: boolean;
+  contextWordFontSize: number;
   contextWordOpacity: number;
   punctuationPause: boolean;
   longWordCompensation: boolean;
@@ -56,7 +56,7 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
     longWordCompensation: currentLongWord,
     chunkMode: currentChunkMode,
     wpm: currentWpm,
-    contextWordSameSize: currentContextSameSize,
+    contextWordFontSize: currentContextFontSize,
     contextWordOpacity: currentContextOpacity,
     setWpm,
     setSavedCustomModes,
@@ -77,7 +77,7 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
     orpColored: currentOrpColored,
     focalLine: currentFocalLine,
     peripheralFade: currentPeripheralFade,
-    contextWordSameSize: currentContextSameSize,
+    contextWordFontSize: currentContextFontSize,
     contextWordOpacity: currentContextOpacity,
     punctuationPause: currentPuncPause,
     longWordCompensation: currentLongWord,
@@ -95,7 +95,7 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
       punctuationPause: settings.punctuationPause,
       longWordCompensation: settings.longWordCompensation,
       chunkMode: settings.chunkMode,
-      contextWordSameSize: settings.contextWordSameSize,
+      contextWordFontSize: settings.contextWordFontSize,
       contextWordOpacity: settings.contextWordOpacity,
     };
     const newMode: CustomMode = {
@@ -152,7 +152,7 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
             if (step === 3)  setSettings(s => ({ ...s, orpColored: true }));
             if (step === 4)  setSettings(s => ({ ...s, focalLine: true }));
             if (step === 5)  setSettings(s => ({ ...s, peripheralFade: true }));
-            if (step === 6)  setSettings(s => ({ ...s, contextWordSameSize: true }));
+            if (step === 6)  setSettings(s => ({ ...s, contextWordFontSize: 0 }));
             if (step === 8)  setSettings(s => ({ ...s, punctuationPause: true }));
             if (step === 9)  setSettings(s => ({ ...s, longWordCompensation: true }));
             if (step === 12) setSettings(s => ({ ...s, chunkMode: 'intelligent' }));
@@ -165,7 +165,7 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
             if (step === 3)  setSettings(s => ({ ...s, orpColored: false }));
             if (step === 4)  setSettings(s => ({ ...s, focalLine: false }));
             if (step === 5)  setSettings(s => ({ ...s, peripheralFade: false }));
-            if (step === 6)  setSettings(s => ({ ...s, contextWordSameSize: false }));
+            if (step === 6)  setSettings(s => ({ ...s, contextWordFontSize: 85 }));
             if (step === 8)  setSettings(s => ({ ...s, punctuationPause: false }));
             if (step === 9)  setSettings(s => ({ ...s, longWordCompensation: false }));
             if (step === 12) setSettings(s => ({ ...s, chunkMode: 'fixed' }));
@@ -318,14 +318,14 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
               <p className={styles.hint}>Off = context words appear smaller, creating visual hierarchy.</p>
               <div className={styles.options}>
                 <button
-                  className={`${styles.optionBtn} ${settings.contextWordSameSize ? styles.optionBtnActive : ''}`}
-                  onClick={() => setSettings(s => ({ ...s, contextWordSameSize: true }))}
-                  aria-pressed={settings.contextWordSameSize}
+                  className={`${styles.optionBtn} ${settings.contextWordFontSize === 0 ? styles.optionBtnActive : ''}`}
+                  onClick={() => setSettings(s => ({ ...s, contextWordFontSize: 0 }))}
+                  aria-pressed={settings.contextWordFontSize === 0}
                 >Same size</button>
                 <button
-                  className={`${styles.optionBtn} ${!settings.contextWordSameSize ? styles.optionBtnActive : ''}`}
-                  onClick={() => setSettings(s => ({ ...s, contextWordSameSize: false }))}
-                  aria-pressed={!settings.contextWordSameSize}
+                  className={`${styles.optionBtn} ${settings.contextWordFontSize !== 0 ? styles.optionBtnActive : ''}`}
+                  onClick={() => setSettings(s => ({ ...s, contextWordFontSize: 85 }))}
+                  aria-pressed={settings.contextWordFontSize !== 0}
                 >Smaller</button>
               </div>
             </div>
@@ -445,7 +445,7 @@ export default function SaveModeWizard({ onClose, existingModes }: SaveModeWizar
                   <li>Color key letter: {settings.orpColored ? 'On' : 'Off'}</li>
                   <li>Focal ticks: {settings.focalLine ? 'On' : 'Off'}</li>
                   <li>Peripheral fade: {settings.peripheralFade ? 'On' : 'Off'}</li>
-                  <li>Context word size: {settings.contextWordSameSize ? 'Same as main' : 'Smaller'}</li>
+                  <li>Context word size: {settings.contextWordFontSize === 0 ? 'Same as main' : 'Smaller'}</li>
                   <li>Context word opacity: {Math.round(settings.contextWordOpacity * 100)}%</li>
                   <li>Punctuation pause: {settings.punctuationPause ? 'On' : 'Off'}</li>
                   <li>Long-word delay: {settings.longWordCompensation ? 'On' : 'Off'}</li>

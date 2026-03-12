@@ -43,7 +43,9 @@ const LS_KEY_CUSTOM_MODES = 'fastread_custom_modes';
 const LS_KEY_ACTIVE_CUSTOM_MODE = 'fastread_active_custom_mode_id';
 const LS_KEY_ORP_COLORED = 'fastread_orp_colored';
 const LS_KEY_SESSION_HISTORY = 'fastread_session_history';
-const LS_KEY_CONTEXT_SAME_SIZE = 'fastread_context_same_size';
+const LS_KEY_CONTEXT_FONT_SIZE = 'fastread_context_font_size';
+// old key kept as read-only for migration
+const LS_KEY_CONTEXT_SAME_SIZE_LEGACY = 'fastread_context_same_size';
 const LS_KEY_CONTEXT_OPACITY   = 'fastread_context_opacity';
 const DEFAULT_WPM = 250;
 const DEFAULT_WINDOW_SIZE: WindowSize = 1;
@@ -180,15 +182,34 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
     return isNewUser ? 'focus' : 'read';
   });
   const [savedCustomModes, setSavedCustomModesState] = useState<CustomMode[]>(() => {
-    try { return JSON.parse(localStorage.getItem(LS_KEY_CUSTOM_MODES) ?? '[]') as CustomMode[]; }
-    catch { return []; }
+    /** Legacy settings shape that may exist in stored custom modes */
+    type LegacyModeSettings = Omit<ModeSettings, 'contextWordFontSize'> & { contextWordSameSize: boolean };
+    try {
+      const raw = JSON.parse(localStorage.getItem(LS_KEY_CUSTOM_MODES) ?? '[]') as Array<
+        Omit<CustomMode, 'settings'> & { settings: ModeSettings | LegacyModeSettings }
+      >;
+      return raw.map((mode): CustomMode => {
+        const s = mode.settings as ModeSettings | LegacyModeSettings;
+        if ('contextWordSameSize' in s) {
+          const { contextWordSameSize, ...rest } = s as LegacyModeSettings;
+          return { ...mode, settings: { ...rest, contextWordFontSize: contextWordSameSize ? 0 : 85 } };
+        }
+        return mode as CustomMode;
+      });
+    } catch { return []; }
   });
   const [activeCustomModeId, setActiveCustomModeIdState] = useState<string | null>(() => {
     return localStorage.getItem(LS_KEY_ACTIVE_CUSTOM_MODE);
   });
-  const [contextWordSameSize, setContextWordSameSizeState] = useState<boolean>(() => {
-    const saved = localStorage.getItem(LS_KEY_CONTEXT_SAME_SIZE);
-    return saved !== null ? saved === 'true' : true;
+  const [contextWordFontSize, setContextWordFontSizeState] = useState<number>(() => {
+    const saved = localStorage.getItem(LS_KEY_CONTEXT_FONT_SIZE);
+    if (saved !== null) {
+      const parsed = parseInt(saved, 10);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+    // Migrate from old boolean key
+    const legacy = localStorage.getItem(LS_KEY_CONTEXT_SAME_SIZE_LEGACY);
+    return legacy === 'false' ? 85 : 0; // 'false' meant "smaller" → medium; else same-as-main
   });
   const [contextWordOpacity, setContextWordOpacityState] = useState<number>(() => {
     const saved = localStorage.getItem(LS_KEY_CONTEXT_OPACITY);
@@ -451,9 +472,9 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(LS_KEY_MAIN_FONT_SIZE, String(clamped));
   }, []);
 
-  const setContextWordSameSize = useCallback((v: boolean) => {
-    setContextWordSameSizeState(v);
-    localStorage.setItem(LS_KEY_CONTEXT_SAME_SIZE, String(v));
+  const setContextWordFontSize = useCallback((v: number) => {
+    setContextWordFontSizeState(v);
+    localStorage.setItem(LS_KEY_CONTEXT_FONT_SIZE, String(v));
   }, []);
 
   const setContextWordOpacity = useCallback((v: number) => {
@@ -548,7 +569,7 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
     setPunctuationPauseRaw(settings.punctuationPause);
     setLongWordCompensationRaw(settings.longWordCompensation);
     setChunkModeRaw(settings.chunkMode);
-    setContextWordSameSizeState(settings.contextWordSameSize);
+    setContextWordFontSizeState(settings.contextWordFontSize);
     setContextWordOpacityState(settings.contextWordOpacity);
     // Reset the flag after React has batched all state updates
     queueMicrotask(() => { applyingModeRef.current = false; });
@@ -611,7 +632,7 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
         longWordCompensation,
         mainWordFontSize,
         chunkMode,
-        contextWordSameSize,
+        contextWordFontSize,
         contextWordOpacity,
         sessionStats,
         sessionHistory,
@@ -645,7 +666,7 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
         setLongWordCompensation,
         setMainWordFontSize,
         setChunkMode,
-        setContextWordSameSize,
+        setContextWordFontSize,
         setContextWordOpacity,
         updateSessionStats,
         resetSessionStats,

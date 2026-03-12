@@ -41,7 +41,7 @@ export default function ReadingModes() {
     highlightColor, setHighlightColor,
     mainWordFontSize, setMainWordFontSize,
     theme,
-    contextWordSameSize, setContextWordSameSize,
+    contextWordFontSize, setContextWordFontSize,
     contextWordOpacity, setContextWordOpacity,
   } = useReaderContext();
 
@@ -82,14 +82,14 @@ export default function ReadingModes() {
       m.id === activeCustomModeId
         ? { ...m, wpm, settings: { windowSize, orpEnabled, orpColored, focalLine,
             peripheralFade, punctuationPause, longWordCompensation, chunkMode,
-            contextWordSameSize, contextWordOpacity } }
+            contextWordFontSize, contextWordOpacity } }
         : m
     );
     setSavedCustomModes(updated);
     setIsDirty(false);
   }, [activeCustomModeId, wpm, windowSize, orpEnabled, orpColored, focalLine,
       peripheralFade, punctuationPause, longWordCompensation, chunkMode,
-      contextWordSameSize, contextWordOpacity,
+      contextWordFontSize, contextWordOpacity,
       savedCustomModes, setSavedCustomModes]);
 
   const handleInlineSave = useCallback(() => {
@@ -105,7 +105,7 @@ export default function ReadingModes() {
       wpm,
       settings: { windowSize, orpEnabled, orpColored, focalLine,
                   peripheralFade, punctuationPause, longWordCompensation, chunkMode,
-                  contextWordSameSize, contextWordOpacity },
+                  contextWordFontSize, contextWordOpacity },
       createdAt: new Date().toISOString(),
     };
     setSavedCustomModes([newMode, ...savedCustomModes]);
@@ -115,7 +115,7 @@ export default function ReadingModes() {
     setIsDirty(false);
   }, [saveName, wpm, windowSize, orpEnabled, orpColored, focalLine,
       peripheralFade, punctuationPause, longWordCompensation, chunkMode,
-      contextWordSameSize, contextWordOpacity,
+      contextWordFontSize, contextWordOpacity,
       savedCustomModes, setSavedCustomModes, setActiveMode, setActiveCustomModeId]);
 
   const activePreset = (['speed', 'focus', 'read'] as PresetModeId[]).includes(
@@ -343,8 +343,8 @@ export default function ReadingModes() {
             <label className={styles.fineRow} style={{ cursor: 'pointer' }}>
               <span className={styles.fineName}>Context word size</span>
               <input type="checkbox" className={styles.toggle}
-                     checked={contextWordSameSize}
-                     onChange={e => handleFinetuneChange(() => setContextWordSameSize(e.target.checked))} />
+                     checked={contextWordFontSize === 0}
+                     onChange={e => handleFinetuneChange(() => setContextWordFontSize(e.target.checked ? 0 : 85))} />
             </label>
 
             {/* 9 — Dim amount (only shown when peripheralFade is ON) */}
