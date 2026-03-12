@@ -85,8 +85,8 @@ interface ReaderViewportProps {
   isEyeFocus?: boolean;
   /** Called when the user clicks the eye focus button */
   onEyeToggle?: () => void;
-  /** When true, context words render at the same font size as the main word */
-  contextWordSameSize?: boolean;
+  /** Font size scale for context words: 0 = same as main word; 70–180 = explicit scale % */
+  contextWordFontSize?: number;
   /** Opacity of context words when peripheralFade is true (0.20–1.00) */
   contextWordOpacity?: number;
 }
@@ -131,15 +131,21 @@ function getSlotOpacity(
 }
 
 /**
- * Return the inline fontSize for a context word based on the contextWordSameSize
- * setting and whether a user-scaled font size is active.
+ * Compute inline fontSize for context words.
+ * contextWordFontSize === 0  → follow main word scale (same size as main)
+ * contextWordFontSize 70–180 → explicit scale applied to the context base clamp
+ *   base: clamp(1.1rem, 5vw, 1.8rem)  (matching .contextWord CSS)
  */
 function getContextWordFontSize(
-  contextWordSameSize: boolean,
+  contextWordFontSize: number,
   scaledFont: string | undefined,
 ): string | undefined {
-  if (!contextWordSameSize) return undefined;
-  return scaledFont ?? 'clamp(1.1rem, 8vw, 3.2rem)';
+  if (contextWordFontSize === 0) {
+    return scaledFont ?? 'clamp(1.1rem, 8vw, 3.2rem)';
+  }
+  const scale = contextWordFontSize / 100;
+  if (scale === 1) return undefined; // 100 = Normal = CSS default, no inline override
+  return `clamp(${(1.1 * scale).toFixed(3)}rem, ${(5 * scale).toFixed(2)}vw, ${(1.8 * scale).toFixed(3)}rem)`;
 }
 
 /** Pixels from left edge to exclude from swipe detection (iOS back-navigation zone) */
@@ -180,7 +186,7 @@ const ReaderViewport = memo(function ReaderViewport({
   onSlower,
   isEyeFocus = false,
   onEyeToggle,
-  contextWordSameSize = true,
+  contextWordFontSize = 0,
   contextWordOpacity = 0.65,
 }: ReaderViewportProps) {
   const { isPlaying, wpm, fileMetadata } = useReaderContext();
@@ -522,9 +528,9 @@ const ReaderViewport = memo(function ReaderViewport({
                 className={`${styles.wordSlot}${isCenter ? ` ${styles.wordSlotCenter}` : ''}`}
                 style={{
                   ...(isCenter && !focalLine ? { color: highlightColor } : undefined),
-                  ...(isPeripheral ? { color: 'var(--vp-text-peripheral)', opacity: 1 } : undefined),
+                  ...(isPeripheral ? { opacity: contextWordOpacity } : undefined),
                   ...(isCenter && scaledFont ? { fontSize: scaledFont } : undefined),
-                  ...(!isCenter ? { fontSize: getContextWordFontSize(contextWordSameSize, scaledFont) } : undefined),
+                  ...(!isCenter ? { fontSize: getContextWordFontSize(contextWordFontSize, scaledFont) } : undefined),
                 }}
                 aria-hidden={!word ? true : undefined}
               >
@@ -602,11 +608,8 @@ const ReaderViewport = memo(function ReaderViewport({
                       : styles.contextWord
                   }
                   style={{
-                    color: getSlotOpacity(actualSlot, peripheralFade, contextWordOpacity) < 1
-                      ? 'var(--vp-text-peripheral)'
-                      : undefined,
-                    opacity: 1,
-                    fontSize: getContextWordFontSize(contextWordSameSize, scaledFont),
+                    opacity: getSlotOpacity(actualSlot, peripheralFade, contextWordOpacity),
+                    fontSize: getContextWordFontSize(contextWordFontSize, scaledFont),
                   }}
                 >
                   {word}

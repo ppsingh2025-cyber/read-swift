@@ -41,7 +41,7 @@ export default function ReadingModes() {
     highlightColor, setHighlightColor,
     mainWordFontSize, setMainWordFontSize,
     theme,
-    contextWordSameSize, setContextWordSameSize,
+    contextWordFontSize, setContextWordFontSize,
     contextWordOpacity, setContextWordOpacity,
   } = useReaderContext();
 
@@ -82,14 +82,14 @@ export default function ReadingModes() {
       m.id === activeCustomModeId
         ? { ...m, wpm, settings: { windowSize, orpEnabled, orpColored, focalLine,
             peripheralFade, punctuationPause, longWordCompensation, chunkMode,
-            contextWordSameSize, contextWordOpacity } }
+            contextWordFontSize, contextWordOpacity } }
         : m
     );
     setSavedCustomModes(updated);
     setIsDirty(false);
   }, [activeCustomModeId, wpm, windowSize, orpEnabled, orpColored, focalLine,
       peripheralFade, punctuationPause, longWordCompensation, chunkMode,
-      contextWordSameSize, contextWordOpacity,
+      contextWordFontSize, contextWordOpacity,
       savedCustomModes, setSavedCustomModes]);
 
   const handleInlineSave = useCallback(() => {
@@ -105,7 +105,7 @@ export default function ReadingModes() {
       wpm,
       settings: { windowSize, orpEnabled, orpColored, focalLine,
                   peripheralFade, punctuationPause, longWordCompensation, chunkMode,
-                  contextWordSameSize, contextWordOpacity },
+                  contextWordFontSize, contextWordOpacity },
       createdAt: new Date().toISOString(),
     };
     setSavedCustomModes([newMode, ...savedCustomModes]);
@@ -115,21 +115,24 @@ export default function ReadingModes() {
     setIsDirty(false);
   }, [saveName, wpm, windowSize, orpEnabled, orpColored, focalLine,
       peripheralFade, punctuationPause, longWordCompensation, chunkMode,
-      contextWordSameSize, contextWordOpacity,
+      contextWordFontSize, contextWordOpacity,
       savedCustomModes, setSavedCustomModes, setActiveMode, setActiveCustomModeId]);
 
   const activePreset = (['speed', 'focus', 'read'] as PresetModeId[]).includes(
     activeMode as PresetModeId
   ) ? (activeMode as PresetModeId) : null;
 
+  // toggleRows kept as a reference for updateActiveCustomMode / handleInlineSave field
+  // enumeration; individual rows rendered explicitly below for conditional control
   const toggleRows: Array<{ key: string; label: string; value: boolean; set: (v: boolean) => void }> = [
-    { key: 'orpEnabled',           label: 'Eye anchor (ORP)',     value: orpEnabled,           set: setOrpEnabled },
-    { key: 'orpColored',           label: 'Highlight key letter', value: orpColored,           set: setOrpColored },
-    { key: 'focalLine',            label: 'Focal line',           value: focalLine,            set: setFocalLine },
-    { key: 'peripheralFade',       label: 'Dim context words',    value: peripheralFade,       set: setPeripheralFade },
-    { key: 'punctuationPause',     label: 'Pause at punctuation', value: punctuationPause,     set: setPunctuationPause },
-    { key: 'longWordCompensation', label: 'Slow on long words',   value: longWordCompensation, set: setLongWordCompensation },
+    { key: 'orpEnabled',           label: 'Reading anchor',         value: orpEnabled,           set: setOrpEnabled },
+    { key: 'orpColored',           label: 'Highlight anchor letter', value: orpColored,           set: setOrpColored },
+    { key: 'focalLine',            label: 'Focus guides',           value: focalLine,            set: setFocalLine },
+    { key: 'peripheralFade',       label: 'Dim side words',         value: peripheralFade,       set: setPeripheralFade },
+    { key: 'punctuationPause',     label: 'Pause at punctuation',   value: punctuationPause,     set: setPunctuationPause },
+    { key: 'longWordCompensation', label: 'Slow on long words',     value: longWordCompensation, set: setLongWordCompensation },
   ];
+  void toggleRows; // kept for reference, rendered individually
 
   return (
     <div className={styles.root}>
@@ -223,7 +226,7 @@ export default function ReadingModes() {
         {finetuneOpen && (
           <div className={styles.accordionBody}>
 
-            {/* 0 — Name & save at the very top */}
+            {/* Name & save at the very top */}
             <div className={styles.inlineSave}>
               <input type="text" className={styles.saveNameInput}
                      placeholder="Name this setup…" maxLength={24} value={saveName}
@@ -247,7 +250,9 @@ export default function ReadingModes() {
               ) : null;
             })()}
 
-            {/* 1 — Speed (WPM) */}
+            {/* ── GROUP 1: PACING ─────────────────────────────── */}
+
+            {/* Speed */}
             <div className={styles.fineRow}>
               <span className={styles.fineName}>Speed</span>
               <div className={styles.wpmStepper}>
@@ -261,7 +266,7 @@ export default function ReadingModes() {
               </div>
             </div>
 
-            {/* 2 — Words shown */}
+            {/* Words shown */}
             <div className={styles.fineRow}>
               <span className={styles.fineName}>Words shown</span>
               <div className={styles.segmented}>
@@ -274,8 +279,21 @@ export default function ReadingModes() {
               </div>
             </div>
 
-            {/* 3 — Layout (orientation) */}
-            <div className={styles.fineRow}>
+            {/* Group into phrases — hidden when windowSize === 1 */}
+            {windowSize > 1 && (
+              <label className={`${styles.fineRow} ${styles.fineGroupDivider}`} style={{ cursor: 'pointer' }}>
+                <span className={styles.fineName}>Group into phrases</span>
+                <input type="checkbox" className={styles.toggle}
+                       checked={chunkMode === 'intelligent'}
+                       onChange={e => handleFinetuneChange(() =>
+                         setChunkMode(e.target.checked ? 'intelligent' : 'fixed'))} />
+              </label>
+            )}
+
+            {/* ── GROUP 2: DISPLAY ────────────────────────────── */}
+
+            {/* Layout — divider when windowSize=1 (Group into phrases hidden) */}
+            <div className={`${styles.fineRow} ${windowSize === 1 ? styles.fineGroupDivider : ''}`}>
               <span className={styles.fineName}>Layout</span>
               <select className={styles.fineSelect}
                       value={orientation}
@@ -286,7 +304,7 @@ export default function ReadingModes() {
               </select>
             </div>
 
-            {/* 4 — Focus word size */}
+            {/* Word size */}
             <div className={styles.fineRow}>
               <span className={styles.fineName}>Word size</span>
               <select className={styles.fineSelect}
@@ -302,9 +320,44 @@ export default function ReadingModes() {
               </select>
             </div>
 
-            {/* 5 — Key letter color */}
+            {/* Side word size — hidden when windowSize === 1 */}
+            {windowSize > 1 && (
+              <div className={styles.fineRow}>
+                <span className={styles.fineName}>Side word size</span>
+                <select className={styles.fineSelect}
+                        value={contextWordFontSize}
+                        onChange={e => handleFinetuneChange(() => setContextWordFontSize(parseInt(e.target.value, 10)))}
+                        aria-label="Side word font size">
+                  <option value={0}>Same as main</option>
+                  <option value={70}>Small</option>
+                  <option value={85}>Medium</option>
+                  <option value={100}>Normal</option>
+                  <option value={120}>Large</option>
+                  <option value={150}>X-Large</option>
+                  <option value={180}>Huge</option>
+                </select>
+              </div>
+            )}
+
+            {/* ── GROUP 3: FOCUS AIDS ─────────────────────────── */}
+
+            {/* Reading anchor */}
+            <label className={`${styles.fineRow} ${styles.fineGroupDivider}`} style={{ cursor: 'pointer' }}>
+              <span className={styles.fineName}>Reading anchor</span>
+              <input type="checkbox" className={styles.toggle} checked={orpEnabled}
+                     onChange={e => handleFinetuneChange(() => setOrpEnabled(e.target.checked))} />
+            </label>
+
+            {/* Highlight anchor letter */}
+            <label className={styles.fineRow} style={{ cursor: 'pointer' }}>
+              <span className={styles.fineName}>Highlight anchor letter</span>
+              <input type="checkbox" className={styles.toggle} checked={orpColored}
+                     onChange={e => handleFinetuneChange(() => setOrpColored(e.target.checked))} />
+            </label>
+
+            {/* Anchor letter color */}
             <div className={styles.fineRow}>
-              <span className={styles.fineName}>Key letter color</span>
+              <span className={styles.fineName}>Anchor letter color</span>
               <div className={styles.colorSwatches}>
                 {ORP_COLORS[theme].map(option => (
                   <button
@@ -321,49 +374,56 @@ export default function ReadingModes() {
               </div>
             </div>
 
-            {/* 6 — Boolean toggles */}
-            {toggleRows.map(item => (
-              <label key={item.key} className={styles.fineRow} style={{ cursor: 'pointer' }}>
-                <span className={styles.fineName}>{item.label}</span>
-                <input type="checkbox" className={styles.toggle} checked={item.value}
-                       onChange={e => handleFinetuneChange(() => item.set(e.target.checked))} />
+            {/* Focus guides */}
+            <label className={styles.fineRow} style={{ cursor: 'pointer' }}>
+              <span className={styles.fineName}>Focus guides</span>
+              <input type="checkbox" className={styles.toggle} checked={focalLine}
+                     onChange={e => handleFinetuneChange(() => setFocalLine(e.target.checked))} />
+            </label>
+
+            {/* ── GROUP 4: SIDE WORDS — entire group hidden when windowSize === 1 */}
+            {windowSize > 1 && <>
+              {/* Dim side words */}
+              <label className={`${styles.fineRow} ${styles.fineGroupDivider}`} style={{ cursor: 'pointer' }}>
+                <span className={styles.fineName}>Dim side words</span>
+                <input type="checkbox" className={styles.toggle} checked={peripheralFade}
+                       onChange={e => handleFinetuneChange(() => setPeripheralFade(e.target.checked))} />
               </label>
-            ))}
 
-            {/* 7 — Phrase grouping */}
-            <label className={styles.fineRow} style={{ cursor: 'pointer' }}>
-              <span className={styles.fineName}>Phrase grouping</span>
-              <input type="checkbox" className={styles.toggle}
-                     checked={chunkMode === 'intelligent'}
-                     onChange={e => handleFinetuneChange(() =>
-                       setChunkMode(e.target.checked ? 'intelligent' : 'fixed'))} />
-            </label>
-
-            {/* 8 — Context word size */}
-            <label className={styles.fineRow} style={{ cursor: 'pointer' }}>
-              <span className={styles.fineName}>Context word size</span>
-              <input type="checkbox" className={styles.toggle}
-                     checked={contextWordSameSize}
-                     onChange={e => handleFinetuneChange(() => setContextWordSameSize(e.target.checked))} />
-            </label>
-
-            {/* 9 — Dim amount (only shown when peripheralFade is ON) */}
-            {peripheralFade && (
-              <div className={styles.fineRow}>
-                <span className={styles.fineName}>Dim amount</span>
-                <div className={styles.wpmStepper}>
-                  <button type="button" className={styles.wpmStepBtn}
-                          onClick={() => handleFinetuneChange(() =>
-                            setContextWordOpacity(Math.max(0.20, contextWordOpacity - 0.05)))}
-                          aria-label="Less dim">−</button>
-                  <span className={styles.wpmValue}>{Math.round(contextWordOpacity * 100)}%</span>
-                  <button type="button" className={styles.wpmStepBtn}
-                          onClick={() => handleFinetuneChange(() =>
-                            setContextWordOpacity(Math.min(1.0, contextWordOpacity + 0.05)))}
-                          aria-label="More dim">+</button>
+              {/* Dim level — only when Dim side words is ON */}
+              {peripheralFade && (
+                <div className={styles.fineRow}>
+                  <span className={styles.fineName}>Dim level</span>
+                  <div className={styles.wpmStepper}>
+                    <button type="button" className={styles.wpmStepBtn}
+                            onClick={() => handleFinetuneChange(() =>
+                              setContextWordOpacity(Math.max(0.20, contextWordOpacity - 0.05)))}
+                            aria-label="Less dim">−</button>
+                    <span className={styles.wpmValue}>{Math.round(contextWordOpacity * 100)}%</span>
+                    <button type="button" className={styles.wpmStepBtn}
+                            onClick={() => handleFinetuneChange(() =>
+                              setContextWordOpacity(Math.min(1.0, contextWordOpacity + 0.05)))}
+                            aria-label="More dim">+</button>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </>}
+
+            {/* ── GROUP 5: READING ENGINE ─────────────────────── */}
+
+            {/* Pause at punctuation */}
+            <label className={`${styles.fineRow} ${styles.fineGroupDivider}`} style={{ cursor: 'pointer' }}>
+              <span className={styles.fineName}>Pause at punctuation</span>
+              <input type="checkbox" className={styles.toggle} checked={punctuationPause}
+                     onChange={e => handleFinetuneChange(() => setPunctuationPause(e.target.checked))} />
+            </label>
+
+            {/* Slow on long words */}
+            <label className={styles.fineRow} style={{ cursor: 'pointer' }}>
+              <span className={styles.fineName}>Slow on long words</span>
+              <input type="checkbox" className={styles.toggle} checked={longWordCompensation}
+                     onChange={e => handleFinetuneChange(() => setLongWordCompensation(e.target.checked))} />
+            </label>
 
           </div>
         )}

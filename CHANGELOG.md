@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.6.0] — Fine-tune menu + wizard restructure
+### Changed
+- Fine-tune menu reordered into 5 logical groups with thin dividers
+- Labels renamed to plain language (Reading anchor, Focus guides,
+  Dim side words, Dim level, Group into phrases, Side word size)
+- Side word controls hidden entirely when Words shown = 1
+- Context word size changed from checkbox to dropdown (Same as main /
+  Small / Medium / Normal / Large / X-Large / Huge)
+- Side word dimming now uses CSS opacity (not a separate color token);
+  --vp-text-peripheral tokens removed from all themes
+- Wizard restructured: 15 steps, new order (words → phrases → speed →
+  layout → word size → side word size → anchor → colour → guides →
+  dim → dim level → punctuation → long words → confirm)
+- Wizard auto-skips side-word steps when Words shown = 1
+- Wizard auto-skips ORP colour step when Reading anchor is off
+- Wizard auto-skips Dim level step when Dim side words is off
+- Layout and Word size steps added to wizard
+### Migration
+- fastread_context_same_size (boolean) → fastread_context_font_size (number)
+- Existing saved custom modes with old field migrated automatically
+
 ### v1.3.2
 - fix(pdf): Approach C diagram detection false positive rate reduced from 83% to 3.5%
   - isDiagramSymbol() excludes prose typography (smart quotes, dashes, footnote markers)

@@ -100,8 +100,8 @@ interface ReaderState {
   mainWordFontSize: number;
   /** Word grouping strategy: fixed window or intelligent phrase-based chunks */
   chunkMode: ChunkMode;
-  /** When true, context words render at the same font size as the main word */
-  contextWordSameSize: boolean;
+  /** Font size scale for context words: 0 = same as main word; 70–180 = explicit scale % */
+  contextWordFontSize: number;
   /** Opacity of context words when peripheralFade is true (0.20–1.00) */
   contextWordOpacity: number;
   /** Lightweight session analytics for the current reading session */
@@ -148,7 +148,7 @@ interface ReaderActions {
   setLongWordCompensation: (enabled: boolean) => void;
   setMainWordFontSize: (size: number) => void;
   setChunkMode: (mode: ChunkMode) => void;
-  setContextWordSameSize: (v: boolean) => void;
+  setContextWordFontSize: (v: number) => void;
   setContextWordOpacity: (v: number) => void;
   /** Update session analytics (called by the RSVP engine) */
   updateSessionStats: (delta: Partial<SessionStats>) => void;

@@ -12,7 +12,7 @@ export interface ModeSettings {
   punctuationPause: boolean;
   longWordCompensation: boolean;
   chunkMode: ChunkMode;
-  contextWordSameSize: boolean;
+  contextWordFontSize: number;   // 0 = same as main word; 70–180 = explicit scale %
   contextWordOpacity: number;
 }
 

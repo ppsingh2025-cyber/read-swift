@@ -110,7 +110,6 @@
   --vp-border:      #1e1e2a;
   --vp-text:        #d4d4d4;
   --vp-placeholder: #55556a;
-  --vp-text-peripheral: #8888a0; /* ≥4.5:1 against --vp-bg #0d0d10 */
   --slot-width:     10ch;
 
   /* Interaction states */
@@ -162,7 +161,6 @@
   --vp-border:     #2a2018;
   --vp-text:       #d8d0b8;
   --vp-placeholder: #5a5040;
-  --vp-text-peripheral: #9a8a6a; /* ≥4.5:1 against --vp-bg #100d08 */
   --slot-width:    10ch;
 
   --state-hover:   rgba(255,255,255,0.06);
@@ -213,7 +211,6 @@
   --vp-border:     #d0c8bc;
   --vp-text:       #1a1a2e;
   --vp-placeholder: #a0a0b8;
-  --vp-text-peripheral: #565470; /* ≥4.5:1 against --vp-bg #ede8e0 */
   --slot-width:    10ch;
 
   --state-hover:   rgba(0,0,0,0.05);
@@ -269,7 +266,6 @@
   --vp-border:      #111111;
   --vp-text:        #e8e8e8;
   --vp-placeholder: #444444;
-  --vp-text-peripheral: #888888; /* ≥4.5:1 against --vp-bg #000000 */
   --slot-width:     10ch;
 
   --state-hover:    rgba(255,255,255,0.07);
