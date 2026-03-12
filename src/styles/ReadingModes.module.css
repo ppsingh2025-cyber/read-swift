@@ -85,6 +85,12 @@
 .fineRow:hover { background: var(--state-hover); }
 .fineName { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
 
+/* Thin group divider — applied to first row of each new group */
+.fineGroupDivider {
+  border-top: 1px solid var(--border);
+  margin-top: 1px;
+}
+
 /* WPM stepper */
 .wpmStepper { display: flex; align-items: center; gap: 6px; }
 .wpmStepBtn {

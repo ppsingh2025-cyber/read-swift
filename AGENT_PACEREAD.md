@@ -200,6 +200,8 @@ peripheralFade: boolean           // default true
 longWordCompensation: boolean     // default true
 mainWordFontSize: number          // 60–200 (%), default 100
 chunkMode: 'fixed' | 'intelligent'
+contextWordFontSize: number          // 0 = same as main word; 70–180 = explicit scale %
+contextWordOpacity: number           // 0.20–1.00, default 0.65
 
 // History & analytics
 records: ReadingRecord[]          // up to 20, from localStorage
@@ -230,6 +232,8 @@ sessionStats: SessionStats        // { wordsRead, startTime, activeTimeMs, effec
 | `fastread_onboarding_complete` | set on onboarding finish |
 | `fastread_focus_marker` | `true` |
 | `fastread_focal_line` | `false` |
+| `fastread_context_font_size` | `0` (number: 0 = same as main word; 70–180 = explicit scale %) |
+| `fastread_context_opacity` | `0.65` |
 
 ---
 
