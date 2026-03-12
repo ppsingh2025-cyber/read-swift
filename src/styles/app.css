@@ -553,10 +553,9 @@ body {
   border-color: rgba(0, 0, 0, 0.12);
 }
 
-.focusWpmUnit {
+.focusBadgeUnit {
   font-size: 0.65rem;
   opacity: 0.7;
-  text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
@@ -774,7 +773,7 @@ kbd {
 
 .focusExitHint {
   position: absolute;
-  bottom: 1rem;
+  top: 3.5rem;
   left: 50%;
   transform: translateX(-50%);
   font-size: 0.72rem;

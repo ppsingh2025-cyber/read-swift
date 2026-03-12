@@ -626,10 +626,10 @@ export default function App() {
               </svg>
             )}
           </button>
-          {/* WPM badge — visible only in focus mode, mirrored at top-left */}
-          {isFocused && (
-            <div className="focusWpmBadge" role="status" aria-label={`${wpm} words per minute`}>
-              {wpm} <span className="focusWpmUnit">WPM</span>
+          {/* Read % badge — visible only in focus mode, top-left */}
+          {isFocused && words.length > 0 && (
+            <div className="focusWpmBadge" role="status" aria-label={`${Math.round((currentWordIndex / Math.max(words.length - 1, 1)) * 100)}% read — ${wpm} WPM`}>
+              {Math.round((currentWordIndex / Math.max(words.length - 1, 1)) * 100)}<span className="focusBadgeUnit">%</span>
             </div>
           )}
           {/* Focus mode exit hint — fades after 3s */}

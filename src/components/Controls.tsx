@@ -84,10 +84,6 @@ export default function Controls({
 
   const hasWords = words.length > 0;
 
-  const readPct = hasWords && words.length > 1
-    ? Math.round(((currentWordIndex + 1) / words.length) * 100)
-    : null;
-
   return (
     <div className={styles.controls}>
       <div className={styles.inner}>
@@ -236,20 +232,10 @@ export default function Controls({
             type="button"
             className={`${styles.wpmPillValue}${wpmFlash ? ` ${styles.wpmPillFlash}` : ''}`}
             onClick={() => { setWpmDraft(String(wpm)); setWpmEditing(true); }}
-            aria-label={readPct !== null
-              ? `${readPct}% read — ${wpm} WPM, tap to edit speed`
-              : `${wpm} words per minute, tap to edit`}
-            title={`${readPct !== null ? `${readPct}% through — ` : ''}${wpm} WPM — tap to edit`}
+            aria-label={`${wpm} words per minute, tap to edit`}
+            title="Tap to set exact WPM"
           >
-            {readPct !== null ? (
-              <>
-                {readPct}<span className={styles.wpmUnit}>%</span>
-              </>
-            ) : (
-              <>
-                {wpm} <span className={styles.wpmUnit}>WPM</span>
-              </>
-            )}
+            {wpm} <span className={styles.wpmUnit}>WPM</span>
           </button>
         )}
 
