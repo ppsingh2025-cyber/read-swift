@@ -572,7 +572,8 @@
 
 .eyeBtn {
   position: absolute;
-  bottom: 32px;
+  /* Sits just above the overlayBar (22px button + 6px padding-bottom = 28px) */
+  bottom: calc(var(--space-7, 28px) + 4px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 5;

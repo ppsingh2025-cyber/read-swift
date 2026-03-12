@@ -280,6 +280,11 @@ const ReaderViewport = memo(function ReaderViewport({
   const userScale   = mainWordFontSize / 100;
   const isMultiWord = wordWindow.length > 1;
 
+  // Progress percentage — used in both the aria-label and the display span
+  const progressPct = (currentWordIndex !== undefined && totalWordCount)
+    ? Math.round((currentWordIndex / totalWordCount) * 100)
+    : 0;
+
   // ORP coloring: focalLine always wins
   // Structural split always happens (pre/ORP/post) — required for tick alignment.
   // Color is only applied when orpColored is true.
@@ -653,9 +658,9 @@ const ReaderViewport = memo(function ReaderViewport({
               <button
                 className={styles.pagePillOverlay}
                 onClick={() => { setShowWordJump(p => !p); }}
-                aria-label={`Word ${currentWordIndex + 1} of ${totalWordCount}, ${totalWordCount > 0 ? Math.round((currentWordIndex / totalWordCount) * 100) : 0}% complete`}
+                aria-label={`Word ${currentWordIndex + 1} of ${totalWordCount}, ${progressPct}% complete`}
               >
-                <span className={styles.wcPctPre}>{totalWordCount > 0 ? Math.round((currentWordIndex / totalWordCount) * 100) : 0}%</span>
+                <span className={styles.wcPctPre}>{progressPct}%</span>
                 {' '}<span className={styles.wcLabel}>W</span>{' '}
                 {(currentWordIndex + 1).toLocaleString()}
                 <span className={styles.wcSep}>/</span>
