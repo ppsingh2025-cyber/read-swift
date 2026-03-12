@@ -9,7 +9,7 @@
  * All interactive elements meet the 44 px minimum touch-target size.
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useReaderContext } from '../context/useReaderContext';
 import styles from '../styles/Controls.module.css';
 
@@ -26,6 +26,10 @@ interface ControlsProps {
   onPasteToggle: () => void;
   /** Whether the paste panel is currently open */
   pasteOpen: boolean;
+  /** When true, the "previous word" button is disabled */
+  prevDisabled?: boolean;
+  /** When true, the "next word" button is disabled */
+  nextDisabled?: boolean;
   /** When true (maximize/focus mode) upload and paste buttons are hidden */
   focused?: boolean;
 }
@@ -33,7 +37,7 @@ interface ControlsProps {
 /** Duration in ms for the WPM flash animation — matches the CSS @keyframes wpmFlash */
 const WPM_FLASH_DURATION = 200;
 
-export default function Controls({
+export default memo(function Controls({
   onFileSelect,
   onPlay,
   onPause,
@@ -44,9 +48,11 @@ export default function Controls({
   onNextWord,
   onPasteToggle,
   pasteOpen,
+  prevDisabled,
+  nextDisabled,
   focused,
 }: ControlsProps) {
-  const { isPlaying, wpm, setWpm, words, isLoading, currentWordIndex } =
+  const { isPlaying, wpm, setWpm, words, isLoading } =
     useReaderContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -138,7 +144,7 @@ export default function Controls({
           type="button"
           className={styles.controlBtn}
           onClick={onPrevWord}
-          disabled={!hasWords || currentWordIndex <= 0}
+          disabled={prevDisabled}
           title="Previous word (←)"
           aria-label="Previous word"
         >
@@ -174,7 +180,7 @@ export default function Controls({
           type="button"
           className={styles.controlBtn}
           onClick={onNextWord}
-          disabled={!hasWords || currentWordIndex >= words.length - 1}
+          disabled={nextDisabled}
           title="Next word (→)"
           aria-label="Next word"
         >
@@ -274,4 +280,4 @@ export default function Controls({
       </div>
     </div>
   );
-}
+})

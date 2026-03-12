@@ -8,12 +8,52 @@
  * Active word auto-scrolls into view as reading advances.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { RefObject } from 'react';
 import { useReaderContext } from '../context/useReaderContext';
 import styles from '../styles/ContextPreview.module.css';
 
 const LS_KEY = 'contextPreview_collapsed';
 const LS_AUTOSCROLL_KEY = 'contextPreview_autoScroll';
+
+interface WordSpanProps {
+  word: string;
+  globalIndex: number;
+  isActive: boolean;
+  activeRef: RefObject<HTMLSpanElement | null>;
+  goToWord: (index: number) => void;
+}
+
+/**
+ * Memoised word span — only re-renders when its own `isActive` state changes.
+ *
+ * Props are stable across ticks:
+ * - `word` and `globalIndex` are primitives from a stable `pageWords` slice.
+ * - `activeRef` is the same `useRef` object across all renders.
+ * - `goToWord` is `useCallback`-memoised in ReaderContext (deps: words.length),
+ *   so its identity stays constant during playback.
+ */
+const WordSpan = memo(function WordSpan({ word, globalIndex, isActive, activeRef, goToWord }: WordSpanProps) {
+  return (
+    <span
+      ref={isActive ? activeRef : undefined}
+      className={isActive ? styles.activeWord : styles.word}
+      onClick={() => goToWord(globalIndex)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          goToWord(globalIndex);
+        }
+      }}
+      aria-label={`${word}${isActive ? ' (current)' : ''}`}
+      aria-pressed={isActive}
+    >
+      {word}{' '}
+    </span>
+  );
+});
 
 interface ContextPreviewProps {
   onExpandChange?: (expanded: boolean) => void;
@@ -219,24 +259,14 @@ export default function ContextPreview({ onExpandChange }: ContextPreviewProps) 
             const globalIndex = pageStart + i;
             const isActive    = globalIndex === currentWordIndex;
             return (
-              <span
+              <WordSpan
                 key={globalIndex}
-                ref={isActive ? activeWordRef : undefined}
-                className={isActive ? styles.activeWord : styles.word}
-                onClick={() => goToWord(globalIndex)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={e => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    goToWord(globalIndex);
-                  }
-                }}
-                aria-label={`${word}${isActive ? ' (current)' : ''}`}
-                aria-pressed={isActive}
-              >
-                {word}{' '}
-              </span>
+                word={word}
+                globalIndex={globalIndex}
+                isActive={isActive}
+                activeRef={activeWordRef}
+                goToWord={goToWord}
+              />
             );
           })}
         </div>
